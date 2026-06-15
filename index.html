@@ -1,0 +1,1104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>World Cup 2026 — Pool Standings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:        #f3efe6;
+    --paper-deep:   #e8e2d3;
+    --ink:          #1c1b18;
+    --ink-soft:     #4a4740;
+    --ink-faint:    #8a857a;
+    --rule:         #c9c1ad;
+    --rule-soft:    #ddd5c1;
+    --accent:       #b8341c;   /* terracotta / vermilion */
+    --accent-deep:  #8a2614;
+    --gold:         #c9a227;
+    --alive:        #2f6b3a;   /* deep green for active */
+    --eliminated:   #8a857a;   /* dust for out */
+    --chip-bg:      #ece6d6;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .num, .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+  /* ---------- top bar ---------- */
+  .topbar {
+    border-bottom: 1px solid var(--rule);
+    padding: 18px 32px 14px;
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 900;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .brand .yr { color: var(--accent); }
+  .brand .sub {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 6px;
+  }
+  .meta {
+    margin-left: auto;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .meta .dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--alive);
+    margin-right: 6px;
+    vertical-align: 1px;
+  }
+  .meta .dot.stale { background: var(--ink-faint); }
+  .meta .dot.err   { background: var(--accent); }
+  .meta button {
+    font: inherit;
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 0;
+    color: var(--ink);
+    padding: 4px 10px;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+  }
+  .meta button:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  /* ---------- layout ---------- */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px;
+  }
+
+  /* ---------- standings table ---------- */
+  .section-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 12px;
+  }
+  h2.section-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    margin: 0 0 24px;
+  }
+
+  .standings {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 56px;
+  }
+  .standings thead th {
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--rule);
+    padding: 0 12px 10px;
+  }
+  .standings thead th.r { text-align: right; }
+  .standings tbody tr {
+    border-bottom: 1px solid var(--rule-soft);
+    cursor: pointer;
+    transition: background 0.12s ease;
+  }
+  .standings tbody tr:hover { background: var(--paper-deep); }
+  .standings tbody td {
+    padding: 18px 12px;
+    vertical-align: middle;
+  }
+  .standings td.rank {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 32px;
+    line-height: 1;
+    color: var(--ink-faint);
+    width: 56px;
+  }
+  .standings tr.leader td.rank { color: var(--accent); }
+  .standings td.owner {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    width: 140px;
+  }
+  .standings td.score {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 26px;
+    width: 90px;
+  }
+  .standings td.score .gp {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  .roster-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+  }
+  .roster-strip .chip {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    background: var(--chip-bg);
+    border: 1px solid transparent;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .roster-strip .chip.alive {
+    background: transparent;
+    border-color: var(--alive);
+    color: var(--alive);
+    font-weight: 600;
+  }
+  .roster-strip .chip.out {
+    color: var(--eliminated);
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    background: transparent;
+    border-color: transparent;
+  }
+  .roster-strip .chip.top {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+    font-weight: 700;
+  }
+
+  .meta-row {
+    display: flex;
+    gap: 18px;
+    margin-top: 8px;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+  }
+  .meta-row .pip {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--alive);
+    margin-right: 5px;
+    vertical-align: 1px;
+  }
+  .meta-row .top-team {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ---------- ledger (scoring key) ---------- */
+  .ledger {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-bottom: 56px;
+  }
+  .ledger > div {
+    background: var(--paper);
+    padding: 14px 16px;
+  }
+  .ledger .pts {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--accent);
+  }
+  .ledger .what {
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  /* ---------- detail view ---------- */
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 28px;
+    font-family: 'Inter', sans-serif;
+  }
+  .back:hover { color: var(--accent); }
+
+  .detail-head {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .detail-head h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 56px;
+    letter-spacing: -0.03em;
+    margin: 0;
+    line-height: 1;
+  }
+  .detail-head .total {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 36px;
+  }
+  .detail-head .total .lbl {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 2px;
+  }
+
+  .detail-meta {
+    color: var(--ink-soft);
+    margin-bottom: 36px;
+    font-size: 14px;
+  }
+  .detail-meta .sep { color: var(--rule); margin: 0 10px; }
+
+  /* team grid */
+  .team-grid {
+    border-top: 1px solid var(--rule);
+  }
+  .team-row {
+    display: grid;
+    grid-template-columns: 38px 1fr 90px 1fr 110px;
+    gap: 20px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    align-items: center;
+  }
+  .team-row .grp {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .team-row .name {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+  }
+  .team-row.out .name {
+    color: var(--eliminated);
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--eliminated);
+  }
+  .team-row .status {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .team-row.alive .status { color: var(--alive); }
+  .team-row.out   .status { color: var(--eliminated); }
+  .team-row.champ .status { color: var(--gold); }
+
+  .team-row .breakdown {
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .team-row .breakdown span { margin-right: 14px; white-space: nowrap; }
+  .team-row .breakdown b { color: var(--ink); font-weight: 700; }
+  .team-row .pts {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 22px;
+  }
+
+  /* ---------- recent matches strip ---------- */
+  .recent {
+    margin-top: 56px;
+  }
+  .recent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .match {
+    background: var(--paper);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .match .when {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .match .line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 16px;
+  }
+  .match .line .sc { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+  .match .line.win  { color: var(--ink); }
+  .match .line.lose { color: var(--ink-faint); }
+
+  /* ---------- footer ---------- */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 24px 32px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  footer a { color: var(--ink-soft); }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 720px) {
+    main { padding: 20px; }
+    .topbar { padding: 14px 20px 12px; }
+    .standings td.rank { font-size: 22px; width: 36px; }
+    .standings td.owner { font-size: 17px; width: 90px; }
+    .standings td.score { font-size: 20px; }
+    .roster-strip .chip { font-size: 10px; padding: 2px 6px; }
+    .detail-head h1 { font-size: 38px; }
+    .detail-head .total { font-size: 28px; }
+    .team-row {
+      grid-template-columns: 28px 1fr 80px;
+      grid-template-areas:
+        "grp name pts"
+        ".   brk brk"
+        ".   sts sts";
+      gap: 6px 14px;
+    }
+    .team-row .grp { grid-area: grp; font-size: 16px; }
+    .team-row .name { grid-area: name; font-size: 16px; }
+    .team-row .pts { grid-area: pts; font-size: 18px; }
+    .team-row .breakdown { grid-area: brk; }
+    .team-row .status { grid-area: sts; }
+  }
+
+  /* loading / error */
+  .panel-msg {
+    padding: 60px 0;
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+  }
+  .panel-msg .small {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 10px;
+    letter-spacing: 0.04em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    Pool '<span class="yr">26</span>
+    <span class="sub">World Cup · Friends Pool</span>
+  </div>
+  <div class="meta">
+    <span id="status"><span class="dot stale"></span>Loading…</span>
+    <button id="refreshBtn" type="button">Refresh</button>
+  </div>
+</div>
+
+<main id="app">
+  <div class="panel-msg">Loading the latest scores…
+    <span class="small">Fetching openfootball/worldcup.json</span>
+  </div>
+</main>
+
+<footer>
+  Data: openfootball/worldcup.json · Auto-refreshes every 6 hours while open ·
+  <a href="https://github.com/openfootball/worldcup.json" target="_blank" rel="noopener">source</a>
+</footer>
+
+<script>
+/* =========================================================
+   World Cup 2026 — Friends Pool Standings
+   Single-file site. Reads openfootball/worldcup.json,
+   computes scores per the pool's rules, and renders a
+   home view + per-owner detail views.
+   ========================================================= */
+
+// ---------- pool roster (from the Excel) ----------
+// We normalize team names to the openfootball/worldcup.json spelling.
+const ROSTER = [
+  // Group A
+  { group: "A", team: "Mexico",            owner: "Matt"  },
+  { group: "A", team: "South Africa",      owner: "Sean"  },
+  { group: "A", team: "South Korea",       owner: "Matt"  },
+  { group: "A", team: "Czech Republic",    owner: "Zach"  },  // Excel: "Czechia"
+  // Group B
+  { group: "B", team: "Canada",            owner: "Sean"  },
+  { group: "B", team: "Bosnia & Herzegovina", owner: "Rusty" },
+  { group: "B", team: "Qatar",             owner: "Zach"  },
+  { group: "B", team: "Switzerland",       owner: "Matt"  },
+  // Group C
+  { group: "C", team: "Brazil",            owner: "Zach"  },
+  { group: "C", team: "Morocco",           owner: "Zach"  },
+  { group: "C", team: "Haiti",             owner: "Rusty" },
+  { group: "C", team: "Scotland",          owner: "Sean"  },
+  // Group D
+  { group: "D", team: "USA",               owner: "Sean"  },  // Excel: "United States"
+  { group: "D", team: "Paraguay",          owner: "Sean"  },
+  { group: "D", team: "Australia",         owner: "Zach"  },
+  { group: "D", team: "Turkey",            owner: "Rusty" },  // Excel: "Türkiye"
+  // Group E
+  { group: "E", team: "Germany",           owner: "Sean"  },
+  { group: "E", team: "Curaçao",           owner: "Sean"  },
+  { group: "E", team: "Ivory Coast",       owner: "Matt"  },  // Excel: "Côte d'Ivoire"
+  { group: "E", team: "Ecuador",           owner: "Zach"  },
+  // Group F
+  { group: "F", team: "Netherlands",       owner: "Rusty" },
+  { group: "F", team: "Japan",             owner: "Rusty" },
+  { group: "F", team: "Sweden",            owner: "Zach"  },
+  { group: "F", team: "Tunisia",           owner: "Rusty" },
+  // Group G
+  { group: "G", team: "Belgium",           owner: "Sean"  },
+  { group: "G", team: "Egypt",             owner: "Matt"  },
+  { group: "G", team: "Iran",              owner: "Matt"  },
+  { group: "G", team: "New Zealand",       owner: "Rusty" },
+  // Group H
+  { group: "H", team: "Spain",             owner: "Rusty" },
+  { group: "H", team: "Cape Verde",        owner: "Sean"  },
+  { group: "H", team: "Saudi Arabia",      owner: "Zach"  },
+  { group: "H", team: "Uruguay",           owner: "Sean"  },
+  // Group I
+  { group: "I", team: "France",            owner: "Sean"  },
+  { group: "I", team: "Senegal",           owner: "Rusty" },
+  { group: "I", team: "Iraq",              owner: "Matt"  },
+  { group: "I", team: "Norway",            owner: "Rusty" },
+  // Group J
+  { group: "J", team: "Argentina",         owner: "Zach"  },
+  { group: "J", team: "Algeria",           owner: "Matt"  },
+  { group: "J", team: "Austria",           owner: "Rusty" },
+  { group: "J", team: "Jordan",            owner: "Matt"  },
+  // Group K
+  { group: "K", team: "Portugal",          owner: "Matt"  },
+  { group: "K", team: "DR Congo",          owner: "Sean"  },
+  { group: "K", team: "Uzbekistan",        owner: "Matt"  },
+  { group: "K", team: "Colombia",          owner: "Zach"  },
+  // Group L
+  { group: "L", team: "England",           owner: "Matt"  },
+  { group: "L", team: "Croatia",           owner: "Zach"  },
+  { group: "L", team: "Ghana",             owner: "Rusty" },
+  { group: "L", team: "Panama",            owner: "Zach"  },
+];
+
+const OWNERS = ["Matt", "Sean", "Zach", "Rusty"];
+const TEAM_INFO = Object.fromEntries(ROSTER.map(r => [r.team, r]));
+const TEAMS = ROSTER.map(r => r.team);
+
+// Scoring rules (per pool)
+const POINTS = {
+  groupWin: 3,
+  groupDraw: 1,
+  advance: 5,           // top 2 + best 8 third-place finishers
+  r32Win: 10,
+  r16Win: 10,
+  qfWin: 10,
+  sfWin: 15,
+  champion: 20,
+};
+
+// ---------- data fetch ----------
+const DATA_URL = "https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json";
+const CACHE_KEY = "wcpool-2026-cache-v1";
+const CACHE_MS  = 6 * 60 * 60 * 1000; // refresh every 6 hours while page is open
+
+async function fetchData(forceFresh = false) {
+  if (!forceFresh) {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (raw) {
+        const cached = JSON.parse(raw);
+        // Render from cache immediately, then refresh in background if stale.
+        if (cached && cached.data) {
+          if (Date.now() - cached.fetchedAt < CACHE_MS) {
+            return { data: cached.data, fetchedAt: cached.fetchedAt, fromCache: true };
+          }
+          // stale-while-revalidate: return cached, caller will refresh after
+          renderFromCache(cached);
+        }
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  const resp = await fetch(DATA_URL, { cache: "no-store" });
+  if (!resp.ok) throw new Error("HTTP " + resp.status);
+  const data = await resp.json();
+  const fetchedAt = Date.now();
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ data, fetchedAt }));
+  } catch (e) { /* quota — fine */ }
+  return { data, fetchedAt, fromCache: false };
+}
+
+function renderFromCache(cached) {
+  // Best-effort silent pre-render so user sees something instantly
+  try {
+    const computed = compute(cached.data);
+    render(computed, cached.fetchedAt, /*isCached*/ true);
+  } catch (e) {}
+}
+
+// ---------- scoring engine ----------
+function compute(data) {
+  const matches = data.matches || [];
+
+  // Per-team accumulators
+  const t = {};
+  for (const tm of TEAMS) {
+    t[tm] = {
+      team: tm,
+      group: TEAM_INFO[tm].group,
+      owner: TEAM_INFO[tm].owner,
+      groupPoints: 0,
+      groupWins: 0,
+      groupDraws: 0,
+      groupLosses: 0,
+      groupPlayed: 0,
+      advanced: false,
+      r32Wins: 0,
+      r16Wins: 0,
+      qfWins: 0,
+      sfWins: 0,
+      champion: false,
+      eliminated: false,
+      results: [],   // chronological list of {round, opp, gf, ga, result, date}
+    };
+  }
+
+  // Helper to detect a played match
+  const isPlayed = m => m && m.score && Array.isArray(m.score.ft) && m.score.ft.length === 2;
+
+  // -------- group stage --------
+  const groupMatches = matches.filter(m => m.group);
+  for (const m of groupMatches) {
+    const a = m.team1, b = m.team2;
+    if (!(a in t) || !(b in t)) continue;
+    if (!isPlayed(m)) continue;
+    const [ga, gb] = m.score.ft;
+    t[a].groupPlayed++;
+    t[b].groupPlayed++;
+    if (ga > gb) {
+      t[a].groupPoints += POINTS.groupWin; t[a].groupWins++;
+      t[b].groupLosses++;
+      t[a].results.push({ round: `Group ${m.group.slice(-1)}`, opp: b, gf: ga, ga: gb, result: "W", pts: POINTS.groupWin, date: m.date });
+      t[b].results.push({ round: `Group ${m.group.slice(-1)}`, opp: a, gf: gb, ga: ga, result: "L", pts: 0, date: m.date });
+    } else if (ga < gb) {
+      t[b].groupPoints += POINTS.groupWin; t[b].groupWins++;
+      t[a].groupLosses++;
+      t[a].results.push({ round: `Group ${m.group.slice(-1)}`, opp: b, gf: ga, ga: gb, result: "L", pts: 0, date: m.date });
+      t[b].results.push({ round: `Group ${m.group.slice(-1)}`, opp: a, gf: gb, ga: ga, result: "W", pts: POINTS.groupWin, date: m.date });
+    } else {
+      t[a].groupPoints += POINTS.groupDraw; t[a].groupDraws++;
+      t[b].groupPoints += POINTS.groupDraw; t[b].groupDraws++;
+      t[a].results.push({ round: `Group ${m.group.slice(-1)}`, opp: b, gf: ga, ga: gb, result: "D", pts: POINTS.groupDraw, date: m.date });
+      t[b].results.push({ round: `Group ${m.group.slice(-1)}`, opp: a, gf: gb, ga: ga, result: "D", pts: POINTS.groupDraw, date: m.date });
+    }
+  }
+
+  // -------- which teams advanced past group? --------
+  // Derive from the Round of 32 bracket: any *named* team appearing
+  // as team1/team2 there has advanced. Placeholder strings like
+  // "1A", "2B", "3A/B/C/D/F" are ignored until they resolve.
+  const r32 = matches.filter(m => m.round === "Round of 32");
+  const advancedSet = new Set();
+  for (const m of r32) {
+    if (m.team1 in t) advancedSet.add(m.team1);
+    if (m.team2 in t) advancedSet.add(m.team2);
+  }
+  for (const tm of TEAMS) {
+    if (advancedSet.has(tm)) t[tm].advanced = true;
+  }
+
+  // Group-stage elimination: if a team has played all 3 group matches
+  // and is NOT in the advanced set after R32 is populated, they're out.
+  // (Until R32 resolves, we only mark teams as eliminated if their group
+  // is fully played AND we can see they didn't make R32.)
+  const groupFullyComplete = {};
+  for (const grp of "ABCDEFGHIJKL") {
+    const gmatches = groupMatches.filter(m => m.group === `Group ${grp}`);
+    groupFullyComplete[grp] = gmatches.length > 0 && gmatches.every(isPlayed);
+  }
+  // We can only definitively eliminate via group stage once R32 includes the named teams.
+  // Approximation: if a team's group is fully complete AND any R32 match in that group's bracket
+  // path has a resolved named team set, infer eliminations. Simpler & safe: if r32 has any named
+  // teams at all, treat the advancedSet as authoritative for groups that are fully complete.
+  const r32HasAnyNamed = advancedSet.size > 0;
+
+  // -------- knockout rounds --------
+  const knockoutRounds = [
+    { key: "Round of 32",  field: "r32Wins", pts: POINTS.r32Win },
+    { key: "Round of 16",  field: "r16Wins", pts: POINTS.r16Win },
+    { key: "Quarter-final",field: "qfWins",  pts: POINTS.qfWin  },
+    { key: "Semi-final",   field: "sfWins",  pts: POINTS.sfWin  },
+    { key: "Final",        field: null,      pts: POINTS.champion },
+  ];
+
+  for (const ko of knockoutRounds) {
+    const ms = matches.filter(m => m.round === ko.key);
+    for (const m of ms) {
+      const a = m.team1, b = m.team2;
+      if (!isPlayed(m)) {
+        // Match scheduled but not played — losers can't be determined yet.
+        continue;
+      }
+      const aNamed = a in t, bNamed = b in t;
+      const [ga, gb] = m.score.ft;
+      let winner = null, loser = null;
+      if (ga > gb)      { winner = a; loser = b; }
+      else if (gb > ga) { winner = b; loser = a; }
+      else {
+        // Knockout draw at FT — check for ET / penalty scoring fields
+        // openfootball typically also includes score.et and score.p (penalties)
+        const p = m.score && m.score.p;
+        const et = m.score && m.score.et;
+        if (Array.isArray(p) && p.length === 2 && p[0] !== p[1]) {
+          if (p[0] > p[1]) { winner = a; loser = b; } else { winner = b; loser = a; }
+        } else if (Array.isArray(et) && et.length === 2 && et[0] !== et[1]) {
+          if (et[0] > et[1]) { winner = a; loser = b; } else { winner = b; loser = a; }
+        } else {
+          // Can't determine — skip
+          continue;
+        }
+      }
+      if (loser && loser in t) {
+        t[loser].eliminated = true;
+        t[loser].results.push({ round: ko.key, opp: winner, gf: (loser===a?ga:gb), ga: (loser===a?gb:ga), result: "L", pts: 0, date: m.date });
+      }
+      if (winner && winner in t) {
+        if (ko.key === "Final") {
+          t[winner].champion = true;
+          t[winner].results.push({ round: "Final", opp: loser, gf: (winner===a?ga:gb), ga: (winner===a?gb:ga), result: "🏆", pts: POINTS.champion, date: m.date });
+        } else {
+          t[winner][ko.field]++;
+          t[winner].results.push({ round: ko.key, opp: loser, gf: (winner===a?ga:gb), ga: (winner===a?gb:ga), result: "W", pts: ko.pts, date: m.date });
+        }
+      }
+    }
+  }
+
+  // Apply group-stage elimination once knockouts have populated
+  if (r32HasAnyNamed) {
+    for (const tm of TEAMS) {
+      if (groupFullyComplete[t[tm].group] && !advancedSet.has(tm)) {
+        t[tm].eliminated = true;
+      }
+    }
+  }
+
+  // Per-team totals
+  for (const tm of TEAMS) {
+    const row = t[tm];
+    row.advanceBonus = row.advanced ? POINTS.advance : 0;
+    row.knockoutPoints =
+      row.r32Wins * POINTS.r32Win +
+      row.r16Wins * POINTS.r16Win +
+      row.qfWins  * POINTS.qfWin  +
+      row.sfWins  * POINTS.sfWin  +
+      (row.champion ? POINTS.champion : 0);
+    row.total = row.groupPoints + row.advanceBonus + row.knockoutPoints;
+    row.alive = !row.eliminated;
+  }
+
+  // Per-owner aggregation
+  const owners = {};
+  for (const o of OWNERS) {
+    owners[o] = {
+      owner: o,
+      teams: ROSTER.filter(r => r.owner === o).map(r => t[r.team]),
+      total: 0,
+      groupPoints: 0,
+      teamsAlive: 0,
+      topTeam: null,
+    };
+  }
+  for (const o of OWNERS) {
+    const obj = owners[o];
+    for (const tr of obj.teams) {
+      obj.total += tr.total;
+      obj.groupPoints += tr.groupPoints;
+      if (tr.alive) obj.teamsAlive++;
+      if (!obj.topTeam || tr.total > obj.topTeam.total) obj.topTeam = tr;
+    }
+  }
+
+  // Standings: total DESC, then groupPoints DESC (tiebreaker per pool rules)
+  const standings = OWNERS.map(o => owners[o]).sort((a, b) => {
+    if (b.total !== a.total) return b.total - a.total;
+    return b.groupPoints - a.groupPoints;
+  });
+
+  // Recent results (played matches involving pool teams), most recent first, top 8
+  const recentMatches = matches
+    .filter(m => isPlayed(m) && (m.team1 in t || m.team2 in t))
+    .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
+    .slice(0, 8)
+    .map(m => ({
+      date: m.date,
+      round: m.round,
+      team1: m.team1, team2: m.team2,
+      ft: m.score.ft,
+    }));
+
+  return { teams: t, owners, standings, recentMatches, playedCount: matches.filter(isPlayed).length, totalMatches: matches.length };
+}
+
+// ---------- render ----------
+let LAST = null;     // {computed, fetchedAt}
+let CURRENT_VIEW = { name: "home" };
+
+function fmtRelative(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60)        return s + "s ago";
+  if (s < 3600)      return Math.floor(s / 60) + "m ago";
+  if (s < 86400)     return Math.floor(s / 3600) + "h ago";
+  return Math.floor(s / 86400) + "d ago";
+}
+
+function fmtDate(ts) {
+  const d = new Date(ts);
+  return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
+function setStatus(kind, text) {
+  const el = document.getElementById("status");
+  if (!el) return;
+  const cls = kind === "ok" ? "" : kind === "err" ? "err" : "stale";
+  el.innerHTML = `<span class="dot ${cls}"></span>${text}`;
+}
+
+function render(computed, fetchedAt, isCached = false) {
+  LAST = { computed, fetchedAt };
+  if (CURRENT_VIEW.name === "home") {
+    renderHome(computed, fetchedAt);
+  } else {
+    renderDetail(CURRENT_VIEW.owner, computed, fetchedAt);
+  }
+  setStatus(isCached ? "stale" : "ok",
+    "Updated " + fmtRelative(fetchedAt) + " · " + fmtDate(fetchedAt));
+}
+
+function renderHome(c, fetchedAt) {
+  const app = document.getElementById("app");
+  const leaderTotal = c.standings[0].total;
+
+  app.innerHTML = `
+    <p class="section-label">Pool standings · ${c.playedCount} of ${c.totalMatches} matches played</p>
+    <h2 class="section-title">Where everyone stands</h2>
+
+    <table class="standings">
+      <thead>
+        <tr>
+          <th style="width:56px;">#</th>
+          <th>Owner</th>
+          <th>Roster · <span style="color:var(--alive);font-weight:700">alive</span> · <span style="text-decoration:line-through;color:var(--eliminated)">out</span></th>
+          <th class="r">Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${c.standings.map((o, idx) => renderStandingsRow(o, idx, leaderTotal)).join("")}
+      </tbody>
+    </table>
+
+    <p class="section-label">Scoring</p>
+    <h2 class="section-title">How points get earned</h2>
+    <div class="ledger">
+      <div><div class="pts">3</div><div class="what">Group-stage win</div></div>
+      <div><div class="pts">1</div><div class="what">Group-stage draw</div></div>
+      <div><div class="pts">5</div><div class="what">Team advances past group</div></div>
+      <div><div class="pts">10</div><div class="what">Win in Round of 32</div></div>
+      <div><div class="pts">10</div><div class="what">Win in Round of 16</div></div>
+      <div><div class="pts">10</div><div class="what">Win in Quarter-final</div></div>
+      <div><div class="pts">15</div><div class="what">Win in Semi-final</div></div>
+      <div><div class="pts">20</div><div class="what">World Cup champion</div></div>
+    </div>
+
+    ${c.recentMatches.length ? `
+      <div class="recent">
+        <p class="section-label">Latest results · pool teams</p>
+        <h2 class="section-title">From the pitch</h2>
+        <div class="recent-grid">
+          ${c.recentMatches.map(renderMatchCard).join("")}
+        </div>
+      </div>
+    ` : ""}
+  `;
+
+  // wire clicks
+  app.querySelectorAll("[data-owner]").forEach(el => {
+    el.addEventListener("click", () => {
+      CURRENT_VIEW = { name: "detail", owner: el.dataset.owner };
+      history.pushState(CURRENT_VIEW, "", "#" + el.dataset.owner);
+      renderDetail(el.dataset.owner, LAST.computed, LAST.fetchedAt);
+      window.scrollTo({ top: 0, behavior: "instant" });
+    });
+  });
+}
+
+function renderStandingsRow(o, idx, leaderTotal) {
+  const isLeader = idx === 0;
+  // Sort each owner's teams by total DESC for the strip, alive first
+  const sorted = [...o.teams].sort((a, b) => {
+    if (b.total !== a.total) return b.total - a.total;
+    if (a.alive !== b.alive) return a.alive ? -1 : 1;
+    return a.team.localeCompare(b.team);
+  });
+  const top = o.topTeam;
+  return `
+    <tr class="${isLeader ? "leader" : ""}" data-owner="${o.owner}">
+      <td class="rank num">${String(idx + 1).padStart(2, "0")}</td>
+      <td class="owner">
+        ${o.owner}
+        <div class="meta-row">
+          <span><span class="pip"></span>${o.teamsAlive} of 12 alive</span>
+          <span>Top: <span class="top-team">${top.team}</span> (${top.total} pt${top.total === 1 ? "" : "s"})</span>
+        </div>
+      </td>
+      <td>
+        <div class="roster-strip">
+          ${sorted.map(tr => `
+            <span class="chip ${tr.alive ? (tr === top && tr.total > 0 ? "top" : "alive") : "out"}"
+                  title="${tr.team} · ${tr.total} pt${tr.total===1?"":"s"}${tr.alive?"":" · eliminated"}">
+              ${tr.team}
+            </span>
+          `).join("")}
+        </div>
+      </td>
+      <td class="score num">
+        ${o.total}
+        <span class="gp">Grp ${o.groupPoints} · ${(o.total - leaderTotal) === 0 ? "leader" : ((o.total - leaderTotal) + " pt" + ((o.total-leaderTotal)===-1?"":"s"))}</span>
+      </td>
+    </tr>
+  `;
+}
+
+function renderMatchCard(m) {
+  const [a, b] = m.ft;
+  const aWin = a > b, bWin = b > a;
+  return `
+    <div class="match">
+      <div class="when">${m.date} · ${m.round}</div>
+      <div class="line ${aWin ? "win" : bWin ? "lose" : ""}">
+        <span>${m.team1}</span><span class="sc">${a}</span>
+      </div>
+      <div class="line ${bWin ? "win" : aWin ? "lose" : ""}">
+        <span>${m.team2}</span><span class="sc">${b}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderDetail(owner, c, fetchedAt) {
+  const o = c.owners[owner];
+  if (!o) { renderHome(c, fetchedAt); return; }
+
+  // Sort owner's teams: alive first, then by total DESC, then group/name
+  const teams = [...o.teams].sort((a, b) => {
+    if (a.alive !== b.alive) return a.alive ? -1 : 1;
+    if (b.total !== a.total) return b.total - a.total;
+    if (a.group !== b.group) return a.group.localeCompare(b.group);
+    return a.team.localeCompare(b.team);
+  });
+
+  const rank = c.standings.findIndex(x => x.owner === owner) + 1;
+
+  const app = document.getElementById("app");
+  app.innerHTML = `
+    <button class="back" id="backBtn" type="button">← All standings</button>
+
+    <div class="detail-head">
+      <h1>${owner}</h1>
+      <div class="total num">
+        <span class="lbl">Total points</span>
+        ${o.total}
+      </div>
+    </div>
+    <div class="detail-meta">
+      Rank #${rank}
+      <span class="sep">/</span>
+      ${o.teamsAlive} of 12 teams alive
+      <span class="sep">/</span>
+      ${o.groupPoints} group-stage points
+      <span class="sep">/</span>
+      Top scorer: <strong>${o.topTeam.team}</strong> (${o.topTeam.total} pt${o.topTeam.total===1?"":"s"})
+    </div>
+
+    <div class="team-grid">
+      ${teams.map(renderTeamRow).join("")}
+    </div>
+  `;
+
+  document.getElementById("backBtn").addEventListener("click", () => {
+    CURRENT_VIEW = { name: "home" };
+    history.pushState(CURRENT_VIEW, "", "#");
+    renderHome(c, fetchedAt);
+    window.scrollTo({ top: 0, behavior: "instant" });
+  });
+}
+
+function renderTeamRow(tr) {
+  const stateCls = tr.champion ? "champ" : (tr.alive ? "alive" : "out");
+  const stateLabel = tr.champion ? "Champion" : (tr.alive ? "Alive" : "Eliminated");
+  const bits = [];
+  if (tr.groupPlayed > 0) {
+    bits.push(`<span>Group: <b>${tr.groupWins}W-${tr.groupDraws}D-${tr.groupLosses}L</b> · ${tr.groupPoints}pt</span>`);
+  } else {
+    bits.push(`<span>Group: <b>—</b></span>`);
+  }
+  if (tr.advanced)   bits.push(`<span>Advance: <b>+5</b></span>`);
+  if (tr.r32Wins)    bits.push(`<span>R32: <b>+${tr.r32Wins*10}</b></span>`);
+  if (tr.r16Wins)    bits.push(`<span>R16: <b>+${tr.r16Wins*10}</b></span>`);
+  if (tr.qfWins)     bits.push(`<span>QF: <b>+${tr.qfWins*10}</b></span>`);
+  if (tr.sfWins)     bits.push(`<span>SF: <b>+${tr.sfWins*15}</b></span>`);
+  if (tr.champion)   bits.push(`<span>🏆 <b>+20</b></span>`);
+
+  return `
+    <div class="team-row ${stateCls}">
+      <div class="grp">${tr.group}</div>
+      <div class="name">${tr.team}</div>
+      <div class="status">${stateLabel}</div>
+      <div class="breakdown">${bits.join("")}</div>
+      <div class="pts num">${tr.total}</div>
+    </div>
+  `;
+}
+
+// ---------- boot ----------
+async function load(force = false) {
+  setStatus("stale", force ? "Refreshing…" : "Loading…");
+  try {
+    const { data, fetchedAt, fromCache } = await fetchData(force);
+    const computed = compute(data);
+    render(computed, fetchedAt, fromCache);
+  } catch (e) {
+    console.error(e);
+    setStatus("err", "Couldn't reach openfootball — see console");
+    // If we have nothing on screen, show an error panel
+    const app = document.getElementById("app");
+    if (app.querySelector(".panel-msg")) {
+      app.innerHTML = `<div class="panel-msg">Couldn't load the latest data.
+        <span class="small">${(e && e.message) || e}. Try Refresh, or open the page from a server (file:// can block fetch).</span></div>`;
+    }
+  }
+}
+
+document.getElementById("refreshBtn").addEventListener("click", () => load(true));
+
+window.addEventListener("popstate", (ev) => {
+  if (ev.state && ev.state.name === "detail" && LAST) {
+    CURRENT_VIEW = ev.state;
+    renderDetail(ev.state.owner, LAST.computed, LAST.fetchedAt);
+  } else {
+    CURRENT_VIEW = { name: "home" };
+    if (LAST) renderHome(LAST.computed, LAST.fetchedAt);
+  }
+});
+
+// Support deep-link via hash, e.g. index.html#Sean
+const hashOwner = decodeURIComponent(location.hash.replace(/^#/, ""));
+if (OWNERS.includes(hashOwner)) {
+  CURRENT_VIEW = { name: "detail", owner: hashOwner };
+}
+
+load(false);
+
+// Auto-refresh every 6 hours while the tab is open
+setInterval(() => load(true), CACHE_MS);
+
+// Also refresh when the tab regains focus after being hidden for a while
+let hiddenAt = null;
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    hiddenAt = Date.now();
+  } else if (hiddenAt && (Date.now() - hiddenAt) > 60 * 60 * 1000) {
+    load(true);
+    hiddenAt = null;
+  }
+});
+</script>
+</body>
+</html>
