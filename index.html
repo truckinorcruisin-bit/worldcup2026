@@ -670,21 +670,136 @@
     pointer-events: none;
   }
   #chartTooltip {
-    position: absolute;
+    position: fixed;
     background: var(--ink);
     color: var(--paper);
-    padding: 8px 10px;
+    padding: 10px 12px;
     font-size: 12px;
     font-family: 'Inter', sans-serif;
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.12s;
     z-index: 100;
-    white-space: nowrap;
+    min-width: 160px;
+    max-width: 240px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   }
   #chartTooltip b { font-family: 'Fraunces', serif; font-weight: 700; }
   #chartTooltip .pts { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+
+  /* ----- draft filter chips ----- */
+  .filter-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .fchip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 12px 6px 6px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    cursor: pointer;
+    transition: opacity 0.12s, background 0.12s;
+  }
+  .fchip .sw { width: 14px; height: 3px; border-radius: 2px; }
+  .fchip .fchip-total {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-left: 2px;
+  }
+  .fchip.off {
+    opacity: 0.4;
+    background: transparent;
+  }
+  .fchip.off .avatar { filter: grayscale(1); }
+  .fchip.on { background: var(--paper-deep); }
+  .fchip:hover { border-color: var(--ink-soft); }
+
+  /* ----- line chart ----- */
+  .chart.line-chart { padding: 16px 4px 4px; }
+  .chart .quartile-label {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 14px;
+    fill: var(--ink);
+  }
+  .chart .quartile-sub {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    fill: var(--ink-faint);
+  }
+  .chart .vtx-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    pointer-events: none;
+  }
+  .chart .vtx-dot { transition: r 0.12s; }
+  .chart .vtx:hover .vtx-dot { r: 7; }
+
+  /* ----- quartile mini-bars inside owner cards ----- */
+  .summary-cards .card .card-total {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 20px;
+  }
+  .qbars {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 78px;
+    margin: 4px 0 14px;
+    padding-bottom: 2px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .qbar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    gap: 3px;
+  }
+  .qbar-track {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    background: linear-gradient(var(--rule-soft), var(--rule-soft)) no-repeat center bottom / 1px 100%;
+  }
+  .qbar-fill {
+    width: 100%;
+    min-height: 2px;
+    border-radius: 1px 1px 0 0;
+  }
+  .qbar-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .qbar-key {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+  }
+  .summary-cards .card .lines .dim { color: var(--ink-faint); font-weight: 500; }
+  .summary-cards .card .lines > div { margin-bottom: 4px; }
 
   .summary-cards {
     display: grid;
@@ -833,8 +948,12 @@
     letter-spacing: 0.04em;
   }
 
-  /* standings cards (mobile-only by default, hidden on desktop) */
-  .standings-cards { display: none; }
+  /* standings cards: shown only on mobile. The desktop hide lives in a
+     min-width query (below) so it can't override the max-width grid rule
+     purely by source order. */
+  @media (min-width: 761px) {
+    .standings-cards { display: none; }
+  }
   .standings-card {
     background: var(--paper);
     border: 1px solid var(--rule);
@@ -1613,224 +1732,298 @@ function renderMatchHistory(tr) {
 }
 
 // ---------- DRAFT PERFORMANCE ----------
-function renderDraftPerformance(c) {
-  setNav("draft");
-  const app = document.getElementById("app");
+// Which owners' lines are currently visible on the draft chart.
+// Persisted in memory across re-renders during the session.
+let DRAFT_VISIBLE = new Set(OWNERS);
 
-  // Build matrix: for each round 1..12, for each owner, the team + total
-  // (one slot per owner per round in this serpentine draft)
+// Quartile definitions for a 12-round draft: 3 rounds each.
+const QUARTILES = [
+  { key: "Q1", label: "Q1", rounds: [1, 2, 3],    sub: "Picks 1–3" },
+  { key: "Q2", label: "Q2", rounds: [4, 5, 6],    sub: "Picks 4–6" },
+  { key: "Q3", label: "Q3", rounds: [7, 8, 9],    sub: "Picks 7–9" },
+  { key: "Q4", label: "Q4", rounds: [10, 11, 12], sub: "Picks 10–12" },
+];
+
+function buildDraftModel(c) {
+  // matrix[round][owner] = { team, pick, total, alive, slot }
   const matrix = {};
   for (let r = 1; r <= 12; r++) {
     matrix[r] = {};
     for (const o of OWNERS) matrix[r][o] = null;
   }
   for (const d of DRAFT) {
-    matrix[d.round][d.owner] = { team: d.team, pick: d.pick, total: c.teams[d.team].total, alive: c.teams[d.team].alive, slot: d.slot };
+    matrix[d.round][d.owner] = {
+      team: d.team, pick: d.pick,
+      total: c.teams[d.team].total,
+      alive: c.teams[d.team].alive,
+      slot: d.slot,
+    };
   }
 
-  // per-owner aggregate: total from each "tier" — early (rounds 1-4),
-  // mid (5-8), late (9-12)
-  const tiers = { early: [1,2,3,4], mid: [5,6,7,8], late: [9,10,11,12] };
-  const ownerTier = {};
+  // For each owner: quartile totals + the 3 picks in each quartile
+  const byOwner = {};
   for (const o of OWNERS) {
-    ownerTier[o] = { early:0, mid:0, late:0, best:null, worst:null, total:0 };
+    byOwner[o] = {
+      owner: o,
+      quartiles: QUARTILES.map(q => {
+        const picks = q.rounds
+          .map(r => matrix[r][o])
+          .filter(Boolean)
+          .map((cell, i) => ({ ...cell, round: q.rounds[i] }));
+        const total = picks.reduce((s, p) => s + p.total, 0);
+        return { key: q.key, label: q.label, sub: q.sub, total, picks };
+      }),
+      total: 0,
+      best: null,   // highest-scoring single pick
+      sleeper: null, // best pick from Q3/Q4
+      bust: null,    // lowest pick from Q1/Q2 (early dud)
+    };
+    // total + extremes
     for (let r = 1; r <= 12; r++) {
       const cell = matrix[r][o];
       if (!cell) continue;
-      ownerTier[o].total += cell.total;
-      if (r <= 4)       ownerTier[o].early += cell.total;
-      else if (r <= 8)  ownerTier[o].mid   += cell.total;
-      else              ownerTier[o].late  += cell.total;
-      if (!ownerTier[o].best  || cell.total > ownerTier[o].best.total)  ownerTier[o].best  = { ...cell, round: r };
-      if (!ownerTier[o].worst || cell.total < ownerTier[o].worst.total) ownerTier[o].worst = { ...cell, round: r };
+      byOwner[o].total += cell.total;
+      const withR = { ...cell, round: r };
+      if (!byOwner[o].best || cell.total > byOwner[o].best.total) byOwner[o].best = withR;
+      if (r >= 7 && (!byOwner[o].sleeper || cell.total > byOwner[o].sleeper.total)) byOwner[o].sleeper = withR;
+      if (r <= 6 && (!byOwner[o].bust || cell.total < byOwner[o].bust.total)) byOwner[o].bust = withR;
     }
   }
+  return { matrix, byOwner };
+}
+
+function renderDraftPerformance(c) {
+  setNav("draft");
+  const app = document.getElementById("app");
+  const model = buildDraftModel(c);
 
   app.innerHTML = `
     <p class="section-label">Draft analytics</p>
     <h2 class="section-title">Performance by draft position</h2>
-    <p style="color:var(--ink-soft); margin: 0 0 24px; max-width: 700px; font-size: 14px;">
-      Points by each owner's pick in each round. Tall bars in early rounds mean your top picks are paying off; tall bars in late rounds mean you found sleepers. Tap any bar for the team.
+    <p style="color:var(--ink-soft); margin: 0 0 20px; max-width: 640px; font-size: 14px;">
+      Total points earned by each owner's picks, grouped into draft quartiles of three picks each.
+      A line that slopes down to the right means the points came from premium early picks; a line that
+      stays high or climbs into Q3–Q4 means the sleepers are paying off. Tap a point for the picks behind it.
     </p>
 
-    <div class="chart-legend">
+    <div class="filter-chips" id="filterChips">
       ${OWNERS.map(o => `
-        <span class="it">
+        <button class="fchip ${DRAFT_VISIBLE.has(o) ? "on" : "off"}" data-filter="${o}" type="button">
+          <span class="avatar ${o.toLowerCase()}" style="width:24px;height:24px;${avatarStyle(o)}"></span>
           <span class="sw" style="background:${OWNER_COLOR_HEX[o]};"></span>
           ${o}
-        </span>
+          <span class="fchip-total">${model.byOwner[o].total}</span>
+        </button>
       `).join("")}
     </div>
 
     <div class="chart-wrap">
-      <div class="chart" id="chartHost">
-        ${renderDraftBarChart(matrix, c)}
+      <div class="chart line-chart" id="chartHost">
+        ${renderDraftLineChart(model)}
       </div>
     </div>
 
     <p class="section-label">By owner</p>
     <h2 class="section-title">Where the points are coming from</h2>
     <div class="summary-cards">
-      ${OWNERS.map(o => renderOwnerDraftCard(o, ownerTier[o], matrix)).join("")}
+      ${OWNERS.map(o => renderOwnerDraftCard(model.byOwner[o])).join("")}
     </div>
   `;
 
-  // wire chart hover/tap tooltips
-  const host = document.getElementById("chartHost");
-  const tip  = document.getElementById("chartTooltip");
-  host.querySelectorAll(".bar").forEach(b => {
-    const showTip = (clientX, clientY) => {
-      const team  = b.getAttribute("data-team");
-      const owner = b.getAttribute("data-owner");
-      const round = b.getAttribute("data-round");
-      const pick  = b.getAttribute("data-pick");
-      const pts   = b.getAttribute("data-pts");
-      const alive = b.getAttribute("data-alive") === "true";
-      tip.innerHTML = `
-        <div><b>${team}</b> · ${owner}</div>
-        <div style="opacity:0.7; font-size: 11px; margin-top:2px;">Pick ${pick} · Round ${round} · ${alive ? "alive" : "out"}</div>
-        <div style="margin-top:4px;"><span class="pts">${pts}</span> points</div>
-      `;
-      tip.style.left = (clientX + 12) + "px";
-      tip.style.top  = (clientY + 12) + "px";
-      tip.style.opacity = "1";
-    };
-    const hideTip = () => { tip.style.opacity = "0"; };
-    b.addEventListener("mouseenter", e => showTip(e.clientX, e.clientY));
-    b.addEventListener("mousemove",  e => showTip(e.clientX, e.clientY));
-    b.addEventListener("mouseleave", hideTip);
-    b.addEventListener("touchstart", e => {
-      const tch = e.touches[0];
-      showTip(tch.clientX, tch.clientY);
-      setTimeout(hideTip, 2500);
-    }, { passive: true });
-    // click → jump to owner page
-    b.addEventListener("click", () => {
-      navigate({ name: "detail", owner: b.getAttribute("data-owner") });
+  wireDraftFilters(c);
+  wireDraftChartPoints(model);
+}
+
+function wireDraftFilters(c) {
+  const chips = document.getElementById("filterChips");
+  if (!chips) return;
+  chips.querySelectorAll("[data-filter]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const o = btn.dataset.filter;
+      if (DRAFT_VISIBLE.has(o)) {
+        // don't allow hiding the last visible line
+        if (DRAFT_VISIBLE.size > 1) DRAFT_VISIBLE.delete(o);
+      } else {
+        DRAFT_VISIBLE.add(o);
+      }
+      renderDraftPerformance(c); // re-render with new visibility + rescaled axis
     });
   });
 }
 
-function renderDraftBarChart(matrix, c) {
-  // dims
-  const W = 900;
-  const H = 380;
-  const padL = 38, padR = 12, padT = 16, padB = 38;
+function renderDraftLineChart(model) {
+  const W = 760, H = 360;
+  const padL = 40, padR = 24, padT = 20, padB = 52;
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
 
-  // find global max points for y scale
+  const visible = OWNERS.filter(o => DRAFT_VISIBLE.has(o));
+
+  // y-axis rescales to the visible owners only
   let maxPts = 0;
-  for (let r = 1; r <= 12; r++) {
-    for (const o of OWNERS) {
-      const cell = matrix[r][o];
-      if (cell && cell.total > maxPts) maxPts = cell.total;
+  for (const o of visible) {
+    for (const q of model.byOwner[o].quartiles) {
+      if (q.total > maxPts) maxPts = q.total;
     }
   }
-  const yMax = Math.max(maxPts + 2, 10);
-  // round up to a nice number for axis (steps of 5)
-  const yMaxNice = Math.ceil(yMax / 5) * 5;
-
-  const groupW = innerW / 12;
-  const barGap = 3;
-  const barW   = (groupW - 16) / 4 - barGap;
-
-  // y ticks
+  const yMaxNice = Math.max(Math.ceil((maxPts + 1) / 5) * 5, 5);
   const tickStep = yMaxNice <= 20 ? 5 : (yMaxNice <= 50 ? 10 : 20);
   const ticks = [];
   for (let v = 0; v <= yMaxNice; v += tickStep) ticks.push(v);
 
-  let svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Draft performance bar chart">`;
+  // x positions for the 4 quartiles
+  const xAt = i => padL + (innerW / 3) * i;   // 4 points → divide into 3 gaps
+  const yAt = v => padT + innerH - (v / yMaxNice) * innerH;
 
-  // grid lines + y labels
+  let svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Draft performance by quartile">`;
+
+  // horizontal grid + y labels
   for (const v of ticks) {
-    const y = padT + innerH - (v / yMaxNice) * innerH;
-    svg += `<line class="grid-line" x1="${padL}" y1="${y}" x2="${padL+innerW}" y2="${y}"/>`;
-    svg += `<text class="axis-text" x="${padL-6}" y="${y+3}" text-anchor="end">${v}</text>`;
+    const y = yAt(v);
+    svg += `<line class="grid-line" x1="${padL}" y1="${y}" x2="${padL + innerW}" y2="${y}"/>`;
+    svg += `<text class="axis-text" x="${padL - 8}" y="${y + 3}" text-anchor="end">${v}</text>`;
   }
 
-  // axis
-  svg += `<line class="axis-line" x1="${padL}" y1="${padT+innerH}" x2="${padL+innerW}" y2="${padT+innerH}"/>`;
+  // vertical quartile separators + x labels
+  QUARTILES.forEach((q, i) => {
+    const x = xAt(i);
+    svg += `<line class="grid-line" style="opacity:0.5" x1="${x}" y1="${padT}" x2="${x}" y2="${padT + innerH}"/>`;
+    svg += `<text class="quartile-label" x="${x}" y="${padT + innerH + 24}" text-anchor="middle">${q.label}</text>`;
+    svg += `<text class="quartile-sub" x="${x}" y="${padT + innerH + 40}" text-anchor="middle">${q.sub}</text>`;
+  });
 
-  // bars per round
-  for (let r = 1; r <= 12; r++) {
-    const gx0 = padL + (r - 1) * groupW;
-    const gxCenter = gx0 + groupW / 2;
+  // baseline axis
+  svg += `<line class="axis-line" x1="${padL}" y1="${padT + innerH}" x2="${padL + innerW}" y2="${padT + innerH}"/>`;
+  svg += `<text class="axis-text" x="${padL - 34}" y="${padT - 6}" style="font-size:9px; letter-spacing:0.12em; text-transform:uppercase; fill: var(--ink-faint);">Points</text>`;
 
-    // round label
-    svg += `<text class="round-label" x="${gxCenter}" y="${padT+innerH+18}">R${r}</text>`;
+  // one smooth line per visible owner
+  for (const o of visible) {
+    const pts = model.byOwner[o].quartiles.map((q, i) => ({ x: xAt(i), y: yAt(q.total), q }));
+    const color = OWNER_COLOR_HEX[o];
+    const d = smoothPath(pts.map(p => [p.x, p.y]));
 
-    // each owner — keep order stable so colors are consistent across rounds
-    OWNERS.forEach((o, i) => {
-      const cell = matrix[r][o];
-      if (!cell) return;
-      const x = gx0 + 8 + i * (barW + barGap);
-      const h = (cell.total / yMaxNice) * innerH;
-      const y = padT + innerH - h;
-      const minH = 2; // make zero-bars visible
-      const hh = Math.max(h, minH);
-      const yy = padT + innerH - hh;
-      const fill = OWNER_COLOR_HEX[o];
-      const fadeOut = !cell.alive ? "opacity:0.35;" : "";
+    // soft area under the line for a bit of depth
+    const areaD = d + ` L ${pts[pts.length-1].x.toFixed(2)} ${(padT+innerH).toFixed(2)}`
+                    + ` L ${pts[0].x.toFixed(2)} ${(padT+innerH).toFixed(2)} Z`;
+    svg += `<path d="${areaD}" fill="${color}" opacity="0.06"/>`;
+    svg += `<path d="${d}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+    // vertices (tappable)
+    pts.forEach((p, i) => {
       svg += `
-        <g>
-          <rect class="bar"
-                x="${x.toFixed(2)}" y="${yy.toFixed(2)}"
-                width="${barW.toFixed(2)}" height="${hh.toFixed(2)}"
-                fill="${fill}" style="${fadeOut}"
-                data-team="${cell.team}"
-                data-owner="${o}"
-                data-round="${r}"
-                data-pick="${cell.pick}"
-                data-pts="${cell.total}"
-                data-alive="${cell.alive}"/>
-          ${cell.total > 0 ? `<text class="bar-label" x="${(x + barW/2).toFixed(2)}" y="${(yy - 3).toFixed(2)}">${cell.total}</text>` : ""}
+        <g class="vtx" data-owner="${o}" data-qi="${i}" style="cursor:pointer;">
+          <circle cx="${p.x.toFixed(2)}" cy="${p.y.toFixed(2)}" r="14" fill="transparent"/>
+          <circle class="vtx-dot" cx="${p.x.toFixed(2)}" cy="${p.y.toFixed(2)}" r="5"
+                  fill="var(--paper)" stroke="${color}" stroke-width="2.5"/>
+          <text class="vtx-label" x="${p.x.toFixed(2)}" y="${(p.y - 12).toFixed(2)}"
+                text-anchor="middle" fill="${color}">${p.q.total}</text>
         </g>
       `;
     });
   }
 
-  // y-axis label
-  svg += `<text class="axis-text" x="${padL-30}" y="${padT-4}" text-anchor="start" style="font-size:9px; letter-spacing:0.12em; text-transform:uppercase; fill: var(--ink-faint);">Points</text>`;
-
   svg += `</svg>`;
   return svg;
 }
 
-function renderOwnerDraftCard(owner, tier, matrix) {
-  const lower = owner.toLowerCase();
-  // find round-by-round picks
-  const picks = [];
-  for (let r = 1; r <= 12; r++) {
-    const cell = matrix[r][owner];
-    if (cell) picks.push({ round: r, ...cell });
+// Catmull-Rom → cubic bezier smoothing. Input: array of [x,y]. Returns SVG path d.
+function smoothPath(points) {
+  if (points.length < 2) return "";
+  if (points.length === 2) {
+    return `M ${points[0][0].toFixed(2)} ${points[0][1].toFixed(2)} L ${points[1][0].toFixed(2)} ${points[1][1].toFixed(2)}`;
   }
-  // Best sleeper: latest-round pick with the most points (i.e., points × round, weighted)
-  // We'll show the best pick from rounds 7+ and the worst pick from rounds 1-4
-  const latePicks   = picks.filter(p => p.round >= 7).sort((a,b) => b.total - a.total);
-  const earlyPicks  = picks.filter(p => p.round <= 4).sort((a,b) => a.total - b.total);
-  const bestSleeper = latePicks[0];
-  const earlyDud    = earlyPicks[0];
+  const t = 0.5; // tension
+  let d = `M ${points[0][0].toFixed(2)} ${points[0][1].toFixed(2)}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i - 1] || points[i];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[i + 2] || p2;
+    const c1x = p1[0] + (p2[0] - p0[0]) / 6 * t * 2;
+    const c1y = p1[1] + (p2[1] - p0[1]) / 6 * t * 2;
+    const c2x = p2[0] - (p3[0] - p1[0]) / 6 * t * 2;
+    const c2y = p2[1] - (p3[1] - p1[1]) / 6 * t * 2;
+    d += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, ${c2x.toFixed(2)} ${c2y.toFixed(2)}, ${p2[0].toFixed(2)} ${p2[1].toFixed(2)}`;
+  }
+  return d;
+}
+
+function wireDraftChartPoints(model) {
+  const host = document.getElementById("chartHost");
+  const tip  = document.getElementById("chartTooltip");
+  if (!host) return;
+  host.querySelectorAll(".vtx").forEach(g => {
+    const owner = g.getAttribute("data-owner");
+    const qi = parseInt(g.getAttribute("data-qi"), 10);
+    const q = model.byOwner[owner].quartiles[qi];
+
+    const showTip = (clientX, clientY) => {
+      const picks = q.picks.map(p =>
+        `<div style="display:flex; justify-content:space-between; gap:14px;">
+           <span>${p.team}${p.alive ? "" : " <span style='opacity:0.6'>(out)</span>"}</span>
+           <span class="pts">${p.total}</span>
+         </div>`
+      ).join("");
+      tip.innerHTML = `
+        <div><b>${owner}</b> · ${q.label} <span style="opacity:0.6; font-size:11px;">(${q.sub})</span></div>
+        <div style="margin:6px 0; border-top:1px solid rgba(243,239,230,0.25); padding-top:6px; font-size:12px;">${picks}</div>
+        <div style="border-top:1px solid rgba(243,239,230,0.25); padding-top:5px; display:flex; justify-content:space-between; gap:14px;">
+          <span style="opacity:0.7;">Quartile total</span><span class="pts">${q.total}</span>
+        </div>
+      `;
+      const maxX = window.innerWidth - 200;
+      tip.style.left = Math.min(clientX + 12, maxX) + "px";
+      tip.style.top  = (clientY + 12) + "px";
+      tip.style.opacity = "1";
+    };
+    const hideTip = () => { tip.style.opacity = "0"; };
+    g.addEventListener("mouseenter", e => showTip(e.clientX, e.clientY));
+    g.addEventListener("mousemove",  e => showTip(e.clientX, e.clientY));
+    g.addEventListener("mouseleave", hideTip);
+    g.addEventListener("touchstart", e => {
+      const tch = e.touches[0];
+      showTip(tch.clientX, tch.clientY);
+      setTimeout(hideTip, 3500);
+    }, { passive: true });
+    g.addEventListener("click", () => navigate({ name: "detail", owner }));
+  });
+}
+
+function renderOwnerDraftCard(od) {
+  const owner = od.owner;
+  const lower = owner.toLowerCase();
+  const qTotals = od.quartiles.map(q => q.total);
+  const maxQ = Math.max(...qTotals, 1);
+
+  // mini sparkline-ish bars for the 4 quartiles inside the card
+  const miniBars = od.quartiles.map(q => {
+    const pct = Math.round((q.total / maxQ) * 100);
+    return `
+      <div class="qbar">
+        <div class="qbar-track">
+          <div class="qbar-fill" style="height:${Math.max(pct, 3)}%; background:${OWNER_COLOR_HEX[owner]};"></div>
+        </div>
+        <div class="qbar-val">${q.total}</div>
+        <div class="qbar-key">${q.label}</div>
+      </div>
+    `;
+  }).join("");
 
   return `
     <div class="card">
       <div class="hd">
-        <span class="avatar ${lower}" style="width:32px;height:32px;${avatarStyle(owner)}"></span>
+        <span class="avatar ${lower}" style="width:34px;height:34px;${avatarStyle(owner)}"></span>
         <span class="name">${owner}</span>
-        <span style="margin-left:auto; font-family:'JetBrains Mono'; font-weight:700; font-size:18px;">${tier.total}</span>
+        <span class="card-total num">${od.total}</span>
       </div>
+      <div class="qbars">${miniBars}</div>
       <div class="lines">
-        <div><span class="lbl">Early (R1-4)</span> <b>${tier.early}</b> pts</div>
-        <div><span class="lbl">Mid (R5-8)</span> <b>${tier.mid}</b> pts</div>
-        <div><span class="lbl">Late (R9-12)</span> <b>${tier.late}</b> pts</div>
-        ${bestSleeper && bestSleeper.total > 0 ? `
-          <div style="margin-top:8px;"><span class="lbl">Best late pick</span><br>
-            <b>${bestSleeper.team}</b> (R${bestSleeper.round}) — ${bestSleeper.total} pts
-          </div>` : ""}
-        ${earlyDud ? `
-          <div style="margin-top:6px;"><span class="lbl">Worst early pick</span><br>
-            <b>${earlyDud.team}</b> (R${earlyDud.round}) — ${earlyDud.total} pt${earlyDud.total===1?"":"s"}
-          </div>` : ""}
+        ${od.best && od.best.total > 0 ? `
+          <div><span class="lbl">Top pick</span> <b>${od.best.team}</b> <span class="dim">(${od.best.pick}) · ${od.best.total} pt${od.best.total===1?"":"s"}</span></div>` : ""}
+        ${od.sleeper && od.sleeper.total > 0 ? `
+          <div><span class="lbl">Best late (R7+)</span> <b>${od.sleeper.team}</b> <span class="dim">(${od.sleeper.pick}) · ${od.sleeper.total} pt${od.sleeper.total===1?"":"s"}</span></div>` : ""}
+        ${od.bust ? `
+          <div><span class="lbl">Coldest early (R1-6)</span> <b>${od.bust.team}</b> <span class="dim">(${od.bust.pick}) · ${od.bust.total} pt${od.bust.total===1?"":"s"}</span></div>` : ""}
       </div>
     </div>
   `;
