@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#f3efe6" />
 <title>World Cup 2026 — Pool Standings</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,12 +17,18 @@
     --ink-faint:    #8a857a;
     --rule:         #c9c1ad;
     --rule-soft:    #ddd5c1;
-    --accent:       #b8341c;   /* terracotta / vermilion */
+    --accent:       #b8341c;
     --accent-deep:  #8a2614;
     --gold:         #c9a227;
-    --alive:        #2f6b3a;   /* deep green for active */
-    --eliminated:   #8a857a;   /* dust for out */
+    --alive:        #2f6b3a;
+    --eliminated:   #8a857a;
     --chip-bg:      #ece6d6;
+
+    /* per-owner accent colors (used for charts, avatars) */
+    --c-matt:  #2f6b3a;  /* green */
+    --c-sean:  #b8341c;  /* terracotta */
+    --c-zach:  #2c5c8a;  /* deep blue */
+    --c-rusty: #c9a227;  /* gold */
   }
 
   * { box-sizing: border-box; }
@@ -33,42 +40,70 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-
   .num, .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
 
-  /* ---------- top bar ---------- */
+  /* ---------- sticky top bar ---------- */
   .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--paper);
     border-bottom: 1px solid var(--rule);
-    padding: 18px 32px 14px;
+    padding: 14px 24px 12px;
     display: flex;
-    align-items: baseline;
-    gap: 24px;
+    align-items: center;
+    gap: 18px;
     flex-wrap: wrap;
   }
   .brand {
     font-family: 'Fraunces', Georgia, serif;
     font-weight: 900;
-    font-size: 28px;
+    font-size: 24px;
     letter-spacing: -0.02em;
     line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
   }
   .brand .yr { color: var(--accent); }
   .brand .sub {
-    display: block;
     font-family: 'Inter', sans-serif;
     font-weight: 500;
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--ink-faint);
-    margin-top: 6px;
+  }
+  .nav {
+    display: flex;
+    gap: 4px;
+    margin-left: 8px;
+  }
+  .nav button {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: transparent;
+    border: none;
+    color: var(--ink-soft);
+    cursor: pointer;
+    padding: 6px 12px;
+    border-bottom: 2px solid transparent;
+  }
+  .nav button:hover { color: var(--ink); }
+  .nav button.active {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
   }
   .meta {
     margin-left: auto;
     display: flex;
-    gap: 18px;
+    gap: 14px;
     align-items: center;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--ink-soft);
   }
   .meta .dot {
@@ -81,47 +116,70 @@
   }
   .meta .dot.stale { background: var(--ink-faint); }
   .meta .dot.err   { background: var(--accent); }
-  .meta button {
+  .meta button.refresh {
     font: inherit;
     background: transparent;
     border: 1px solid var(--rule);
-    border-radius: 0;
     color: var(--ink);
     padding: 4px 10px;
     cursor: pointer;
     letter-spacing: 0.04em;
   }
-  .meta button:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .meta button.refresh:hover {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
 
-  /* ---------- layout ---------- */
   main {
     max-width: 1100px;
     margin: 0 auto;
-    padding: 32px;
+    padding: 28px 24px 60px;
   }
 
-  /* ---------- standings table ---------- */
+  /* ---------- section labels ---------- */
   .section-label {
     font-family: 'Inter', sans-serif;
     font-size: 10px;
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--ink-faint);
-    margin: 0 0 12px;
+    margin: 0 0 10px;
   }
   h2.section-title {
     font-family: 'Fraunces', serif;
     font-weight: 700;
     font-size: 22px;
     letter-spacing: -0.01em;
-    margin: 0 0 24px;
+    margin: 0 0 22px;
   }
 
-  .standings {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 56px;
+  /* ---------- owner avatar ---------- */
+  .avatar {
+    display: inline-block;
+    border-radius: 50%;
+    background: var(--chip-bg);
+    background-size: cover;
+    background-position: center 28%; /* faces are upper-middle in the source art */
+    border: 1.5px solid var(--rule);
+    flex-shrink: 0;
   }
+  .avatar.matt  { box-shadow: inset 0 0 0 2px var(--c-matt); }
+  .avatar.sean  { box-shadow: inset 0 0 0 2px var(--c-sean); }
+  .avatar.zach  { box-shadow: inset 0 0 0 2px var(--c-zach); }
+  .avatar.rusty { box-shadow: inset 0 0 0 2px var(--c-rusty); }
+  /* the no-image fallback */
+  .avatar.placeholder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- standings (DESKTOP table; mobile becomes cards) ---------- */
+  .standings { width: 100%; border-collapse: collapse; margin-bottom: 48px; }
   .standings thead th {
     text-align: left;
     font-family: 'Inter', sans-serif;
@@ -140,25 +198,30 @@
     transition: background 0.12s ease;
   }
   .standings tbody tr:hover { background: var(--paper-deep); }
-  .standings tbody td {
-    padding: 18px 12px;
-    vertical-align: middle;
-  }
+  .standings tbody td { padding: 16px 12px; vertical-align: middle; }
   .standings td.rank {
     font-family: 'Fraunces', serif;
     font-weight: 900;
-    font-size: 32px;
+    font-size: 30px;
     line-height: 1;
     color: var(--ink-faint);
-    width: 56px;
+    width: 50px;
   }
   .standings tr.leader td.rank { color: var(--accent); }
-  .standings td.owner {
+  .standings td.owner-cell {
+    width: 200px;
+  }
+  .standings td.owner-cell .owner-line {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .standings td.owner-cell .name {
     font-family: 'Fraunces', serif;
     font-weight: 700;
     font-size: 22px;
     letter-spacing: -0.01em;
-    width: 140px;
+    line-height: 1;
   }
   .standings td.score {
     text-align: right;
@@ -176,6 +239,24 @@
     margin-top: 4px;
     text-transform: uppercase;
   }
+  .meta-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 6px;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+    flex-wrap: wrap;
+  }
+  .meta-row .pip {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--alive);
+    margin-right: 5px;
+    vertical-align: 1px;
+  }
+  .meta-row .top-team { color: var(--ink); font-weight: 600; }
 
   .roster-strip {
     display: flex;
@@ -213,44 +294,20 @@
     font-weight: 700;
   }
 
-  .meta-row {
-    display: flex;
-    gap: 18px;
-    margin-top: 8px;
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    color: var(--ink-soft);
-  }
-  .meta-row .pip {
-    display: inline-block;
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--alive);
-    margin-right: 5px;
-    vertical-align: 1px;
-  }
-  .meta-row .top-team {
-    color: var(--ink);
-    font-weight: 600;
-  }
-
-  /* ---------- ledger (scoring key) ---------- */
+  /* ---------- ledger ---------- */
   .ledger {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 1px;
     background: var(--rule);
     border: 1px solid var(--rule);
-    margin-bottom: 56px;
+    margin-bottom: 48px;
   }
-  .ledger > div {
-    background: var(--paper);
-    padding: 14px 16px;
-  }
+  .ledger > div { background: var(--paper); padding: 14px 16px; }
   .ledger .pts {
     font-family: 'Fraunces', serif;
     font-weight: 700;
-    font-size: 28px;
+    font-size: 26px;
     line-height: 1;
     color: var(--accent);
   }
@@ -262,7 +319,7 @@
     line-height: 1.4;
   }
 
-  /* ---------- detail view ---------- */
+  /* ---------- detail page ---------- */
   .back {
     display: inline-flex;
     align-items: center;
@@ -271,37 +328,67 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--ink-soft);
-    text-decoration: none;
     background: transparent;
     border: none;
     cursor: pointer;
     padding: 0;
-    margin-bottom: 28px;
+    margin-bottom: 20px;
     font-family: 'Inter', sans-serif;
+    font-weight: 600;
   }
   .back:hover { color: var(--accent); }
 
-  .detail-head {
-    display: flex;
-    align-items: baseline;
-    gap: 24px;
-    margin-bottom: 8px;
-    flex-wrap: wrap;
+  .owner-hero {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 32px;
+    margin-bottom: 36px;
+    align-items: start;
   }
-  .detail-head h1 {
+  .owner-hero .portrait {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: var(--chip-bg);
+    background-size: cover;
+    background-position: center;
+    border: 1px solid var(--rule);
+    box-shadow: 0 2px 0 var(--rule-soft), 0 12px 28px -12px rgba(28,27,24,0.25);
+  }
+  .owner-hero .portrait.no-img {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-family: 'Fraunces', serif;
     font-weight: 900;
-    font-size: 56px;
-    letter-spacing: -0.03em;
-    margin: 0;
-    line-height: 1;
+    font-size: 96px;
+    color: var(--ink-faint);
+    background: var(--paper-deep);
   }
-  .detail-head .total {
+  .owner-hero .info {
+    padding-top: 8px;
+  }
+  .owner-hero h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 64px;
+    letter-spacing: -0.03em;
+    margin: 0 0 4px;
+    line-height: 0.95;
+  }
+  .owner-hero .total-row {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .owner-hero .total {
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
-    font-size: 36px;
+    font-size: 44px;
+    line-height: 1;
   }
-  .detail-head .total .lbl {
+  .owner-hero .total .lbl {
     display: block;
     font-family: 'Inter', sans-serif;
     font-size: 10px;
@@ -309,79 +396,181 @@
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--ink-faint);
-    margin-bottom: 2px;
+    margin-bottom: 4px;
   }
-
-  .detail-meta {
+  .owner-hero .stat {
+    font-size: 13px;
     color: var(--ink-soft);
-    margin-bottom: 36px;
-    font-size: 14px;
   }
-  .detail-meta .sep { color: var(--rule); margin: 0 10px; }
+  .owner-hero .stat b { color: var(--ink); font-weight: 700; }
+  .owner-hero .stat-sep { color: var(--rule); margin: 0 4px; }
 
-  /* team grid */
-  .team-grid {
-    border-top: 1px solid var(--rule);
-  }
-  .team-row {
-    display: grid;
-    grid-template-columns: 38px 1fr 90px 1fr 110px;
-    gap: 20px;
-    padding: 18px 0;
-    border-bottom: 1px solid var(--rule-soft);
+  /* sort toggle */
+  .sort-bar {
+    display: flex;
     align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+  .sort-bar button {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--ink-soft);
+    cursor: pointer;
+    padding: 5px 10px;
+  }
+  .sort-bar button.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  /* team grid + expandable rows */
+  .team-grid { border-top: 1px solid var(--rule); }
+  .team-row {
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .team-row .summary {
+    display: grid;
+    grid-template-columns: 50px 32px 1fr 100px 110px;
+    gap: 16px;
+    padding: 16px 0;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .team-row .summary:hover { background: var(--paper-deep); }
+  .team-row .pick {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-faint);
+    letter-spacing: 0.02em;
   }
   .team-row .grp {
     font-family: 'Fraunces', serif;
     font-weight: 700;
-    font-size: 20px;
+    font-size: 18px;
     color: var(--ink-faint);
     text-align: center;
+  }
+  .team-row .name-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
   }
   .team-row .name {
     font-family: 'Fraunces', serif;
     font-weight: 600;
     font-size: 20px;
     letter-spacing: -0.01em;
+    line-height: 1.1;
   }
-  .team-row.out .name {
-    color: var(--eliminated);
-    text-decoration: line-through;
-    text-decoration-thickness: 1px;
-    text-decoration-color: var(--eliminated);
+  .team-row .breakdown {
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
   }
+  .team-row .breakdown span { white-space: nowrap; }
+  .team-row .breakdown b { color: var(--ink); font-weight: 700; }
   .team-row .status {
     font-family: 'Inter', sans-serif;
     font-size: 10px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     font-weight: 600;
+    text-align: center;
   }
   .team-row.alive .status { color: var(--alive); }
   .team-row.out   .status { color: var(--eliminated); }
   .team-row.champ .status { color: var(--gold); }
-
-  .team-row .breakdown {
-    font-size: 12px;
-    color: var(--ink-soft);
-    font-family: 'JetBrains Mono', monospace;
+  .team-row.out .name {
+    color: var(--eliminated);
+    text-decoration: line-through;
+    text-decoration-color: var(--eliminated);
+    text-decoration-thickness: 1px;
   }
-  .team-row .breakdown span { margin-right: 14px; white-space: nowrap; }
-  .team-row .breakdown b { color: var(--ink); font-weight: 700; }
-  .team-row .pts {
+  .team-row .pts-cell {
     text-align: right;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
     font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
   }
+  .team-row .pts-cell .caret {
+    color: var(--ink-faint);
+    transition: transform 0.18s ease;
+    font-size: 14px;
+    line-height: 1;
+    width: 12px;
+  }
+  .team-row.expanded .pts-cell .caret { transform: rotate(180deg); color: var(--ink); }
 
-  /* ---------- recent matches strip ---------- */
-  .recent {
-    margin-top: 56px;
+  /* match list (expandable) */
+  .matches {
+    padding: 4px 0 18px 50px;
+    display: none;
   }
+  .team-row.expanded .matches { display: block; }
+  .matches .empty {
+    color: var(--ink-faint);
+    font-style: italic;
+    font-size: 13px;
+    padding: 6px 0;
+  }
+  .matches table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .matches th {
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .matches th.r { text-align: right; }
+  .matches td {
+    padding: 7px 8px;
+    border-bottom: 1px solid var(--rule-soft);
+    font-family: 'Inter', sans-serif;
+  }
+  .matches td.date { color: var(--ink-faint); font-family: 'JetBrains Mono', monospace; font-size: 12px; white-space: nowrap; }
+  .matches td.round-cell { color: var(--ink-soft); font-size: 12px; white-space: nowrap; }
+  .matches td.opp { font-family: 'Fraunces', serif; font-weight: 600; }
+  .matches td.score { font-family: 'JetBrains Mono', monospace; font-weight: 700; text-align: center; white-space: nowrap; }
+  .matches td.result-cell { text-align: center; font-weight: 700; font-size: 11px; letter-spacing: 0.1em; }
+  .matches td.result-cell.W { color: var(--alive); }
+  .matches td.result-cell.L { color: var(--eliminated); }
+  .matches td.result-cell.D { color: var(--ink-soft); }
+  .matches td.pts-earned { text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+  .matches td.pts-earned.zero { color: var(--ink-faint); font-weight: 500; }
+
+  /* ---------- From the pitch ---------- */
   .recent-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1px;
     background: var(--rule);
     border: 1px solid var(--rule);
@@ -406,15 +595,138 @@
     font-family: 'Fraunces', serif;
     font-weight: 600;
     font-size: 16px;
+    gap: 12px;
   }
-  .match .line .sc { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+  .match .line .nm { display: flex; align-items: baseline; gap: 6px; min-width: 0; flex: 1; }
+  .match .line .nm .tn { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .match .line .nm .ow {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    white-space: nowrap;
+  }
+  .match .line .sc { font-family: 'JetBrains Mono', monospace; font-weight: 700; flex-shrink: 0; }
   .match .line.win  { color: var(--ink); }
   .match .line.lose { color: var(--ink-faint); }
+
+  /* ---------- draft performance page ---------- */
+  .chart-wrap {
+    margin-bottom: 36px;
+  }
+  .chart-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    font-size: 12px;
+  }
+  .chart-legend .it {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+  }
+  .chart-legend .sw {
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+  }
+  .chart {
+    width: 100%;
+    height: auto;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 16px 8px 8px;
+    overflow-x: auto;
+  }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .chart .grid-line { stroke: var(--rule-soft); stroke-width: 1; }
+  .chart .axis-line { stroke: var(--rule); stroke-width: 1; }
+  .chart .axis-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    fill: var(--ink-faint);
+  }
+  .chart .round-label {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 11px;
+    fill: var(--ink-soft);
+    text-anchor: middle;
+  }
+  .chart .bar {
+    cursor: pointer;
+    transition: opacity 0.12s;
+  }
+  .chart .bar:hover { opacity: 0.7; }
+  .chart .bar-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    fill: var(--ink-soft);
+    text-anchor: middle;
+    pointer-events: none;
+  }
+  #chartTooltip {
+    position: absolute;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 8px 10px;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.12s;
+    z-index: 100;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  #chartTooltip b { font-family: 'Fraunces', serif; font-weight: 700; }
+  #chartTooltip .pts { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+  .summary-cards .card {
+    border: 1px solid var(--rule);
+    padding: 16px;
+    background: var(--paper);
+  }
+  .summary-cards .card .hd {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .summary-cards .card .hd .name {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  .summary-cards .card .lines {
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+  .summary-cards .card .lines b { color: var(--ink); font-weight: 700; }
+  .summary-cards .card .lines .lbl {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
 
   /* ---------- footer ---------- */
   footer {
     border-top: 1px solid var(--rule);
-    padding: 24px 32px;
+    padding: 22px 24px;
     font-size: 11px;
     letter-spacing: 0.06em;
     color: var(--ink-faint);
@@ -423,28 +735,85 @@
   footer a { color: var(--ink-soft); }
 
   /* ---------- responsive ---------- */
-  @media (max-width: 720px) {
-    main { padding: 20px; }
-    .topbar { padding: 14px 20px 12px; }
-    .standings td.rank { font-size: 22px; width: 36px; }
-    .standings td.owner { font-size: 17px; width: 90px; }
-    .standings td.score { font-size: 20px; }
-    .roster-strip .chip { font-size: 10px; padding: 2px 6px; }
-    .detail-head h1 { font-size: 38px; }
-    .detail-head .total { font-size: 28px; }
-    .team-row {
-      grid-template-columns: 28px 1fr 80px;
-      grid-template-areas:
-        "grp name pts"
-        ".   brk brk"
-        ".   sts sts";
-      gap: 6px 14px;
+  @media (max-width: 760px) {
+    main { padding: 20px 16px 60px; }
+    .topbar {
+      padding: 10px 16px;
+      gap: 10px;
     }
-    .team-row .grp { grid-area: grp; font-size: 16px; }
-    .team-row .name { grid-area: name; font-size: 16px; }
-    .team-row .pts { grid-area: pts; font-size: 18px; }
-    .team-row .breakdown { grid-area: brk; }
-    .team-row .status { grid-area: sts; }
+    .brand { font-size: 20px; }
+    .brand .sub { display: none; }
+    .nav { margin-left: 0; order: 3; width: 100%; gap: 0; border-top: 1px solid var(--rule-soft); padding-top: 6px; margin-top: 4px; }
+    .nav button { flex: 1; padding: 8px 6px; font-size: 11px; }
+    .meta { font-size: 10px; gap: 8px; }
+    .meta button.refresh { padding: 4px 8px; font-size: 11px; }
+
+    /* standings: hide the table, render cards via JS class swap */
+    .standings { display: none; }
+    .standings-cards { display: grid; gap: 10px; margin-bottom: 40px; }
+
+    h2.section-title { font-size: 19px; margin-bottom: 16px; }
+
+    .ledger { grid-template-columns: repeat(2, 1fr); margin-bottom: 36px; }
+    .ledger .pts { font-size: 22px; }
+    .ledger .what { font-size: 10px; }
+
+    /* owner hero: stack */
+    .owner-hero {
+      grid-template-columns: 1fr;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    .owner-hero .portrait { max-width: 320px; margin: 0 auto; }
+    .owner-hero .portrait.no-img { font-size: 72px; }
+    .owner-hero h1 { font-size: 44px; text-align: center; }
+    .owner-hero .total-row {
+      justify-content: center;
+      text-align: center;
+      gap: 16px;
+    }
+    .owner-hero .total { font-size: 36px; }
+    .owner-hero .info { padding-top: 0; }
+    .owner-hero .stat { text-align: center; }
+
+    /* team row → 2-line layout */
+    .team-row .summary {
+      grid-template-columns: 44px 1fr 70px;
+      grid-template-areas:
+        "pick name pts"
+        "grp  brk  pts"
+        "grp  sts  pts";
+      gap: 4px 12px;
+      padding: 14px 0;
+    }
+    .team-row .pick   { grid-area: pick; }
+    .team-row .grp    { grid-area: grp; text-align: left; font-size: 14px; padding-left: 4px; }
+    .team-row .name-wrap { grid-area: name; }
+    .team-row .name   { font-size: 17px; }
+    .team-row .breakdown { grid-area: brk; font-size: 10px; gap: 8px; }
+    .team-row .status { grid-area: sts; text-align: left; font-size: 9px; padding-top: 2px; }
+    .team-row .pts-cell { grid-area: pts; font-size: 20px; }
+
+    .matches { padding: 4px 0 14px 12px; }
+    .matches table { font-size: 11px; }
+    .matches th, .matches td { padding: 5px 4px; }
+    .matches td.date, .matches td.round-cell { display: none; }
+    /* keep opp / score / result / pts on mobile */
+
+    .recent-grid { grid-template-columns: 1fr; }
+    .match .line { font-size: 15px; }
+
+    .summary-cards { grid-template-columns: 1fr; }
+    .chart { padding: 12px 4px 4px; }
+  }
+
+  /* very narrow phones */
+  @media (max-width: 380px) {
+    .owner-hero h1 { font-size: 36px; }
+    .owner-hero .total { font-size: 28px; }
+    .team-row .summary { grid-template-columns: 38px 1fr 56px; }
+    .team-row .name { font-size: 15px; }
+    .team-row .pts-cell { font-size: 17px; }
   }
 
   /* loading / error */
@@ -464,6 +833,53 @@
     letter-spacing: 0.04em;
   }
 
+  /* standings cards (mobile-only by default, hidden on desktop) */
+  .standings-cards { display: none; }
+  .standings-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 14px;
+    cursor: pointer;
+  }
+  .standings-card.leader { border-color: var(--accent); border-left-width: 4px; }
+  .standings-card .top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .standings-card .top .rk {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 28px;
+    color: var(--ink-faint);
+    line-height: 1;
+    min-width: 32px;
+  }
+  .standings-card.leader .top .rk { color: var(--accent); }
+  .standings-card .top .nm {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 22px;
+    flex: 1;
+    line-height: 1;
+  }
+  .standings-card .top .sc {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 1;
+  }
+  .standings-card .sub {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .standings-card .sub b { color: var(--ink); }
+
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; }
   }
@@ -472,13 +888,17 @@
 <body>
 
 <div class="topbar">
-  <div class="brand">
+  <div class="brand" id="brandLink" title="Home">
     Pool '<span class="yr">26</span>
     <span class="sub">World Cup · Friends Pool</span>
   </div>
+  <nav class="nav">
+    <button id="navHome" class="active" type="button">Standings</button>
+    <button id="navDraft" type="button">Draft Performance</button>
+  </nav>
   <div class="meta">
     <span id="status"><span class="dot stale"></span>Loading…</span>
-    <button id="refreshBtn" type="button">Refresh</button>
+    <button id="refreshBtn" class="refresh" type="button">Refresh</button>
   </div>
 </div>
 
@@ -488,6 +908,8 @@
   </div>
 </main>
 
+<div id="chartTooltip"></div>
+
 <footer>
   Data: openfootball/worldcup.json · Auto-refreshes every 6 hours while open ·
   <a href="https://github.com/openfootball/worldcup.json" target="_blank" rel="noopener">source</a>
@@ -495,97 +917,142 @@
 
 <script>
 /* =========================================================
-   World Cup 2026 — Friends Pool Standings
-   Single-file site. Reads openfootball/worldcup.json,
-   computes scores per the pool's rules, and renders a
-   home view + per-owner detail views.
+   World Cup 2026 — Friends Pool, v2
    ========================================================= */
 
-// ---------- pool roster (from the Excel) ----------
-// We normalize team names to the openfootball/worldcup.json spelling.
+// ---------- pool roster (normalized team names) ----------
 const ROSTER = [
-  // Group A
-  { group: "A", team: "Mexico",            owner: "Matt"  },
-  { group: "A", team: "South Africa",      owner: "Sean"  },
-  { group: "A", team: "South Korea",       owner: "Matt"  },
-  { group: "A", team: "Czech Republic",    owner: "Zach"  },  // Excel: "Czechia"
-  // Group B
-  { group: "B", team: "Canada",            owner: "Sean"  },
-  { group: "B", team: "Bosnia & Herzegovina", owner: "Rusty" },
-  { group: "B", team: "Qatar",             owner: "Zach"  },
-  { group: "B", team: "Switzerland",       owner: "Matt"  },
-  // Group C
-  { group: "C", team: "Brazil",            owner: "Zach"  },
-  { group: "C", team: "Morocco",           owner: "Zach"  },
-  { group: "C", team: "Haiti",             owner: "Rusty" },
-  { group: "C", team: "Scotland",          owner: "Sean"  },
-  // Group D
-  { group: "D", team: "USA",               owner: "Sean"  },  // Excel: "United States"
-  { group: "D", team: "Paraguay",          owner: "Sean"  },
-  { group: "D", team: "Australia",         owner: "Zach"  },
-  { group: "D", team: "Turkey",            owner: "Rusty" },  // Excel: "Türkiye"
-  // Group E
-  { group: "E", team: "Germany",           owner: "Sean"  },
-  { group: "E", team: "Curaçao",           owner: "Sean"  },
-  { group: "E", team: "Ivory Coast",       owner: "Matt"  },  // Excel: "Côte d'Ivoire"
-  { group: "E", team: "Ecuador",           owner: "Zach"  },
-  // Group F
-  { group: "F", team: "Netherlands",       owner: "Rusty" },
-  { group: "F", team: "Japan",             owner: "Rusty" },
-  { group: "F", team: "Sweden",            owner: "Zach"  },
-  { group: "F", team: "Tunisia",           owner: "Rusty" },
-  // Group G
-  { group: "G", team: "Belgium",           owner: "Sean"  },
-  { group: "G", team: "Egypt",             owner: "Matt"  },
-  { group: "G", team: "Iran",              owner: "Matt"  },
-  { group: "G", team: "New Zealand",       owner: "Rusty" },
-  // Group H
-  { group: "H", team: "Spain",             owner: "Rusty" },
-  { group: "H", team: "Cape Verde",        owner: "Sean"  },
-  { group: "H", team: "Saudi Arabia",      owner: "Zach"  },
-  { group: "H", team: "Uruguay",           owner: "Sean"  },
-  // Group I
-  { group: "I", team: "France",            owner: "Sean"  },
-  { group: "I", team: "Senegal",           owner: "Rusty" },
-  { group: "I", team: "Iraq",              owner: "Matt"  },
-  { group: "I", team: "Norway",            owner: "Rusty" },
-  // Group J
-  { group: "J", team: "Argentina",         owner: "Zach"  },
-  { group: "J", team: "Algeria",           owner: "Matt"  },
-  { group: "J", team: "Austria",           owner: "Rusty" },
-  { group: "J", team: "Jordan",            owner: "Matt"  },
-  // Group K
-  { group: "K", team: "Portugal",          owner: "Matt"  },
-  { group: "K", team: "DR Congo",          owner: "Sean"  },
-  { group: "K", team: "Uzbekistan",        owner: "Matt"  },
-  { group: "K", team: "Colombia",          owner: "Zach"  },
-  // Group L
-  { group: "L", team: "England",           owner: "Matt"  },
-  { group: "L", team: "Croatia",           owner: "Zach"  },
-  { group: "L", team: "Ghana",             owner: "Rusty" },
-  { group: "L", team: "Panama",            owner: "Zach"  },
+  { group: "A", team: "Mexico",                owner: "Matt"  },
+  { group: "A", team: "South Africa",          owner: "Sean"  },
+  { group: "A", team: "South Korea",           owner: "Matt"  },
+  { group: "A", team: "Czech Republic",        owner: "Zach"  },
+  { group: "B", team: "Canada",                owner: "Sean"  },
+  { group: "B", team: "Bosnia & Herzegovina",  owner: "Rusty" },
+  { group: "B", team: "Qatar",                 owner: "Zach"  },
+  { group: "B", team: "Switzerland",           owner: "Matt"  },
+  { group: "C", team: "Brazil",                owner: "Zach"  },
+  { group: "C", team: "Morocco",               owner: "Zach"  },
+  { group: "C", team: "Haiti",                 owner: "Rusty" },
+  { group: "C", team: "Scotland",              owner: "Sean"  },
+  { group: "D", team: "USA",                   owner: "Sean"  },
+  { group: "D", team: "Paraguay",              owner: "Sean"  },
+  { group: "D", team: "Australia",             owner: "Zach"  },
+  { group: "D", team: "Turkey",                owner: "Rusty" },
+  { group: "E", team: "Germany",               owner: "Sean"  },
+  { group: "E", team: "Curaçao",               owner: "Sean"  },
+  { group: "E", team: "Ivory Coast",           owner: "Matt"  },
+  { group: "E", team: "Ecuador",               owner: "Zach"  },
+  { group: "F", team: "Netherlands",           owner: "Rusty" },
+  { group: "F", team: "Japan",                 owner: "Rusty" },
+  { group: "F", team: "Sweden",                owner: "Zach"  },
+  { group: "F", team: "Tunisia",               owner: "Rusty" },
+  { group: "G", team: "Belgium",               owner: "Sean"  },
+  { group: "G", team: "Egypt",                 owner: "Matt"  },
+  { group: "G", team: "Iran",                  owner: "Matt"  },
+  { group: "G", team: "New Zealand",           owner: "Rusty" },
+  { group: "H", team: "Spain",                 owner: "Rusty" },
+  { group: "H", team: "Cape Verde",            owner: "Sean"  },
+  { group: "H", team: "Saudi Arabia",          owner: "Zach"  },
+  { group: "H", team: "Uruguay",               owner: "Sean"  },
+  { group: "I", team: "France",                owner: "Sean"  },
+  { group: "I", team: "Senegal",               owner: "Rusty" },
+  { group: "I", team: "Iraq",                  owner: "Matt"  },
+  { group: "I", team: "Norway",                owner: "Rusty" },
+  { group: "J", team: "Argentina",             owner: "Zach"  },
+  { group: "J", team: "Algeria",               owner: "Matt"  },
+  { group: "J", team: "Austria",               owner: "Rusty" },
+  { group: "J", team: "Jordan",                owner: "Matt"  },
+  { group: "K", team: "Portugal",              owner: "Matt"  },
+  { group: "K", team: "DR Congo",              owner: "Sean"  },
+  { group: "K", team: "Uzbekistan",            owner: "Matt"  },
+  { group: "K", team: "Colombia",              owner: "Zach"  },
+  { group: "L", team: "England",               owner: "Matt"  },
+  { group: "L", team: "Croatia",               owner: "Zach"  },
+  { group: "L", team: "Ghana",                 owner: "Rusty" },
+  { group: "L", team: "Panama",                owner: "Zach"  },
 ];
 
+// ---------- draft (12 rounds × 4 owners = 48 picks) ----------
+// Serpentine: Rusty/Sean/Matt/Zach in odd rounds; Zach/Matt/Sean/Rusty in even.
+const DRAFT = [
+  { pick: "1.01",  round: 1,  slot: 1, owner: "Rusty", team: "Spain" },
+  { pick: "1.02",  round: 1,  slot: 2, owner: "Sean",  team: "France" },
+  { pick: "1.03",  round: 1,  slot: 3, owner: "Matt",  team: "England" },
+  { pick: "1.04",  round: 1,  slot: 4, owner: "Zach",  team: "Argentina" },
+  { pick: "2.01",  round: 2,  slot: 1, owner: "Zach",  team: "Brazil" },
+  { pick: "2.02",  round: 2,  slot: 2, owner: "Matt",  team: "Portugal" },
+  { pick: "2.03",  round: 2,  slot: 3, owner: "Sean",  team: "Germany" },
+  { pick: "2.04",  round: 2,  slot: 4, owner: "Rusty", team: "Norway" },
+  { pick: "3.01",  round: 3,  slot: 1, owner: "Rusty", team: "Netherlands" },
+  { pick: "3.02",  round: 3,  slot: 2, owner: "Sean",  team: "Belgium" },
+  { pick: "3.03",  round: 3,  slot: 3, owner: "Matt",  team: "Mexico" },
+  { pick: "3.04",  round: 3,  slot: 4, owner: "Zach",  team: "Colombia" },
+  { pick: "4.01",  round: 4,  slot: 1, owner: "Zach",  team: "Morocco" },
+  { pick: "4.02",  round: 4,  slot: 2, owner: "Matt",  team: "Switzerland" },
+  { pick: "4.03",  round: 4,  slot: 3, owner: "Sean",  team: "USA" },
+  { pick: "4.04",  round: 4,  slot: 4, owner: "Rusty", team: "Japan" },
+  { pick: "5.01",  round: 5,  slot: 1, owner: "Rusty", team: "Turkey" },
+  { pick: "5.02",  round: 5,  slot: 2, owner: "Sean",  team: "Uruguay" },
+  { pick: "5.03",  round: 5,  slot: 3, owner: "Matt",  team: "Egypt" },
+  { pick: "5.04",  round: 5,  slot: 4, owner: "Zach",  team: "Croatia" },
+  { pick: "6.01",  round: 6,  slot: 1, owner: "Zach",  team: "Ecuador" },
+  { pick: "6.02",  round: 6,  slot: 2, owner: "Matt",  team: "South Korea" },
+  { pick: "6.03",  round: 6,  slot: 3, owner: "Sean",  team: "Canada" },
+  { pick: "6.04",  round: 6,  slot: 4, owner: "Rusty", team: "Austria" },
+  { pick: "7.01",  round: 7,  slot: 1, owner: "Rusty", team: "Senegal" },
+  { pick: "7.02",  round: 7,  slot: 2, owner: "Sean",  team: "Scotland" },
+  { pick: "7.03",  round: 7,  slot: 3, owner: "Matt",  team: "Ivory Coast" },
+  { pick: "7.04",  round: 7,  slot: 4, owner: "Zach",  team: "Sweden" },
+  { pick: "8.01",  round: 8,  slot: 1, owner: "Zach",  team: "Czech Republic" },
+  { pick: "8.02",  round: 8,  slot: 2, owner: "Matt",  team: "Algeria" },
+  { pick: "8.03",  round: 8,  slot: 3, owner: "Sean",  team: "Paraguay" },
+  { pick: "8.04",  round: 8,  slot: 4, owner: "Rusty", team: "Ghana" },
+  { pick: "9.01",  round: 9,  slot: 1, owner: "Rusty", team: "Bosnia & Herzegovina" },
+  { pick: "9.02",  round: 9,  slot: 2, owner: "Sean",  team: "DR Congo" },
+  { pick: "9.03",  round: 9,  slot: 3, owner: "Matt",  team: "Iran" },
+  { pick: "9.04",  round: 9,  slot: 4, owner: "Zach",  team: "Australia" },
+  { pick: "10.01", round: 10, slot: 1, owner: "Zach",  team: "Saudi Arabia" },
+  { pick: "10.02", round: 10, slot: 2, owner: "Matt",  team: "Uzbekistan" },
+  { pick: "10.03", round: 10, slot: 3, owner: "Sean",  team: "South Africa" },
+  { pick: "10.04", round: 10, slot: 4, owner: "Rusty", team: "New Zealand" },
+  { pick: "11.01", round: 11, slot: 1, owner: "Rusty", team: "Tunisia" },
+  { pick: "11.02", round: 11, slot: 2, owner: "Sean",  team: "Cape Verde" },
+  { pick: "11.03", round: 11, slot: 3, owner: "Matt",  team: "Iraq" },
+  { pick: "11.04", round: 11, slot: 4, owner: "Zach",  team: "Panama" },
+  { pick: "12.01", round: 12, slot: 1, owner: "Zach",  team: "Qatar" },
+  { pick: "12.02", round: 12, slot: 2, owner: "Matt",  team: "Jordan" },
+  { pick: "12.03", round: 12, slot: 3, owner: "Sean",  team: "Curaçao" },
+  { pick: "12.04", round: 12, slot: 4, owner: "Rusty", team: "Haiti" },
+];
+
+// quick lookup: team → { pick, round, slot, owner }
+const DRAFT_BY_TEAM = Object.fromEntries(DRAFT.map(d => [d.team, d]));
+
 const OWNERS = ["Matt", "Sean", "Zach", "Rusty"];
+const OWNER_COLORS = {
+  Matt:  "var(--c-matt)",
+  Sean:  "var(--c-sean)",
+  Zach:  "var(--c-zach)",
+  Rusty: "var(--c-rusty)",
+};
+const OWNER_COLOR_HEX = {
+  Matt:  "#2f6b3a",
+  Sean:  "#b8341c",
+  Zach:  "#2c5c8a",
+  Rusty: "#c9a227",
+};
 const TEAM_INFO = Object.fromEntries(ROSTER.map(r => [r.team, r]));
 const TEAMS = ROSTER.map(r => r.team);
 
-// Scoring rules (per pool)
 const POINTS = {
-  groupWin: 3,
-  groupDraw: 1,
-  advance: 5,           // top 2 + best 8 third-place finishers
-  r32Win: 10,
-  r16Win: 10,
-  qfWin: 10,
-  sfWin: 15,
-  champion: 20,
+  groupWin: 3, groupDraw: 1, advance: 5,
+  r32Win: 10, r16Win: 10, qfWin: 10, sfWin: 15, champion: 20,
 };
 
 // ---------- data fetch ----------
-const DATA_URL = "https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json";
+const DATA_URL  = "https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json";
 const CACHE_KEY = "wcpool-2026-cache-v1";
-const CACHE_MS  = 6 * 60 * 60 * 1000; // refresh every 6 hours while page is open
+const CACHE_MS  = 6 * 60 * 60 * 1000;
 
 async function fetchData(forceFresh = false) {
   if (!forceFresh) {
@@ -593,33 +1060,27 @@ async function fetchData(forceFresh = false) {
       const raw = localStorage.getItem(CACHE_KEY);
       if (raw) {
         const cached = JSON.parse(raw);
-        // Render from cache immediately, then refresh in background if stale.
         if (cached && cached.data) {
           if (Date.now() - cached.fetchedAt < CACHE_MS) {
             return { data: cached.data, fetchedAt: cached.fetchedAt, fromCache: true };
           }
-          // stale-while-revalidate: return cached, caller will refresh after
           renderFromCache(cached);
         }
       }
-    } catch (e) { /* ignore */ }
+    } catch (e) {}
   }
-
   const resp = await fetch(DATA_URL, { cache: "no-store" });
   if (!resp.ok) throw new Error("HTTP " + resp.status);
   const data = await resp.json();
   const fetchedAt = Date.now();
-  try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ data, fetchedAt }));
-  } catch (e) { /* quota — fine */ }
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data, fetchedAt })); } catch (e) {}
   return { data, fetchedAt, fromCache: false };
 }
 
 function renderFromCache(cached) {
-  // Best-effort silent pre-render so user sees something instantly
   try {
     const computed = compute(cached.data);
-    render(computed, cached.fetchedAt, /*isCached*/ true);
+    render(computed, cached.fetchedAt, true);
   } catch (e) {}
 }
 
@@ -627,141 +1088,102 @@ function renderFromCache(cached) {
 function compute(data) {
   const matches = data.matches || [];
 
-  // Per-team accumulators
   const t = {};
   for (const tm of TEAMS) {
+    const d = DRAFT_BY_TEAM[tm];
     t[tm] = {
       team: tm,
       group: TEAM_INFO[tm].group,
       owner: TEAM_INFO[tm].owner,
+      pick: d ? d.pick : "",
+      pickRound: d ? d.round : null,
+      pickSlot: d ? d.slot : null,
       groupPoints: 0,
-      groupWins: 0,
-      groupDraws: 0,
-      groupLosses: 0,
+      groupWins: 0, groupDraws: 0, groupLosses: 0,
       groupPlayed: 0,
       advanced: false,
-      r32Wins: 0,
-      r16Wins: 0,
-      qfWins: 0,
-      sfWins: 0,
-      champion: false,
-      eliminated: false,
-      results: [],   // chronological list of {round, opp, gf, ga, result, date}
+      r32Wins: 0, r16Wins: 0, qfWins: 0, sfWins: 0,
+      champion: false, eliminated: false,
+      matchHistory: [], // per-team rich list of all played matches
     };
   }
 
-  // Helper to detect a played match
   const isPlayed = m => m && m.score && Array.isArray(m.score.ft) && m.score.ft.length === 2;
 
-  // -------- group stage --------
+  // ----- group stage -----
   const groupMatches = matches.filter(m => m.group);
   for (const m of groupMatches) {
     const a = m.team1, b = m.team2;
     if (!(a in t) || !(b in t)) continue;
     if (!isPlayed(m)) continue;
     const [ga, gb] = m.score.ft;
-    t[a].groupPlayed++;
-    t[b].groupPlayed++;
-    if (ga > gb) {
-      t[a].groupPoints += POINTS.groupWin; t[a].groupWins++;
-      t[b].groupLosses++;
-      t[a].results.push({ round: `Group ${m.group.slice(-1)}`, opp: b, gf: ga, ga: gb, result: "W", pts: POINTS.groupWin, date: m.date });
-      t[b].results.push({ round: `Group ${m.group.slice(-1)}`, opp: a, gf: gb, ga: ga, result: "L", pts: 0, date: m.date });
-    } else if (ga < gb) {
-      t[b].groupPoints += POINTS.groupWin; t[b].groupWins++;
-      t[a].groupLosses++;
-      t[a].results.push({ round: `Group ${m.group.slice(-1)}`, opp: b, gf: ga, ga: gb, result: "L", pts: 0, date: m.date });
-      t[b].results.push({ round: `Group ${m.group.slice(-1)}`, opp: a, gf: gb, ga: ga, result: "W", pts: POINTS.groupWin, date: m.date });
-    } else {
-      t[a].groupPoints += POINTS.groupDraw; t[a].groupDraws++;
-      t[b].groupPoints += POINTS.groupDraw; t[b].groupDraws++;
-      t[a].results.push({ round: `Group ${m.group.slice(-1)}`, opp: b, gf: ga, ga: gb, result: "D", pts: POINTS.groupDraw, date: m.date });
-      t[b].results.push({ round: `Group ${m.group.slice(-1)}`, opp: a, gf: gb, ga: ga, result: "D", pts: POINTS.groupDraw, date: m.date });
-    }
+    t[a].groupPlayed++; t[b].groupPlayed++;
+    let resA, resB, ptsA, ptsB;
+    if (ga > gb)      { resA="W"; resB="L"; ptsA=POINTS.groupWin;  ptsB=0; t[a].groupWins++;   t[a].groupPoints += POINTS.groupWin;  t[b].groupLosses++; }
+    else if (ga < gb) { resA="L"; resB="W"; ptsA=0; ptsB=POINTS.groupWin;  t[b].groupWins++;   t[b].groupPoints += POINTS.groupWin;  t[a].groupLosses++; }
+    else              { resA="D"; resB="D"; ptsA=ptsB=POINTS.groupDraw; t[a].groupDraws++; t[b].groupDraws++; t[a].groupPoints+=POINTS.groupDraw; t[b].groupPoints+=POINTS.groupDraw; }
+    t[a].matchHistory.push({ date: m.date, round: m.round, group: m.group, opp: b, gf: ga, ga: gb, result: resA, pts: ptsA });
+    t[b].matchHistory.push({ date: m.date, round: m.round, group: m.group, opp: a, gf: gb, ga: ga, result: resB, pts: ptsB });
   }
 
-  // -------- which teams advanced past group? --------
-  // Derive from the Round of 32 bracket: any *named* team appearing
-  // as team1/team2 there has advanced. Placeholder strings like
-  // "1A", "2B", "3A/B/C/D/F" are ignored until they resolve.
+  // ----- advanced set (from R32 named teams) -----
   const r32 = matches.filter(m => m.round === "Round of 32");
   const advancedSet = new Set();
   for (const m of r32) {
     if (m.team1 in t) advancedSet.add(m.team1);
     if (m.team2 in t) advancedSet.add(m.team2);
   }
-  for (const tm of TEAMS) {
-    if (advancedSet.has(tm)) t[tm].advanced = true;
-  }
+  for (const tm of TEAMS) if (advancedSet.has(tm)) t[tm].advanced = true;
 
-  // Group-stage elimination: if a team has played all 3 group matches
-  // and is NOT in the advanced set after R32 is populated, they're out.
-  // (Until R32 resolves, we only mark teams as eliminated if their group
-  // is fully played AND we can see they didn't make R32.)
   const groupFullyComplete = {};
   for (const grp of "ABCDEFGHIJKL") {
-    const gmatches = groupMatches.filter(m => m.group === `Group ${grp}`);
-    groupFullyComplete[grp] = gmatches.length > 0 && gmatches.every(isPlayed);
+    const gms = groupMatches.filter(m => m.group === `Group ${grp}`);
+    groupFullyComplete[grp] = gms.length > 0 && gms.every(isPlayed);
   }
-  // We can only definitively eliminate via group stage once R32 includes the named teams.
-  // Approximation: if a team's group is fully complete AND any R32 match in that group's bracket
-  // path has a resolved named team set, infer eliminations. Simpler & safe: if r32 has any named
-  // teams at all, treat the advancedSet as authoritative for groups that are fully complete.
   const r32HasAnyNamed = advancedSet.size > 0;
 
-  // -------- knockout rounds --------
+  // ----- knockouts -----
   const knockoutRounds = [
-    { key: "Round of 32",  field: "r32Wins", pts: POINTS.r32Win },
-    { key: "Round of 16",  field: "r16Wins", pts: POINTS.r16Win },
-    { key: "Quarter-final",field: "qfWins",  pts: POINTS.qfWin  },
-    { key: "Semi-final",   field: "sfWins",  pts: POINTS.sfWin  },
-    { key: "Final",        field: null,      pts: POINTS.champion },
+    { key: "Round of 32",   field: "r32Wins", pts: POINTS.r32Win },
+    { key: "Round of 16",   field: "r16Wins", pts: POINTS.r16Win },
+    { key: "Quarter-final", field: "qfWins",  pts: POINTS.qfWin  },
+    { key: "Semi-final",    field: "sfWins",  pts: POINTS.sfWin  },
+    { key: "Final",         field: null,      pts: POINTS.champion },
   ];
 
   for (const ko of knockoutRounds) {
     const ms = matches.filter(m => m.round === ko.key);
     for (const m of ms) {
+      if (!isPlayed(m)) continue;
       const a = m.team1, b = m.team2;
-      if (!isPlayed(m)) {
-        // Match scheduled but not played — losers can't be determined yet.
-        continue;
-      }
-      const aNamed = a in t, bNamed = b in t;
       const [ga, gb] = m.score.ft;
       let winner = null, loser = null;
       if (ga > gb)      { winner = a; loser = b; }
       else if (gb > ga) { winner = b; loser = a; }
       else {
-        // Knockout draw at FT — check for ET / penalty scoring fields
-        // openfootball typically also includes score.et and score.p (penalties)
-        const p = m.score && m.score.p;
+        const p  = m.score && m.score.p;
         const et = m.score && m.score.et;
-        if (Array.isArray(p) && p.length === 2 && p[0] !== p[1]) {
-          if (p[0] > p[1]) { winner = a; loser = b; } else { winner = b; loser = a; }
-        } else if (Array.isArray(et) && et.length === 2 && et[0] !== et[1]) {
-          if (et[0] > et[1]) { winner = a; loser = b; } else { winner = b; loser = a; }
-        } else {
-          // Can't determine — skip
-          continue;
-        }
+        if (Array.isArray(p)  && p.length===2  && p[0]!==p[1])  { winner = p[0]>p[1]  ? a : b; loser = winner===a?b:a; }
+        else if (Array.isArray(et) && et.length===2 && et[0]!==et[1]) { winner = et[0]>et[1] ? a : b; loser = winner===a?b:a; }
+        else continue;
       }
-      if (loser && loser in t) {
+      if (loser in t) {
         t[loser].eliminated = true;
-        t[loser].results.push({ round: ko.key, opp: winner, gf: (loser===a?ga:gb), ga: (loser===a?gb:ga), result: "L", pts: 0, date: m.date });
+        t[loser].matchHistory.push({ date: m.date, round: ko.key, opp: winner, gf: (loser===a?ga:gb), ga: (loser===a?gb:ga), result: "L", pts: 0 });
       }
-      if (winner && winner in t) {
+      if (winner in t) {
         if (ko.key === "Final") {
           t[winner].champion = true;
-          t[winner].results.push({ round: "Final", opp: loser, gf: (winner===a?ga:gb), ga: (winner===a?gb:ga), result: "🏆", pts: POINTS.champion, date: m.date });
+          t[winner].matchHistory.push({ date: m.date, round: "Final", opp: loser, gf: (winner===a?ga:gb), ga: (winner===a?gb:ga), result: "🏆", pts: POINTS.champion });
         } else {
           t[winner][ko.field]++;
-          t[winner].results.push({ round: ko.key, opp: loser, gf: (winner===a?ga:gb), ga: (winner===a?gb:ga), result: "W", pts: ko.pts, date: m.date });
+          t[winner].matchHistory.push({ date: m.date, round: ko.key, opp: loser, gf: (winner===a?ga:gb), ga: (winner===a?gb:ga), result: "W", pts: ko.pts });
         }
       }
     }
   }
 
-  // Apply group-stage elimination once knockouts have populated
+  // group-stage eliminations once R32 has named teams
   if (r32HasAnyNamed) {
     for (const tm of TEAMS) {
       if (groupFullyComplete[t[tm].group] && !advancedSet.has(tm)) {
@@ -770,99 +1192,106 @@ function compute(data) {
     }
   }
 
-  // Per-team totals
+  // per-team totals
   for (const tm of TEAMS) {
     const row = t[tm];
     row.advanceBonus = row.advanced ? POINTS.advance : 0;
     row.knockoutPoints =
-      row.r32Wins * POINTS.r32Win +
-      row.r16Wins * POINTS.r16Win +
-      row.qfWins  * POINTS.qfWin  +
-      row.sfWins  * POINTS.sfWin  +
+      row.r32Wins*POINTS.r32Win + row.r16Wins*POINTS.r16Win +
+      row.qfWins*POINTS.qfWin   + row.sfWins*POINTS.sfWin   +
       (row.champion ? POINTS.champion : 0);
     row.total = row.groupPoints + row.advanceBonus + row.knockoutPoints;
     row.alive = !row.eliminated;
+    // sort each team's match history chronologically
+    row.matchHistory.sort((a,b) => (a.date||"").localeCompare(b.date||""));
   }
 
-  // Per-owner aggregation
+  // owners
   const owners = {};
   for (const o of OWNERS) {
     owners[o] = {
       owner: o,
       teams: ROSTER.filter(r => r.owner === o).map(r => t[r.team]),
-      total: 0,
-      groupPoints: 0,
-      teamsAlive: 0,
-      topTeam: null,
+      total: 0, groupPoints: 0, teamsAlive: 0, topTeam: null,
     };
   }
   for (const o of OWNERS) {
     const obj = owners[o];
     for (const tr of obj.teams) {
-      obj.total += tr.total;
-      obj.groupPoints += tr.groupPoints;
+      obj.total += tr.total; obj.groupPoints += tr.groupPoints;
       if (tr.alive) obj.teamsAlive++;
       if (!obj.topTeam || tr.total > obj.topTeam.total) obj.topTeam = tr;
     }
   }
 
-  // Standings: total DESC, then groupPoints DESC (tiebreaker per pool rules)
-  const standings = OWNERS.map(o => owners[o]).sort((a, b) => {
+  const standings = OWNERS.map(o => owners[o]).sort((a,b) => {
     if (b.total !== a.total) return b.total - a.total;
     return b.groupPoints - a.groupPoints;
   });
 
-  // Recent results (played matches involving pool teams), most recent first, top 8
   const recentMatches = matches
     .filter(m => isPlayed(m) && (m.team1 in t || m.team2 in t))
-    .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
+    .sort((a,b) => (b.date || "").localeCompare(a.date || ""))
     .slice(0, 8)
-    .map(m => ({
-      date: m.date,
-      round: m.round,
-      team1: m.team1, team2: m.team2,
-      ft: m.score.ft,
-    }));
+    .map(m => ({ date: m.date, round: m.round, team1: m.team1, team2: m.team2, ft: m.score.ft }));
 
-  return { teams: t, owners, standings, recentMatches, playedCount: matches.filter(isPlayed).length, totalMatches: matches.length };
+  return {
+    teams: t, owners, standings, recentMatches,
+    playedCount: matches.filter(isPlayed).length,
+    totalMatches: matches.length,
+  };
 }
 
-// ---------- render ----------
-let LAST = null;     // {computed, fetchedAt}
+// ---------- view state ----------
+let LAST = null; // { computed, fetchedAt }
 let CURRENT_VIEW = { name: "home" };
+let SORT_MODE = "draft"; // "draft" | "points" | "alive"
 
+// ---------- format helpers ----------
 function fmtRelative(ts) {
   const s = Math.floor((Date.now() - ts) / 1000);
-  if (s < 60)        return s + "s ago";
-  if (s < 3600)      return Math.floor(s / 60) + "m ago";
-  if (s < 86400)     return Math.floor(s / 3600) + "h ago";
+  if (s < 60)    return s + "s ago";
+  if (s < 3600)  return Math.floor(s / 60) + "m ago";
+  if (s < 86400) return Math.floor(s / 3600) + "h ago";
   return Math.floor(s / 86400) + "d ago";
 }
-
 function fmtDate(ts) {
-  const d = new Date(ts);
-  return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  return new Date(ts).toLocaleString(undefined, { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
 }
-
+function fmtMatchDate(d) {
+  if (!d) return "—";
+  const dt = new Date(d + "T12:00:00Z");
+  return dt.toLocaleDateString(undefined, { month:"short", day:"numeric" });
+}
 function setStatus(kind, text) {
   const el = document.getElementById("status");
   if (!el) return;
   const cls = kind === "ok" ? "" : kind === "err" ? "err" : "stale";
   el.innerHTML = `<span class="dot ${cls}"></span>${text}`;
 }
+function setNav(view) {
+  document.getElementById("navHome").classList.toggle("active", view === "home" || view === "detail");
+  document.getElementById("navDraft").classList.toggle("active", view === "draft");
+}
+// avatar background style for an owner; gracefully falls back if image missing
+function avatarStyle(owner) {
+  const file = owner.toLowerCase() + ".png";
+  return `background-image:url('${file}');`;
+}
 
+// ---------- render orchestrator ----------
 function render(computed, fetchedAt, isCached = false) {
   LAST = { computed, fetchedAt };
-  if (CURRENT_VIEW.name === "home") {
-    renderHome(computed, fetchedAt);
-  } else {
-    renderDetail(CURRENT_VIEW.owner, computed, fetchedAt);
-  }
+  if (CURRENT_VIEW.name === "home")        renderHome(computed);
+  else if (CURRENT_VIEW.name === "draft")  renderDraftPerformance(computed);
+  else if (CURRENT_VIEW.name === "detail") renderDetail(CURRENT_VIEW.owner, computed);
   setStatus(isCached ? "stale" : "ok",
     "Updated " + fmtRelative(fetchedAt) + " · " + fmtDate(fetchedAt));
 }
 
-function renderHome(c, fetchedAt) {
+// ---------- HOME ----------
+function renderHome(c) {
+  setNav("home");
   const app = document.getElementById("app");
   const leaderTotal = c.standings[0].total;
 
@@ -873,7 +1302,7 @@ function renderHome(c, fetchedAt) {
     <table class="standings">
       <thead>
         <tr>
-          <th style="width:56px;">#</th>
+          <th style="width:50px;">#</th>
           <th>Owner</th>
           <th>Roster · <span style="color:var(--alive);font-weight:700">alive</span> · <span style="text-decoration:line-through;color:var(--eliminated)">out</span></th>
           <th class="r">Points</th>
@@ -883,6 +1312,10 @@ function renderHome(c, fetchedAt) {
         ${c.standings.map((o, idx) => renderStandingsRow(o, idx, leaderTotal)).join("")}
       </tbody>
     </table>
+
+    <div class="standings-cards">
+      ${c.standings.map((o, idx) => renderStandingsCard(o, idx, leaderTotal)).join("")}
+    </div>
 
     <p class="section-label">Scoring</p>
     <h2 class="section-title">How points get earned</h2>
@@ -898,154 +1331,552 @@ function renderHome(c, fetchedAt) {
     </div>
 
     ${c.recentMatches.length ? `
-      <div class="recent">
-        <p class="section-label">Latest results · pool teams</p>
-        <h2 class="section-title">From the pitch</h2>
-        <div class="recent-grid">
-          ${c.recentMatches.map(renderMatchCard).join("")}
-        </div>
+      <p class="section-label">Latest results</p>
+      <h2 class="section-title">From the pitch</h2>
+      <div class="recent-grid">
+        ${c.recentMatches.map(renderMatchCard).join("")}
       </div>
     ` : ""}
   `;
 
-  // wire clicks
-  app.querySelectorAll("[data-owner]").forEach(el => {
+  // wire clicks (both table rows and mobile cards)
+  app.querySelectorAll("[data-owner-link]").forEach(el => {
     el.addEventListener("click", () => {
-      CURRENT_VIEW = { name: "detail", owner: el.dataset.owner };
-      history.pushState(CURRENT_VIEW, "", "#" + el.dataset.owner);
-      renderDetail(el.dataset.owner, LAST.computed, LAST.fetchedAt);
-      window.scrollTo({ top: 0, behavior: "instant" });
+      navigate({ name: "detail", owner: el.dataset.ownerLink });
     });
   });
 }
 
 function renderStandingsRow(o, idx, leaderTotal) {
-  const isLeader = idx === 0;
-  // Sort each owner's teams by total DESC for the strip, alive first
-  const sorted = [...o.teams].sort((a, b) => {
+  const sorted = [...o.teams].sort((a,b) => {
     if (b.total !== a.total) return b.total - a.total;
     if (a.alive !== b.alive) return a.alive ? -1 : 1;
     return a.team.localeCompare(b.team);
   });
   const top = o.topTeam;
+  const lower = o.owner.toLowerCase();
+  const gap = o.total - leaderTotal;
+  const gapTxt = gap === 0 ? "leader" : `${gap} pt${gap === -1 ? "" : "s"}`;
   return `
-    <tr class="${isLeader ? "leader" : ""}" data-owner="${o.owner}">
+    <tr class="${idx===0 ? "leader" : ""}" data-owner-link="${o.owner}">
       <td class="rank num">${String(idx + 1).padStart(2, "0")}</td>
-      <td class="owner">
-        ${o.owner}
-        <div class="meta-row">
-          <span><span class="pip"></span>${o.teamsAlive} of 12 alive</span>
-          <span>Top: <span class="top-team">${top.team}</span> (${top.total} pt${top.total === 1 ? "" : "s"})</span>
+      <td class="owner-cell">
+        <div class="owner-line">
+          <span class="avatar ${lower}" style="width:42px;height:42px;${avatarStyle(o.owner)}"></span>
+          <div>
+            <div class="name">${o.owner}</div>
+            <div class="meta-row">
+              <span><span class="pip"></span>${o.teamsAlive} of 12 alive</span>
+              <span>Top: <span class="top-team">${top.team}</span> (${top.total} pt${top.total === 1 ? "" : "s"})</span>
+            </div>
+          </div>
         </div>
       </td>
       <td>
         <div class="roster-strip">
           ${sorted.map(tr => `
             <span class="chip ${tr.alive ? (tr === top && tr.total > 0 ? "top" : "alive") : "out"}"
-                  title="${tr.team} · ${tr.total} pt${tr.total===1?"":"s"}${tr.alive?"":" · eliminated"}">
-              ${tr.team}
-            </span>
+                  title="${tr.team} · ${tr.total} pt${tr.total===1?"":"s"}${tr.alive?"":" · eliminated"}">${tr.team}</span>
           `).join("")}
         </div>
       </td>
       <td class="score num">
         ${o.total}
-        <span class="gp">Grp ${o.groupPoints} · ${(o.total - leaderTotal) === 0 ? "leader" : ((o.total - leaderTotal) + " pt" + ((o.total-leaderTotal)===-1?"":"s"))}</span>
+        <span class="gp">Grp ${o.groupPoints} · ${gapTxt}</span>
       </td>
     </tr>
+  `;
+}
+
+function renderStandingsCard(o, idx, leaderTotal) {
+  const lower = o.owner.toLowerCase();
+  const top = o.topTeam;
+  const sorted = [...o.teams].sort((a,b) => {
+    if (b.total !== a.total) return b.total - a.total;
+    if (a.alive !== b.alive) return a.alive ? -1 : 1;
+    return a.team.localeCompare(b.team);
+  });
+  const gap = o.total - leaderTotal;
+  const gapTxt = gap === 0 ? "leader" : `${gap} pt${gap === -1 ? "" : "s"}`;
+  return `
+    <div class="standings-card ${idx===0 ? "leader" : ""}" data-owner-link="${o.owner}">
+      <div class="top">
+        <span class="rk num">${String(idx + 1).padStart(2, "0")}</span>
+        <span class="avatar ${lower}" style="width:44px;height:44px;${avatarStyle(o.owner)}"></span>
+        <span class="nm">${o.owner}</span>
+        <span class="sc num">${o.total}</span>
+      </div>
+      <div class="sub">
+        <span><b>${o.teamsAlive}</b>/12 alive</span>
+        <span>Grp <b>${o.groupPoints}</b></span>
+        <span>${gapTxt}</span>
+        <span>Top: <b>${top.team}</b> (${top.total})</span>
+      </div>
+      <div class="roster-strip">
+        ${sorted.map(tr => `
+          <span class="chip ${tr.alive ? (tr === top && tr.total > 0 ? "top" : "alive") : "out"}">${tr.team}</span>
+        `).join("")}
+      </div>
+    </div>
   `;
 }
 
 function renderMatchCard(m) {
   const [a, b] = m.ft;
   const aWin = a > b, bWin = b > a;
+  const o1 = TEAM_INFO[m.team1] ? TEAM_INFO[m.team1].owner : null;
+  const o2 = TEAM_INFO[m.team2] ? TEAM_INFO[m.team2].owner : null;
+  const ownerTag = o => o ? `<span class="ow">${o}</span>` : "";
   return `
     <div class="match">
-      <div class="when">${m.date} · ${m.round}</div>
+      <div class="when">${fmtMatchDate(m.date)} · ${m.round}</div>
       <div class="line ${aWin ? "win" : bWin ? "lose" : ""}">
-        <span>${m.team1}</span><span class="sc">${a}</span>
+        <div class="nm"><span class="tn">${m.team1}</span>${ownerTag(o1)}</div>
+        <span class="sc">${a}</span>
       </div>
       <div class="line ${bWin ? "win" : aWin ? "lose" : ""}">
-        <span>${m.team2}</span><span class="sc">${b}</span>
+        <div class="nm"><span class="tn">${m.team2}</span>${ownerTag(o2)}</div>
+        <span class="sc">${b}</span>
       </div>
     </div>
   `;
 }
 
-function renderDetail(owner, c, fetchedAt) {
+// ---------- DETAIL ----------
+function sortTeams(teams, mode) {
+  const arr = [...teams];
+  if (mode === "draft") {
+    arr.sort((a, b) => (a.pickRound - b.pickRound) || (a.pickSlot - b.pickSlot));
+  } else if (mode === "points") {
+    arr.sort((a, b) => (b.total - a.total) || (a.pickRound - b.pickRound));
+  } else { // alive
+    arr.sort((a, b) => {
+      if (a.alive !== b.alive) return a.alive ? -1 : 1;
+      if (b.total !== a.total) return b.total - a.total;
+      return a.pickRound - b.pickRound;
+    });
+  }
+  return arr;
+}
+
+function renderDetail(owner, c) {
+  setNav("home");
   const o = c.owners[owner];
-  if (!o) { renderHome(c, fetchedAt); return; }
+  if (!o) { renderHome(c); return; }
 
-  // Sort owner's teams: alive first, then by total DESC, then group/name
-  const teams = [...o.teams].sort((a, b) => {
-    if (a.alive !== b.alive) return a.alive ? -1 : 1;
-    if (b.total !== a.total) return b.total - a.total;
-    if (a.group !== b.group) return a.group.localeCompare(b.group);
-    return a.team.localeCompare(b.team);
-  });
-
+  const lower = owner.toLowerCase();
   const rank = c.standings.findIndex(x => x.owner === owner) + 1;
-
+  const teams = sortTeams(o.teams, SORT_MODE);
   const app = document.getElementById("app");
+
   app.innerHTML = `
     <button class="back" id="backBtn" type="button">← All standings</button>
 
-    <div class="detail-head">
-      <h1>${owner}</h1>
-      <div class="total num">
-        <span class="lbl">Total points</span>
-        ${o.total}
+    <div class="owner-hero">
+      <div class="portrait" id="ownerPortrait"
+           style="${avatarStyle(owner)}"
+           data-owner="${owner}">
+      </div>
+      <div class="info">
+        <h1>${owner}</h1>
+        <div class="total-row">
+          <div class="total num">
+            <span class="lbl">Total points</span>
+            ${o.total}
+          </div>
+          <div class="stat">
+            <b>Rank #${rank}</b>
+            <span class="stat-sep">/</span>
+            <b>${o.teamsAlive}</b> of 12 alive
+            <span class="stat-sep">/</span>
+            <b>${o.groupPoints}</b> group pts
+            <br>
+            Top scorer: <b>${o.topTeam.team}</b> (${o.topTeam.total} pt${o.topTeam.total===1?"":"s"})
+          </div>
+        </div>
       </div>
     </div>
-    <div class="detail-meta">
-      Rank #${rank}
-      <span class="sep">/</span>
-      ${o.teamsAlive} of 12 teams alive
-      <span class="sep">/</span>
-      ${o.groupPoints} group-stage points
-      <span class="sep">/</span>
-      Top scorer: <strong>${o.topTeam.team}</strong> (${o.topTeam.total} pt${o.topTeam.total===1?"":"s"})
+
+    <div class="sort-bar">
+      <span>Sort:</span>
+      <button data-sort="draft"  class="${SORT_MODE==="draft"  ? "active":""}" type="button">Draft order</button>
+      <button data-sort="points" class="${SORT_MODE==="points" ? "active":""}" type="button">Points</button>
+      <button data-sort="alive"  class="${SORT_MODE==="alive"  ? "active":""}" type="button">Alive first</button>
     </div>
 
-    <div class="team-grid">
-      ${teams.map(renderTeamRow).join("")}
+    <div class="team-grid" id="teamGrid">
+      ${teams.map(tr => renderTeamRow(tr)).join("")}
     </div>
   `;
 
   document.getElementById("backBtn").addEventListener("click", () => {
-    CURRENT_VIEW = { name: "home" };
-    history.pushState(CURRENT_VIEW, "", "#");
-    renderHome(c, fetchedAt);
-    window.scrollTo({ top: 0, behavior: "instant" });
+    navigate({ name: "home" });
+  });
+
+  // Image fallback: if owner image fails to load, replace background with initial
+  const portrait = document.getElementById("ownerPortrait");
+  const probe = new Image();
+  probe.onerror = () => {
+    portrait.style.backgroundImage = "none";
+    portrait.classList.add("no-img");
+    portrait.textContent = owner[0];
+  };
+  probe.src = lower + ".png";
+
+  // sort toggle
+  app.querySelectorAll(".sort-bar button[data-sort]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      SORT_MODE = btn.dataset.sort;
+      renderDetail(owner, c);
+    });
+  });
+
+  // team-row expand/collapse
+  app.querySelectorAll(".team-row .summary").forEach(s => {
+    s.addEventListener("click", () => {
+      s.parentElement.classList.toggle("expanded");
+    });
   });
 }
 
 function renderTeamRow(tr) {
-  const stateCls = tr.champion ? "champ" : (tr.alive ? "alive" : "out");
+  const stateCls   = tr.champion ? "champ" : (tr.alive ? "alive" : "out");
   const stateLabel = tr.champion ? "Champion" : (tr.alive ? "Alive" : "Eliminated");
+
   const bits = [];
   if (tr.groupPlayed > 0) {
-    bits.push(`<span>Group: <b>${tr.groupWins}W-${tr.groupDraws}D-${tr.groupLosses}L</b> · ${tr.groupPoints}pt</span>`);
+    bits.push(`<span>Grp <b>${tr.groupWins}-${tr.groupDraws}-${tr.groupLosses}</b> · ${tr.groupPoints}pt</span>`);
   } else {
-    bits.push(`<span>Group: <b>—</b></span>`);
+    bits.push(`<span>Grp <b>—</b></span>`);
   }
-  if (tr.advanced)   bits.push(`<span>Advance: <b>+5</b></span>`);
-  if (tr.r32Wins)    bits.push(`<span>R32: <b>+${tr.r32Wins*10}</b></span>`);
-  if (tr.r16Wins)    bits.push(`<span>R16: <b>+${tr.r16Wins*10}</b></span>`);
-  if (tr.qfWins)     bits.push(`<span>QF: <b>+${tr.qfWins*10}</b></span>`);
-  if (tr.sfWins)     bits.push(`<span>SF: <b>+${tr.sfWins*15}</b></span>`);
+  if (tr.advanced)   bits.push(`<span>Adv <b>+5</b></span>`);
+  if (tr.r32Wins)    bits.push(`<span>R32 <b>+${tr.r32Wins*10}</b></span>`);
+  if (tr.r16Wins)    bits.push(`<span>R16 <b>+${tr.r16Wins*10}</b></span>`);
+  if (tr.qfWins)     bits.push(`<span>QF <b>+${tr.qfWins*10}</b></span>`);
+  if (tr.sfWins)     bits.push(`<span>SF <b>+${tr.sfWins*15}</b></span>`);
   if (tr.champion)   bits.push(`<span>🏆 <b>+20</b></span>`);
 
   return `
     <div class="team-row ${stateCls}">
-      <div class="grp">${tr.group}</div>
-      <div class="name">${tr.team}</div>
-      <div class="status">${stateLabel}</div>
-      <div class="breakdown">${bits.join("")}</div>
-      <div class="pts num">${tr.total}</div>
+      <div class="summary">
+        <div class="pick">${tr.pick || "—"}</div>
+        <div class="grp">${tr.group}</div>
+        <div class="name-wrap">
+          <div class="name">${tr.team}</div>
+          <div class="breakdown">${bits.join("")}</div>
+        </div>
+        <div class="status">${stateLabel}</div>
+        <div class="pts-cell"><span class="num">${tr.total}</span><span class="caret">▾</span></div>
+      </div>
+      <div class="matches">
+        ${renderMatchHistory(tr)}
+      </div>
     </div>
   `;
 }
+
+function renderMatchHistory(tr) {
+  if (!tr.matchHistory || tr.matchHistory.length === 0) {
+    return `<div class="empty">No matches played yet.</div>`;
+  }
+  return `
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Round</th>
+          <th>Opponent</th>
+          <th style="text-align:center;">Score</th>
+          <th style="text-align:center;">Result</th>
+          <th class="r">Pts</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tr.matchHistory.map(m => {
+          const cls = (m.result === "W" || m.result === "🏆") ? "W"
+                    : m.result === "L" ? "L" : "D";
+          const pts = m.pts || 0;
+          return `
+            <tr>
+              <td class="date">${fmtMatchDate(m.date)}</td>
+              <td class="round-cell">${m.round}</td>
+              <td class="opp">${m.opp}</td>
+              <td class="score">${m.gf} – ${m.ga}</td>
+              <td class="result-cell ${cls}">${m.result}</td>
+              <td class="pts-earned ${pts===0?"zero":""}">${pts > 0 ? "+"+pts : "—"}</td>
+            </tr>
+          `;
+        }).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+// ---------- DRAFT PERFORMANCE ----------
+function renderDraftPerformance(c) {
+  setNav("draft");
+  const app = document.getElementById("app");
+
+  // Build matrix: for each round 1..12, for each owner, the team + total
+  // (one slot per owner per round in this serpentine draft)
+  const matrix = {};
+  for (let r = 1; r <= 12; r++) {
+    matrix[r] = {};
+    for (const o of OWNERS) matrix[r][o] = null;
+  }
+  for (const d of DRAFT) {
+    matrix[d.round][d.owner] = { team: d.team, pick: d.pick, total: c.teams[d.team].total, alive: c.teams[d.team].alive, slot: d.slot };
+  }
+
+  // per-owner aggregate: total from each "tier" — early (rounds 1-4),
+  // mid (5-8), late (9-12)
+  const tiers = { early: [1,2,3,4], mid: [5,6,7,8], late: [9,10,11,12] };
+  const ownerTier = {};
+  for (const o of OWNERS) {
+    ownerTier[o] = { early:0, mid:0, late:0, best:null, worst:null, total:0 };
+    for (let r = 1; r <= 12; r++) {
+      const cell = matrix[r][o];
+      if (!cell) continue;
+      ownerTier[o].total += cell.total;
+      if (r <= 4)       ownerTier[o].early += cell.total;
+      else if (r <= 8)  ownerTier[o].mid   += cell.total;
+      else              ownerTier[o].late  += cell.total;
+      if (!ownerTier[o].best  || cell.total > ownerTier[o].best.total)  ownerTier[o].best  = { ...cell, round: r };
+      if (!ownerTier[o].worst || cell.total < ownerTier[o].worst.total) ownerTier[o].worst = { ...cell, round: r };
+    }
+  }
+
+  app.innerHTML = `
+    <p class="section-label">Draft analytics</p>
+    <h2 class="section-title">Performance by draft position</h2>
+    <p style="color:var(--ink-soft); margin: 0 0 24px; max-width: 700px; font-size: 14px;">
+      Points by each owner's pick in each round. Tall bars in early rounds mean your top picks are paying off; tall bars in late rounds mean you found sleepers. Tap any bar for the team.
+    </p>
+
+    <div class="chart-legend">
+      ${OWNERS.map(o => `
+        <span class="it">
+          <span class="sw" style="background:${OWNER_COLOR_HEX[o]};"></span>
+          ${o}
+        </span>
+      `).join("")}
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart" id="chartHost">
+        ${renderDraftBarChart(matrix, c)}
+      </div>
+    </div>
+
+    <p class="section-label">By owner</p>
+    <h2 class="section-title">Where the points are coming from</h2>
+    <div class="summary-cards">
+      ${OWNERS.map(o => renderOwnerDraftCard(o, ownerTier[o], matrix)).join("")}
+    </div>
+  `;
+
+  // wire chart hover/tap tooltips
+  const host = document.getElementById("chartHost");
+  const tip  = document.getElementById("chartTooltip");
+  host.querySelectorAll(".bar").forEach(b => {
+    const showTip = (clientX, clientY) => {
+      const team  = b.getAttribute("data-team");
+      const owner = b.getAttribute("data-owner");
+      const round = b.getAttribute("data-round");
+      const pick  = b.getAttribute("data-pick");
+      const pts   = b.getAttribute("data-pts");
+      const alive = b.getAttribute("data-alive") === "true";
+      tip.innerHTML = `
+        <div><b>${team}</b> · ${owner}</div>
+        <div style="opacity:0.7; font-size: 11px; margin-top:2px;">Pick ${pick} · Round ${round} · ${alive ? "alive" : "out"}</div>
+        <div style="margin-top:4px;"><span class="pts">${pts}</span> points</div>
+      `;
+      tip.style.left = (clientX + 12) + "px";
+      tip.style.top  = (clientY + 12) + "px";
+      tip.style.opacity = "1";
+    };
+    const hideTip = () => { tip.style.opacity = "0"; };
+    b.addEventListener("mouseenter", e => showTip(e.clientX, e.clientY));
+    b.addEventListener("mousemove",  e => showTip(e.clientX, e.clientY));
+    b.addEventListener("mouseleave", hideTip);
+    b.addEventListener("touchstart", e => {
+      const tch = e.touches[0];
+      showTip(tch.clientX, tch.clientY);
+      setTimeout(hideTip, 2500);
+    }, { passive: true });
+    // click → jump to owner page
+    b.addEventListener("click", () => {
+      navigate({ name: "detail", owner: b.getAttribute("data-owner") });
+    });
+  });
+}
+
+function renderDraftBarChart(matrix, c) {
+  // dims
+  const W = 900;
+  const H = 380;
+  const padL = 38, padR = 12, padT = 16, padB = 38;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  // find global max points for y scale
+  let maxPts = 0;
+  for (let r = 1; r <= 12; r++) {
+    for (const o of OWNERS) {
+      const cell = matrix[r][o];
+      if (cell && cell.total > maxPts) maxPts = cell.total;
+    }
+  }
+  const yMax = Math.max(maxPts + 2, 10);
+  // round up to a nice number for axis (steps of 5)
+  const yMaxNice = Math.ceil(yMax / 5) * 5;
+
+  const groupW = innerW / 12;
+  const barGap = 3;
+  const barW   = (groupW - 16) / 4 - barGap;
+
+  // y ticks
+  const tickStep = yMaxNice <= 20 ? 5 : (yMaxNice <= 50 ? 10 : 20);
+  const ticks = [];
+  for (let v = 0; v <= yMaxNice; v += tickStep) ticks.push(v);
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Draft performance bar chart">`;
+
+  // grid lines + y labels
+  for (const v of ticks) {
+    const y = padT + innerH - (v / yMaxNice) * innerH;
+    svg += `<line class="grid-line" x1="${padL}" y1="${y}" x2="${padL+innerW}" y2="${y}"/>`;
+    svg += `<text class="axis-text" x="${padL-6}" y="${y+3}" text-anchor="end">${v}</text>`;
+  }
+
+  // axis
+  svg += `<line class="axis-line" x1="${padL}" y1="${padT+innerH}" x2="${padL+innerW}" y2="${padT+innerH}"/>`;
+
+  // bars per round
+  for (let r = 1; r <= 12; r++) {
+    const gx0 = padL + (r - 1) * groupW;
+    const gxCenter = gx0 + groupW / 2;
+
+    // round label
+    svg += `<text class="round-label" x="${gxCenter}" y="${padT+innerH+18}">R${r}</text>`;
+
+    // each owner — keep order stable so colors are consistent across rounds
+    OWNERS.forEach((o, i) => {
+      const cell = matrix[r][o];
+      if (!cell) return;
+      const x = gx0 + 8 + i * (barW + barGap);
+      const h = (cell.total / yMaxNice) * innerH;
+      const y = padT + innerH - h;
+      const minH = 2; // make zero-bars visible
+      const hh = Math.max(h, minH);
+      const yy = padT + innerH - hh;
+      const fill = OWNER_COLOR_HEX[o];
+      const fadeOut = !cell.alive ? "opacity:0.35;" : "";
+      svg += `
+        <g>
+          <rect class="bar"
+                x="${x.toFixed(2)}" y="${yy.toFixed(2)}"
+                width="${barW.toFixed(2)}" height="${hh.toFixed(2)}"
+                fill="${fill}" style="${fadeOut}"
+                data-team="${cell.team}"
+                data-owner="${o}"
+                data-round="${r}"
+                data-pick="${cell.pick}"
+                data-pts="${cell.total}"
+                data-alive="${cell.alive}"/>
+          ${cell.total > 0 ? `<text class="bar-label" x="${(x + barW/2).toFixed(2)}" y="${(yy - 3).toFixed(2)}">${cell.total}</text>` : ""}
+        </g>
+      `;
+    });
+  }
+
+  // y-axis label
+  svg += `<text class="axis-text" x="${padL-30}" y="${padT-4}" text-anchor="start" style="font-size:9px; letter-spacing:0.12em; text-transform:uppercase; fill: var(--ink-faint);">Points</text>`;
+
+  svg += `</svg>`;
+  return svg;
+}
+
+function renderOwnerDraftCard(owner, tier, matrix) {
+  const lower = owner.toLowerCase();
+  // find round-by-round picks
+  const picks = [];
+  for (let r = 1; r <= 12; r++) {
+    const cell = matrix[r][owner];
+    if (cell) picks.push({ round: r, ...cell });
+  }
+  // Best sleeper: latest-round pick with the most points (i.e., points × round, weighted)
+  // We'll show the best pick from rounds 7+ and the worst pick from rounds 1-4
+  const latePicks   = picks.filter(p => p.round >= 7).sort((a,b) => b.total - a.total);
+  const earlyPicks  = picks.filter(p => p.round <= 4).sort((a,b) => a.total - b.total);
+  const bestSleeper = latePicks[0];
+  const earlyDud    = earlyPicks[0];
+
+  return `
+    <div class="card">
+      <div class="hd">
+        <span class="avatar ${lower}" style="width:32px;height:32px;${avatarStyle(owner)}"></span>
+        <span class="name">${owner}</span>
+        <span style="margin-left:auto; font-family:'JetBrains Mono'; font-weight:700; font-size:18px;">${tier.total}</span>
+      </div>
+      <div class="lines">
+        <div><span class="lbl">Early (R1-4)</span> <b>${tier.early}</b> pts</div>
+        <div><span class="lbl">Mid (R5-8)</span> <b>${tier.mid}</b> pts</div>
+        <div><span class="lbl">Late (R9-12)</span> <b>${tier.late}</b> pts</div>
+        ${bestSleeper && bestSleeper.total > 0 ? `
+          <div style="margin-top:8px;"><span class="lbl">Best late pick</span><br>
+            <b>${bestSleeper.team}</b> (R${bestSleeper.round}) — ${bestSleeper.total} pts
+          </div>` : ""}
+        ${earlyDud ? `
+          <div style="margin-top:6px;"><span class="lbl">Worst early pick</span><br>
+            <b>${earlyDud.team}</b> (R${earlyDud.round}) — ${earlyDud.total} pt${earlyDud.total===1?"":"s"}
+          </div>` : ""}
+      </div>
+    </div>
+  `;
+}
+
+// ---------- navigation ----------
+function navigate(view) {
+  CURRENT_VIEW = view;
+  let hash = "";
+  if (view.name === "detail") hash = "#" + view.owner;
+  else if (view.name === "draft") hash = "#draft";
+  else hash = "#";
+  history.pushState(view, "", hash);
+  if (!LAST) return;
+  if (view.name === "home")        renderHome(LAST.computed);
+  else if (view.name === "draft")  renderDraftPerformance(LAST.computed);
+  else if (view.name === "detail") renderDetail(view.owner, LAST.computed);
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+window.addEventListener("popstate", (ev) => {
+  if (!LAST) return;
+  if (ev.state && ev.state.name) {
+    CURRENT_VIEW = ev.state;
+  } else {
+    // derive from hash
+    const h = decodeURIComponent(location.hash.replace(/^#/, ""));
+    if (h === "draft") CURRENT_VIEW = { name: "draft" };
+    else if (OWNERS.includes(h)) CURRENT_VIEW = { name: "detail", owner: h };
+    else CURRENT_VIEW = { name: "home" };
+  }
+  if (CURRENT_VIEW.name === "home")        renderHome(LAST.computed);
+  else if (CURRENT_VIEW.name === "draft")  renderDraftPerformance(LAST.computed);
+  else if (CURRENT_VIEW.name === "detail") renderDetail(CURRENT_VIEW.owner, LAST.computed);
+});
+
+// initial view from hash
+const initialHash = decodeURIComponent(location.hash.replace(/^#/, ""));
+if (initialHash === "draft") CURRENT_VIEW = { name: "draft" };
+else if (OWNERS.includes(initialHash)) CURRENT_VIEW = { name: "detail", owner: initialHash };
+
+// top-nav wiring
+document.getElementById("navHome").addEventListener("click",  () => navigate({ name: "home" }));
+document.getElementById("navDraft").addEventListener("click", () => navigate({ name: "draft" }));
+document.getElementById("brandLink").addEventListener("click", () => navigate({ name: "home" }));
+document.getElementById("refreshBtn").addEventListener("click", () => load(true));
 
 // ---------- boot ----------
 async function load(force = false) {
@@ -1057,46 +1888,22 @@ async function load(force = false) {
   } catch (e) {
     console.error(e);
     setStatus("err", "Couldn't reach openfootball — see console");
-    // If we have nothing on screen, show an error panel
     const app = document.getElementById("app");
     if (app.querySelector(".panel-msg")) {
       app.innerHTML = `<div class="panel-msg">Couldn't load the latest data.
-        <span class="small">${(e && e.message) || e}. Try Refresh, or open the page from a server (file:// can block fetch).</span></div>`;
+        <span class="small">${(e && e.message) || e}. Try Refresh, or serve the file over http(s) (file:// can block fetch).</span></div>`;
     }
   }
 }
 
-document.getElementById("refreshBtn").addEventListener("click", () => load(true));
-
-window.addEventListener("popstate", (ev) => {
-  if (ev.state && ev.state.name === "detail" && LAST) {
-    CURRENT_VIEW = ev.state;
-    renderDetail(ev.state.owner, LAST.computed, LAST.fetchedAt);
-  } else {
-    CURRENT_VIEW = { name: "home" };
-    if (LAST) renderHome(LAST.computed, LAST.fetchedAt);
-  }
-});
-
-// Support deep-link via hash, e.g. index.html#Sean
-const hashOwner = decodeURIComponent(location.hash.replace(/^#/, ""));
-if (OWNERS.includes(hashOwner)) {
-  CURRENT_VIEW = { name: "detail", owner: hashOwner };
-}
-
 load(false);
-
-// Auto-refresh every 6 hours while the tab is open
 setInterval(() => load(true), CACHE_MS);
 
-// Also refresh when the tab regains focus after being hidden for a while
 let hiddenAt = null;
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    hiddenAt = Date.now();
-  } else if (hiddenAt && (Date.now() - hiddenAt) > 60 * 60 * 1000) {
-    load(true);
-    hiddenAt = null;
+  if (document.hidden) hiddenAt = Date.now();
+  else if (hiddenAt && (Date.now() - hiddenAt) > 60 * 60 * 1000) {
+    load(true); hiddenAt = null;
   }
 });
 </script>
