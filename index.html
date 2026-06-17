@@ -772,7 +772,17 @@
     justify-content: flex-end;
     height: 100%;
     gap: 3px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font: inherit;
+    border-radius: 3px;
+    transition: background 0.12s;
   }
+  .qbar:hover { background: var(--paper-deep); }
+  .qbar.active { background: var(--paper-deep); }
+  .qbar.active .qbar-key { color: var(--ink); }
   .qbar-track {
     width: 100%;
     flex: 1;
@@ -784,7 +794,9 @@
     width: 100%;
     min-height: 2px;
     border-radius: 1px 1px 0 0;
+    transition: opacity 0.12s;
   }
+  .qbar:hover .qbar-fill { opacity: 0.8; }
   .qbar-val {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
@@ -798,6 +810,40 @@
     letter-spacing: 0.08em;
     color: var(--ink-faint);
   }
+  .qbars-hint {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+    margin: -8px 0 12px;
+  }
+  /* quartile detail panels */
+  .qd-panel { display: none; margin: 0 0 12px; padding: 10px 12px; background: var(--paper-deep); border-left: 2px solid var(--ink-soft); }
+  .qd-panel.open { display: block; }
+  .qd-hd {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .qd-hd b { color: var(--ink); }
+  .qd-pick {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 13px;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .qd-pick:first-of-type { border-top: none; }
+  .qd-flag { height: 11px; }
+  .qd-name { font-family: 'Fraunces', serif; font-weight: 600; }
+  .qd-pick.out .qd-name { color: var(--eliminated); text-decoration: line-through; }
+  .qd-pick-no { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); }
+  .qd-pts { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 12px; }
   .summary-cards .card .lines .dim { color: var(--ink-faint); font-weight: 500; }
   .summary-cards .card .lines > div { margin-bottom: 4px; }
 
@@ -1062,6 +1108,70 @@
   }
   .trend-empty .dim { color: var(--ink-faint); }
 
+  /* ---------- today's games ---------- */
+  .today-sub {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin: -10px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .today-sub .tv-note {
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.02em;
+  }
+  .today-grid {
+    display: grid;
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-bottom: 48px;
+  }
+  .today-row {
+    background: var(--paper);
+    display: grid;
+    grid-template-columns: 78px 1fr auto;
+    gap: 16px;
+    align-items: center;
+    padding: 12px 16px;
+  }
+  .today-row.pool { background: linear-gradient(to right, rgba(184,52,28,0.04), transparent 55%); }
+  .today-row.live { background: linear-gradient(to right, rgba(184,52,28,0.09), transparent 60%); }
+  .td-time { display: flex; align-items: center; }
+  .td-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .td-status.final { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); font-family: 'Inter', sans-serif; }
+  .td-status.live {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); font-family: 'Inter', sans-serif;
+  }
+  .td-teams {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .td-side { display: inline-flex; align-items: center; gap: 7px; }
+  .td-tn { font-family: 'Fraunces', serif; font-weight: 600; font-size: 16px; }
+  .td-flag { height: 16px; border: 0.5px solid var(--rule-soft); }
+  .td-side .ow {
+    font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint);
+  }
+  .td-v { color: var(--ink-faint); font-family: 'Fraunces', serif; font-size: 13px; }
+  .td-score { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 16px; color: var(--ink); }
+  .td-meta { text-align: right; display: flex; flex-direction: column; gap: 2px; }
+  .td-round { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); font-family: 'Inter', sans-serif; }
+  .td-where { font-size: 11px; color: var(--ink-soft); }
+
   /* ---------- footer ---------- */
   footer {
     border-top: 1px solid var(--rule);
@@ -1160,6 +1270,19 @@
 
     /* flags slightly larger touch-friendly on detail rows */
     .row-flag { height: 20px; }
+
+    /* today's games: stack into two lines */
+    .today-row {
+      grid-template-columns: 60px 1fr;
+      grid-template-areas: "time teams" "time meta";
+      gap: 4px 12px;
+      padding: 12px;
+    }
+    .td-time { grid-area: time; align-items: flex-start; }
+    .td-teams { grid-area: teams; gap: 8px; }
+    .td-tn { font-size: 14px; }
+    .td-meta { grid-area: meta; text-align: left; flex-direction: row; gap: 10px; align-items: baseline; }
+    .today-sub { gap: 8px; }
   }
 
   /* very narrow phones */
@@ -1704,6 +1827,23 @@ function compute(data) {
   const upcomingFixtures = poolFixtures.filter(f => f.kickoff > now);
   const nextFixture = upcomingFixtures[0] || null;
 
+  // ----- ALL fixtures (every match: played, live, upcoming) for "Today's games" -----
+  const allFixtures = matches.map(m => {
+    const ko = kickoffEpoch(m.date, m.time);
+    const played = isPlayed(m);
+    const live = !played && ko != null && ko <= now && now < ko + MATCH_DURATION_MS;
+    return {
+      date: m.date, time: m.time, ground: m.ground, round: m.round,
+      team1: m.team1, team2: m.team2, kickoff: ko,
+      o1: TEAM_INFO[m.team1] ? TEAM_INFO[m.team1].owner : null,
+      o2: TEAM_INFO[m.team2] ? TEAM_INFO[m.team2].owner : null,
+      inPool: (m.team1 in t) || (m.team2 in t),
+      played, live,
+      ft: played ? m.score.ft : null,
+    };
+  }).filter(f => f.kickoff != null)
+    .sort((a,b) => a.kickoff - b.kickoff);
+
   // per-team next fixture (named teams only)
   const teamNext = {};
   for (const f of poolFixtures) {
@@ -1757,7 +1897,7 @@ function compute(data) {
 
   return {
     teams: t, owners, standings, recentMatches,
-    upcomingFixtures, liveFixtures, nextFixture, groupTables,
+    upcomingFixtures, liveFixtures, nextFixture, groupTables, allFixtures,
     now,
     playedCount: matches.filter(isPlayed).length,
     totalMatches: matches.length,
@@ -1831,6 +1971,7 @@ function renderHome(c) {
 
   app.innerHTML = `
     ${renderMatchBanner(c)}
+    ${renderTodaysGames(c)}
 
     <p class="section-label">Pool standings · ${c.playedCount} of ${c.totalMatches} matches played</p>
     <h2 class="section-title">Where everyone stands</h2>
@@ -2191,6 +2332,82 @@ function fmtCountdown(ms) {
   return `${sec}s`;
 }
 
+function renderTodaysGames(c) {
+  const fixtures = c.allFixtures || [];
+  if (!fixtures.length) return "";
+
+  // "Today" = the viewer's local calendar day. If nothing today, fall back to
+  // the next day that has matches so the section is never empty.
+  const sameLocalDay = (epoch, ref) => {
+    const a = new Date(epoch), b = new Date(ref);
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  };
+  const now = Date.now();
+  let todays = fixtures.filter(f => sameLocalDay(f.kickoff, now));
+  let heading = "Today's games";
+  let isToday = true;
+
+  if (todays.length === 0) {
+    const future = fixtures.filter(f => f.kickoff > now);
+    if (future.length === 0) return ""; // tournament over
+    const nextDay = future[0].kickoff;
+    todays = fixtures.filter(f => sameLocalDay(f.kickoff, nextDay));
+    isToday = false;
+    const dlabel = new Date(nextDay).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+    heading = `Next match day · ${dlabel}`;
+  }
+
+  const poolCount = todays.filter(f => f.inPool).length;
+  const sub = isToday
+    ? `${todays.length} match${todays.length===1?"":"es"}${poolCount ? ` · ${poolCount} with pool teams` : ""}`
+    : `${todays.length} match${todays.length===1?"":"es"}`;
+
+  return `
+    <p class="section-label">Schedule</p>
+    <h2 class="section-title">${heading}</h2>
+    <div class="today-sub">${sub}<span class="tv-note">📺 US: FOX / FS1 · Telemundo</span></div>
+    <div class="today-grid">
+      ${todays.map(renderTodayRow).join("")}
+    </div>
+  `;
+}
+
+function renderTodayRow(f) {
+  const o1 = f.o1 ? `<span class="ow">${f.o1}</span>` : "";
+  const o2 = f.o2 ? `<span class="ow">${f.o2}</span>` : "";
+  const venue = venueName(f.ground);
+  const where = f.ground ? `${cityLabel(f.ground)}${venue ? " · " + venue : ""}` : "";
+
+  let statusHtml, rowCls = f.inPool ? "pool" : "";
+  if (f.live) {
+    rowCls += " live";
+    statusHtml = `<span class="td-status live"><span class="live-dot"></span>Live</span>`;
+  } else if (f.played) {
+    statusHtml = `<span class="td-status final">Full time</span>`;
+  } else {
+    statusHtml = `<span class="td-status">${fmtClock(f.kickoff)}</span>`;
+  }
+
+  const scoreOrV = (f.played || f.live) && f.ft
+    ? `<span class="td-score">${f.ft[0]}–${f.ft[1]}</span>`
+    : `<span class="td-v">v</span>`;
+
+  return `
+    <div class="today-row ${rowCls}">
+      <div class="td-time">${statusHtml}</div>
+      <div class="td-teams">
+        <span class="td-side">${flagImg(f.team1,"w40","td-flag")}<span class="td-tn">${f.team1}</span>${o1}</span>
+        ${scoreOrV}
+        <span class="td-side">${flagImg(f.team2,"w40","td-flag")}<span class="td-tn">${f.team2}</span>${o2}</span>
+      </div>
+      <div class="td-meta">
+        <span class="td-round">${f.round}</span>
+        ${where ? `<span class="td-where">📍 ${where}</span>` : ""}
+      </div>
+    </div>
+  `;
+}
+
 function renderMatchBanner(c) {
   // Live takes priority
   if (c.liveFixtures && c.liveFixtures.length > 0) {
@@ -2530,6 +2747,27 @@ function renderDraftPerformance(c) {
 
   wireDraftFilters(c);
   wireDraftChartPoints(model);
+  wireQuartileBars();
+}
+
+function wireQuartileBars() {
+  document.querySelectorAll(".qbar").forEach(bar => {
+    bar.addEventListener("click", () => {
+      const owner = bar.dataset.owner;
+      const qi = bar.dataset.qi;
+      const panel = document.querySelector(`.qd-panel[data-owner="${owner}"][data-qi="${qi}"]`);
+      if (!panel) return;
+      const isOpen = panel.classList.contains("open");
+      // close sibling panels within the same card + clear active bars
+      const card = bar.closest(".card");
+      card.querySelectorAll(".qd-panel.open").forEach(p => p.classList.remove("open"));
+      card.querySelectorAll(".qbar.active").forEach(b => b.classList.remove("active"));
+      if (!isOpen) {
+        panel.classList.add("open");
+        bar.classList.add("active");
+      }
+    });
+  });
 }
 
 function wireDraftFilters(c) {
@@ -2693,16 +2931,35 @@ function renderOwnerDraftCard(od) {
   const qTotals = od.quartiles.map(q => q.total);
   const maxQ = Math.max(...qTotals, 1);
 
-  // mini sparkline-ish bars for the 4 quartiles inside the card
-  const miniBars = od.quartiles.map(q => {
+  // mini bars for the 4 quartiles — each clickable to expand its picks
+  const miniBars = od.quartiles.map((q, qi) => {
     const pct = Math.round((q.total / maxQ) * 100);
     return `
-      <div class="qbar">
+      <button class="qbar" data-owner="${owner}" data-qi="${qi}" type="button"
+              aria-label="${owner} ${q.label}: ${q.total} points — tap for picks">
         <div class="qbar-track">
           <div class="qbar-fill" style="height:${Math.max(pct, 3)}%; background:${OWNER_COLOR_HEX[owner]};"></div>
         </div>
         <div class="qbar-val">${q.total}</div>
         <div class="qbar-key">${q.label}</div>
+      </button>
+    `;
+  }).join("");
+
+  // expandable detail panels (one per quartile, hidden until its bar is tapped)
+  const panels = od.quartiles.map((q, qi) => {
+    const picks = q.picks.map(p => `
+      <div class="qd-pick ${p.alive ? "" : "out"}">
+        ${flagImg(p.team,"w20","qd-flag")}
+        <span class="qd-name">${p.team}</span>
+        <span class="qd-pick-no">${p.pick}</span>
+        <span class="qd-pts">${p.total} pt${p.total===1?"":"s"}</span>
+      </div>
+    `).join("");
+    return `
+      <div class="qd-panel" data-owner="${owner}" data-qi="${qi}">
+        <div class="qd-hd">${q.label} · ${q.sub} · <b>${q.total} pts</b></div>
+        ${picks}
       </div>
     `;
   }).join("");
@@ -2715,6 +2972,8 @@ function renderOwnerDraftCard(od) {
         <span class="card-total num">${od.total}</span>
       </div>
       <div class="qbars">${miniBars}</div>
+      <div class="qd-panels">${panels}</div>
+      <div class="qbars-hint">Tap a bar for the picks behind it</div>
       <div class="lines">
         ${od.best && od.best.total > 0 ? `
           <div><span class="lbl">Top pick</span> <b>${od.best.team}</b> <span class="dim">(${od.best.pick}) · ${od.best.total} pt${od.best.total===1?"":"s"}</span></div>` : ""}
