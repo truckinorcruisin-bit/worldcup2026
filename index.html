@@ -1172,6 +1172,228 @@
   .td-round { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); font-family: 'Inter', sans-serif; }
   .td-where { font-size: 11px; color: var(--ink-soft); }
 
+  /* ---------- upsets tab ---------- */
+  .upset-explainer {
+    color: var(--ink-soft);
+    font-size: 14px;
+    max-width: 640px;
+    margin: -8px 0 28px;
+    line-height: 1.6;
+  }
+  .upset-list {
+    display: grid;
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-bottom: 48px;
+  }
+  .upset-row {
+    background: var(--paper);
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 0;
+    padding: 0;
+  }
+  .upset-row.top-upset { background: linear-gradient(to right, rgba(201,162,39,0.07), transparent 60%); }
+  .up-rank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 26px;
+    color: var(--ink-faint);
+    border-right: 1px solid var(--rule-soft);
+    padding: 18px 0;
+  }
+  .upset-row.top-upset .up-rank { color: var(--gold); }
+  .up-body { padding: 16px 18px; }
+  .up-headline {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .up-teams {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    flex: 1;
+    min-width: 0;
+  }
+  .up-team {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+  .up-team.winner .up-name { font-weight: 700; color: var(--ink); }
+  .up-name {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    letter-spacing: -0.01em;
+  }
+  .up-seed {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    white-space: nowrap;
+  }
+  .up-owner {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--alive);
+    padding: 1px 5px;
+  }
+  .up-owner.suffer { background: var(--ink-soft); }
+  .up-result-badge {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    flex-shrink: 0;
+    align-self: center;
+  }
+  .up-result-badge.win  { background: var(--alive); color: var(--paper); }
+  .up-result-badge.draw { background: var(--gold);  color: var(--ink); }
+  .up-score-display { flex-shrink: 0; text-align: right; }
+  .up-goals {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 24px;
+  }
+  /* shock meter */
+  .up-meter-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .up-meter-track {
+    height: 4px;
+    background: var(--rule-soft);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .up-meter-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(to right, var(--gold), var(--accent));
+    transition: width 0.4s ease;
+  }
+  .upset-row.top-upset .up-meter-fill { background: linear-gradient(to right, var(--gold), #c9a227); }
+  .up-meta {
+    display: flex;
+    gap: 14px;
+    font-size: 11px;
+    flex-wrap: wrap;
+    align-items: baseline;
+  }
+  .up-score-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--accent);
+  }
+  .up-gap { color: var(--ink-soft); }
+  .up-date { color: var(--ink-faint); }
+  .up-flag { height: 16px; border: 0.5px solid var(--rule-soft); }
+
+  /* per-owner cards */
+  .upset-owner-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  .upset-ocard {
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    padding: 16px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .upset-ocard:hover { background: var(--paper-deep); }
+  .uo-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .uo-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  .uo-stats {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--rule-soft);
+    margin-bottom: 12px;
+  }
+  .uo-stat {
+    flex: 1;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    border-right: 1px solid var(--rule-soft);
+  }
+  .uo-stat:last-child { border-right: none; }
+  .uo-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 1;
+  }
+  .uo-val.benefit { color: var(--alive); }
+  .uo-val.suffer  { color: var(--accent); }
+  .uo-lbl {
+    font-size: 9px;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .uo-best {
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+  .uo-best b { color: var(--ink); }
+  .uo-best .lbl {
+    display: block;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+  .uo-best .dim { color: var(--ink-faint); }
+  .uo-flag { height: 10px; }
+
+  /* upset tab mobile */
+  @media (max-width: 760px) {
+    .upset-row { grid-template-columns: 36px 1fr; }
+    .up-rank { font-size: 20px; padding: 14px 0; }
+    .up-body { padding: 12px; }
+    .up-name { font-size: 15px; }
+    .up-goals { font-size: 20px; }
+    .upset-owner-grid { grid-template-columns: 1fr; }
+    .up-meta { gap: 10px; }
+  }
+
   /* ---------- footer ---------- */
   footer {
     border-top: 1px solid var(--rule);
@@ -1382,6 +1604,7 @@
     <button id="navHome" class="active" type="button">Standings</button>
     <button id="navGroups" type="button">Groups</button>
     <button id="navDraft" type="button">Draft Performance</button>
+    <button id="navUpsets" type="button">Upsets</button>
   </nav>
   <div class="meta">
     <span id="status"><span class="dot stale"></span>Loading…</span>
@@ -1895,9 +2118,46 @@ function compute(data) {
     groupTables[grp] = arr;
   }
 
+  // ----- upsets: lower-seeded team wins or draws against a higher-seeded one -----
+  // seed = draft round (1 = best, 12 = last). Score = gap for win, gap×0.5 for draw.
+  const upsets = [];
+  for (const m of matches) {
+    if (!isPlayed(m)) continue;
+    const t1 = m.team1, t2 = m.team2;
+    const d1 = DRAFT_BY_TEAM[t1], d2 = DRAFT_BY_TEAM[t2];
+    if (!d1 || !d2) continue;           // only pool-pool matchups
+    const s1 = d1.round, s2 = d2.round;
+    const gap = Math.abs(s1 - s2);
+    if (gap === 0) continue;            // same round = no upset possible
+    const [g1, g2] = m.score.ft;
+    const betterTeam  = s1 < s2 ? t1 : t2;
+    const worseTeam   = s1 < s2 ? t2 : t1;
+    const betterSeed  = Math.min(s1, s2);
+    const worseSeed   = Math.max(s1, s2);
+    const betterGoals = s1 < s2 ? g1 : g2;
+    const worseGoals  = s1 < s2 ? g2 : g1;
+
+    let upsetScore = 0, resultType = "";
+    if (worseGoals > betterGoals)       { upsetScore = gap;       resultType = "W"; }
+    else if (worseGoals === betterGoals) { upsetScore = gap * 0.5; resultType = "D"; }
+    else continue; // better seed won — not an upset
+
+    upsets.push({
+      date: m.date, round: m.round, ground: m.ground,
+      betterTeam, worseTeam, betterSeed, worseSeed,
+      betterGoals, worseGoals, gap, upsetScore, resultType,
+      betterOwner: TEAM_INFO[betterTeam] ? TEAM_INFO[betterTeam].owner : null,
+      worseOwner:  TEAM_INFO[worseTeam]  ? TEAM_INFO[worseTeam].owner  : null,
+      betterPick:  DRAFT_BY_TEAM[betterTeam] ? DRAFT_BY_TEAM[betterTeam].pick : "",
+      worsePick:   DRAFT_BY_TEAM[worseTeam]  ? DRAFT_BY_TEAM[worseTeam].pick  : "",
+    });
+  }
+  upsets.sort((a, b) => b.upsetScore - a.upsetScore);
+
   return {
     teams: t, owners, standings, recentMatches,
     upcomingFixtures, liveFixtures, nextFixture, groupTables, allFixtures,
+    upsets,
     now,
     playedCount: matches.filter(isPlayed).length,
     totalMatches: matches.length,
@@ -1935,6 +2195,7 @@ function setNav(view) {
   document.getElementById("navHome").classList.toggle("active", view === "home" || view === "detail");
   document.getElementById("navGroups").classList.toggle("active", view === "groups");
   document.getElementById("navDraft").classList.toggle("active", view === "draft");
+  document.getElementById("navUpsets").classList.toggle("active", view === "upsets");
 }
 // avatar background style for an owner; gracefully falls back if image missing
 function avatarStyle(owner) {
@@ -1957,6 +2218,7 @@ function render(computed, fetchedAt, isCached = false, rawData = null) {
   if (CURRENT_VIEW.name === "home")        renderHome(computed);
   else if (CURRENT_VIEW.name === "groups") renderGroups(computed);
   else if (CURRENT_VIEW.name === "draft")  renderDraftPerformance(computed);
+  else if (CURRENT_VIEW.name === "upsets") renderUpsets(computed);
   else if (CURRENT_VIEW.name === "detail") renderDetail(CURRENT_VIEW.owner, computed);
   setStatus(isCached ? "stale" : "ok",
     "Updated " + fmtRelative(fetchedAt) + " · " + fmtDate(fetchedAt));
@@ -2707,6 +2969,135 @@ function buildDraftModel(c) {
   return { matrix, byOwner };
 }
 
+// ---------- UPSETS ----------
+function renderUpsets(c) {
+  setNav("upsets");
+  const app = document.getElementById("app");
+  const upsets = c.upsets || [];
+  const maxScore = upsets.length ? upsets[0].upsetScore : 1;
+
+  // Per-owner upset tally: who benefits (worse seed = my team winning/drawing), who suffers (better seed = my team held/beaten)
+  const ownerStats = {};
+  for (const o of OWNERS) ownerStats[o] = { benefited: 0, suffered: 0, bestUpset: null };
+  for (const u of upsets) {
+    if (u.worseOwner)  { ownerStats[u.worseOwner].benefited += u.upsetScore; if (!ownerStats[u.worseOwner].bestUpset || u.upsetScore > ownerStats[u.worseOwner].bestUpset.upsetScore) ownerStats[u.worseOwner].bestUpset = u; }
+    if (u.betterOwner) { ownerStats[u.betterOwner].suffered += u.upsetScore; }
+  }
+  const sorted = OWNERS.map(o => ({ owner: o, ...ownerStats[o] }))
+    .sort((a, b) => b.benefited - a.benefited);
+
+  app.innerHTML = `
+    ${renderMatchBanner(c)}
+    <p class="section-label">Upset tracker · ${c.playedCount} of ${c.totalMatches} matches played</p>
+    <h2 class="section-title">Biggest upsets so far</h2>
+    <p class="upset-explainer">
+      Upset score = draft-round gap between the teams. A win by the lower-seeded team scores the full gap;
+      a draw scores half. Only pool-vs-pool matchups count.
+    </p>
+
+    ${upsets.length === 0 ? `
+      <div class="trend-empty">No upsets yet — better seeds have won every pool matchup so far.
+        <span class="dim">Check back as more matches are played.</span>
+      </div>
+    ` : `
+      <div class="upset-list">
+        ${upsets.map((u, i) => renderUpsetRow(u, i, maxScore)).join("")}
+      </div>
+    `}
+
+    <p class="section-label" style="margin-top:40px;">By owner</p>
+    <h2 class="section-title">Who's been lucky — and who's been burned</h2>
+    <div class="upset-owner-grid">
+      ${sorted.map(s => renderUpsetOwnerCard(s, c)).join("")}
+    </div>
+  `;
+
+  app.querySelectorAll("[data-owner-link]").forEach(el => {
+    el.addEventListener("click", () => navigate({ name: "detail", owner: el.dataset.ownerLink }));
+  });
+}
+
+function renderUpsetRow(u, rank, maxScore) {
+  const pct = Math.round((u.upsetScore / maxScore) * 100);
+  const resultLabel = u.resultType === "W" ? "WIN" : "DRAW";
+  const resultDesc  = u.resultType === "W"
+    ? `${u.worseTeam} won`
+    : `Draw — ${u.worseTeam} held ${u.betterTeam}`;
+
+  const worseOwnerTag  = u.worseOwner  ? `<span class="up-owner">${u.worseOwner}</span>` : "";
+  const betterOwnerTag = u.betterOwner ? `<span class="up-owner suffer">${u.betterOwner}</span>` : "";
+
+  return `
+    <div class="upset-row ${rank === 0 ? "top-upset" : ""}">
+      <div class="up-rank">${rank + 1}</div>
+      <div class="up-body">
+        <div class="up-headline">
+          <div class="up-teams">
+            <span class="up-team winner">
+              ${flagImg(u.worseTeam,"w40","up-flag")}
+              <span class="up-name">${u.worseTeam}</span>
+              <span class="up-seed">R${u.worseSeed} · ${u.worsePick}</span>
+              ${worseOwnerTag}
+            </span>
+            <span class="up-result-badge ${u.resultType === "W" ? "win" : "draw"}">${resultLabel}</span>
+            <span class="up-team">
+              ${flagImg(u.betterTeam,"w40","up-flag")}
+              <span class="up-name">${u.betterTeam}</span>
+              <span class="up-seed">R${u.betterSeed} · ${u.betterPick}</span>
+              ${betterOwnerTag}
+            </span>
+          </div>
+          <div class="up-score-display">
+            <span class="up-goals">${u.worseGoals}–${u.betterGoals}</span>
+          </div>
+        </div>
+        <div class="up-meter-row">
+          <div class="up-meter-track">
+            <div class="up-meter-fill" style="width:${pct}%;"></div>
+          </div>
+          <div class="up-meta">
+            <span class="up-score-val">${u.upsetScore % 1 === 0 ? u.upsetScore : u.upsetScore.toFixed(1)} upset pt${u.upsetScore === 1 ? "" : "s"}</span>
+            <span class="up-gap">${u.gap}-round gap</span>
+            <span class="up-date">${fmtMatchDate(u.date)} · ${u.round}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderUpsetOwnerCard(s, c) {
+  const lower = s.owner.toLowerCase();
+  const o = c.owners[s.owner];
+  const best = s.bestUpset;
+  return `
+    <div class="upset-ocard" data-owner-link="${s.owner}">
+      <div class="uo-head">
+        <span class="avatar ${lower}" style="width:34px;height:34px;${avatarStyle(s.owner)}"></span>
+        <span class="uo-name">${s.owner}</span>
+      </div>
+      <div class="uo-stats">
+        <div class="uo-stat">
+          <span class="uo-val benefit">${s.benefited % 1 === 0 ? s.benefited : s.benefited.toFixed(1)}</span>
+          <span class="uo-lbl">upset pts earned</span>
+        </div>
+        <div class="uo-stat">
+          <span class="uo-val suffer">${s.suffered % 1 === 0 ? s.suffered : s.suffered.toFixed(1)}</span>
+          <span class="uo-lbl">upset pts against</span>
+        </div>
+      </div>
+      ${best ? `
+        <div class="uo-best">
+          <span class="lbl">Best upset</span>
+          ${flagImg(best.worseTeam,"w20","uo-flag")} <b>${best.worseTeam}</b>
+          ${best.resultType === "W" ? "beat" : "drew"}
+          ${flagImg(best.betterTeam,"w20","uo-flag")} <b>${best.betterTeam}</b>
+          <span class="dim">(${best.upsetScore % 1 === 0 ? best.upsetScore : best.upsetScore.toFixed(1)} pts)</span>
+        </div>` : `<div class="uo-best dim">No upsets earned yet.</div>`}
+    </div>
+  `;
+}
+
 function renderDraftPerformance(c) {
   setNav("draft");
   const app = document.getElementById("app");
@@ -2993,12 +3384,14 @@ function navigate(view) {
   if (view.name === "detail") hash = "#" + view.owner;
   else if (view.name === "draft") hash = "#draft";
   else if (view.name === "groups") hash = "#groups";
+  else if (view.name === "upsets") hash = "#upsets";
   else hash = "#";
   history.pushState(view, "", hash);
   if (!LAST) return;
   if (view.name === "home")        renderHome(LAST.computed);
   else if (view.name === "groups") renderGroups(LAST.computed);
   else if (view.name === "draft")  renderDraftPerformance(LAST.computed);
+  else if (view.name === "upsets") renderUpsets(LAST.computed);
   else if (view.name === "detail") renderDetail(view.owner, LAST.computed);
   window.scrollTo({ top: 0, behavior: "instant" });
 }
@@ -3012,12 +3405,14 @@ window.addEventListener("popstate", (ev) => {
     const h = decodeURIComponent(location.hash.replace(/^#/, ""));
     if (h === "draft") CURRENT_VIEW = { name: "draft" };
     else if (h === "groups") CURRENT_VIEW = { name: "groups" };
+    else if (h === "upsets") CURRENT_VIEW = { name: "upsets" };
     else if (OWNERS.includes(h)) CURRENT_VIEW = { name: "detail", owner: h };
     else CURRENT_VIEW = { name: "home" };
   }
   if (CURRENT_VIEW.name === "home")        renderHome(LAST.computed);
   else if (CURRENT_VIEW.name === "groups") renderGroups(LAST.computed);
   else if (CURRENT_VIEW.name === "draft")  renderDraftPerformance(LAST.computed);
+  else if (CURRENT_VIEW.name === "upsets") renderUpsets(LAST.computed);
   else if (CURRENT_VIEW.name === "detail") renderDetail(CURRENT_VIEW.owner, LAST.computed);
 });
 
@@ -3025,12 +3420,14 @@ window.addEventListener("popstate", (ev) => {
 const initialHash = decodeURIComponent(location.hash.replace(/^#/, ""));
 if (initialHash === "draft") CURRENT_VIEW = { name: "draft" };
 else if (initialHash === "groups") CURRENT_VIEW = { name: "groups" };
+else if (initialHash === "upsets") CURRENT_VIEW = { name: "upsets" };
 else if (OWNERS.includes(initialHash)) CURRENT_VIEW = { name: "detail", owner: initialHash };
 
 // top-nav wiring
-document.getElementById("navHome").addEventListener("click",  () => navigate({ name: "home" }));
+document.getElementById("navHome").addEventListener("click",   () => navigate({ name: "home" }));
 document.getElementById("navGroups").addEventListener("click", () => navigate({ name: "groups" }));
-document.getElementById("navDraft").addEventListener("click", () => navigate({ name: "draft" }));
+document.getElementById("navDraft").addEventListener("click",  () => navigate({ name: "draft" }));
+document.getElementById("navUpsets").addEventListener("click", () => navigate({ name: "upsets" }));
 document.getElementById("brandLink").addEventListener("click", () => navigate({ name: "home" }));
 document.getElementById("refreshBtn").addEventListener("click", () => load(true));
 
