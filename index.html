@@ -3464,6 +3464,12 @@ function normalizePost(raw) {
   };
 }
 
+// Reddit blocks direct browser fetch (CORS). Route through allorigins.win,
+// which fetches the URL server-side and returns it to the browser.
+function fzProxy(url) {
+  return `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+}
+
 async function fetchFanZone(force = false) {
   // In-memory cache first
   if (!force && FZ_MEM && Date.now() - FZ_MEM.fetchedAt < FZ_CACHE_MS) return FZ_MEM;
@@ -3481,13 +3487,17 @@ async function fetchFanZone(force = false) {
     } catch (e) {}
   }
 
-  // Fetch all feeds in parallel; failures are non-fatal
+  // Fetch all feeds through CORS proxy in parallel; failures are non-fatal
   const results = await Promise.allSettled(
-    FZ_FEEDS.map(url => fetch(url, {
-      headers: { "Accept": "application/json" },
-      cache: "no-store",
-    }).then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }))
+    FZ_FEEDS.map(url =>
+      fetch(fzProxy(url), { cache: "no-store" })
+        .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+        .catch(err => { console.warn("[FanZone] Feed failed:", url, err.message); throw err; })
+    )
   );
+
+  const succeeded = results.filter(r => r.status === "fulfilled").length;
+  console.log(`[FanZone] ${succeeded}/${FZ_FEEDS.length} feeds succeeded`);
 
   const seen = new Set();
   const posts = [];
@@ -3504,11 +3514,11 @@ async function fetchFanZone(force = false) {
     }
   }
 
-  // Deduplicated; sort by score desc for "hot", created desc for "new"
+  // Sort by score desc; remove very low-engagement outliers
   posts.sort((a, b) => b.score - a.score);
-  // Remove very low-engagement relative to field once we have the set
   const topScore = posts[0]?.score || 1;
   const filtered = posts.filter(p => p.score >= Math.min(topScore * 0.02, 25));
+  console.log(`[FanZone] ${posts.length} posts collected, ${filtered.length} after quality filter`);
 
   const fetchedAt = Date.now();
   FZ_MEM = { posts: filtered, fetchedAt };
