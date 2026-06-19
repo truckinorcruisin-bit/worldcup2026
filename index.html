@@ -3416,29 +3416,24 @@ let   FZ_MEM       = null;            // in-memory cache { posts, fetchedAt }
 let   FZ_SORT      = "hot";           // "hot" | "new"
 let   FZ_LOADING   = false;
 
-// Subreddits and search queries that surface fan culture content
+// Broad feeds that always have posts — we filter client-side rather than searching
 const FZ_FEEDS = [
-  // Visiting fan stories & host city experiences (search)
-  "https://www.reddit.com/r/worldcup/search.json?q=fans+visiting+USA+host+city+experience&sort=hot&t=month&limit=15&raw_json=1",
-  // Cultural observations, prices, food, heat (search)
-  "https://www.reddit.com/r/worldcup/search.json?q=American+culture+food+prices+funny+reaction&sort=hot&t=month&limit=15&raw_json=1",
-  // General r/worldcup hot — filtered client-side
-  "https://www.reddit.com/r/worldcup/hot.json?limit=30&raw_json=1",
-  // r/soccer fan culture angle
-  "https://www.reddit.com/r/soccer/search.json?q=world+cup+2026+fans+USA+visiting+host+city&sort=hot&t=month&limit=12&raw_json=1",
+  // Primary: r/worldcup hot — the main community feed
+  "https://www.reddit.com/r/worldcup/hot.json?limit=50&raw_json=1",
+  // Rising: catches newer breakout posts before they hit hot
+  "https://www.reddit.com/r/worldcup/rising.json?limit=25&raw_json=1",
+  // r/soccer for broader World Cup fan discussion
+  "https://www.reddit.com/r/soccer/search.json?q=world+cup+2026&sort=hot&t=week&limit=20&raw_json=1",
 ];
 
-// Posts that are pure match infrastructure (not fan culture)
+// Only remove the truly mechanical automated posts (match threads etc).
+// Everything else — fan discussion, culture, reactions, travel — we keep.
 function isFanCulturePost(post) {
   const t = post.title || "";
-  if (/^(Match Thread|Post.Match Thread|Pre.Match Thread|Daily Discussion|General Discussion|Friendly Reminder)/i.test(t)) return false;
-  // Pure highlight clips without fan context
-  if (/streamable\.com|clips\.twitch\.tv/.test(post.domain) && !/fan/i.test(t)) return false;
-  return true;
+  return !/^(Match Thread:|Post.Match Thread:|Pre-Match Thread:|Daily Discussion|Friendly Reminder|Mod Post)/i.test(t);
 }
 
 function normalizePost(raw) {
-  // Reddit HTML-encodes URLs in preview — decode &amp;
   let thumb = null;
   const preview = raw.preview?.images?.[0];
   if (preview?.source?.url) {
@@ -3446,58 +3441,77 @@ function normalizePost(raw) {
   } else if (raw.thumbnail?.startsWith("http")) {
     thumb = raw.thumbnail;
   }
-
   return {
-    id:          raw.id,
-    title:       raw.title,
-    url:         raw.url,
-    permalink:   "https://reddit.com" + raw.permalink,
-    score:       raw.score,
-    comments:    raw.num_comments,
-    subreddit:   raw.subreddit,
-    author:      raw.author,
-    created:     raw.created_utc * 1000,
+    id:        raw.id,
+    title:     raw.title,
+    url:       raw.url,
+    permalink: "https://reddit.com" + raw.permalink,
+    score:     raw.score,
+    comments:  raw.num_comments,
+    subreddit: raw.subreddit,
+    author:    raw.author,
+    created:   raw.created_utc * 1000,
     thumb,
-    domain:      raw.domain,
-    isSelf:      raw.is_self,
-    flair:       raw.link_flair_text || null,
+    domain:    raw.domain,
+    isSelf:    raw.is_self,
+    flair:     raw.link_flair_text || null,
   };
 }
 
-// Reddit blocks direct browser fetch (CORS). Route through allorigins.win,
-// which fetches the URL server-side and returns it to the browser.
-function fzProxy(url) {
-  return `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+// Fetch one Reddit URL.
+// Strategy:
+//   1. Direct browser fetch — Reddit's public JSON API allows CORS from any origin.
+//   2. If that fails (some networks block reddit.com), fall back to allorigins.win
+//      using the /get endpoint which wraps the response in a JSON object so we
+//      can distinguish a proxy-200/reddit-403 from a real success.
+async function fzFetchOne(url) {
+  // --- try 1: direct ---
+  try {
+    const r = await fetch(url, { cache: "no-store" });
+    if (r.ok) {
+      const data = await r.json();
+      if (data?.data?.children) {
+        console.log("[FanZone] direct OK:", url.slice(0, 60));
+        return data;
+      }
+    }
+  } catch (e) {
+    console.warn("[FanZone] direct failed:", e.message);
+  }
+  // --- try 2: allorigins.win /get (always returns 200; wraps Reddit response) ---
+  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+  const r = await fetch(proxy, { cache: "no-store" });
+  if (!r.ok) throw new Error("Proxy HTTP " + r.status);
+  const wrapper = await r.json();
+  const code = wrapper?.status?.http_code;
+  if (!wrapper.contents) throw new Error(`Reddit → ${code ?? "no content"}`);
+  const data = JSON.parse(wrapper.contents);
+  if (!data?.data?.children) throw new Error("Unexpected Reddit response shape");
+  console.log("[FanZone] proxy OK:", url.slice(0, 60));
+  return data;
 }
 
 async function fetchFanZone(force = false) {
-  // In-memory cache first
   if (!force && FZ_MEM && Date.now() - FZ_MEM.fetchedAt < FZ_CACHE_MS) return FZ_MEM;
-  // localStorage cache
   if (!force) {
     try {
       const raw = localStorage.getItem(FZ_STORE_KEY);
       if (raw) {
         const c = JSON.parse(raw);
-        if (c?.posts && Date.now() - c.fetchedAt < FZ_CACHE_MS) {
-          FZ_MEM = c;
-          return c;
-        }
+        if (c?.posts && Date.now() - c.fetchedAt < FZ_CACHE_MS) { FZ_MEM = c; return c; }
       }
     } catch (e) {}
   }
 
-  // Fetch all feeds through CORS proxy in parallel; failures are non-fatal
-  const results = await Promise.allSettled(
-    FZ_FEEDS.map(url =>
-      fetch(fzProxy(url), { cache: "no-store" })
-        .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-        .catch(err => { console.warn("[FanZone] Feed failed:", url, err.message); throw err; })
-    )
-  );
+  const results = await Promise.allSettled(FZ_FEEDS.map(fzFetchOne));
 
   const succeeded = results.filter(r => r.status === "fulfilled").length;
   console.log(`[FanZone] ${succeeded}/${FZ_FEEDS.length} feeds succeeded`);
+  if (succeeded === 0) {
+    // Report what went wrong
+    results.forEach((r, i) => r.status === "rejected" &&
+      console.warn(`[FanZone] Feed ${i} error:`, r.reason?.message || r.reason));
+  }
 
   const seen = new Set();
   const posts = [];
@@ -3507,21 +3521,18 @@ async function fetchFanZone(force = false) {
     for (const child of children) {
       const raw = child?.data;
       if (!raw || seen.has(raw.id)) continue;
-      if (raw.stickied || raw.over_18 || raw.score < 20) continue;
+      if (raw.stickied || raw.over_18) continue;
       if (!isFanCulturePost(raw)) continue;
       seen.add(raw.id);
       posts.push(normalizePost(raw));
     }
   }
 
-  // Sort by score desc; remove very low-engagement outliers
   posts.sort((a, b) => b.score - a.score);
-  const topScore = posts[0]?.score || 1;
-  const filtered = posts.filter(p => p.score >= Math.min(topScore * 0.02, 25));
-  console.log(`[FanZone] ${posts.length} posts collected, ${filtered.length} after quality filter`);
+  console.log(`[FanZone] ${posts.length} posts collected from ${succeeded} feeds`);
 
   const fetchedAt = Date.now();
-  FZ_MEM = { posts: filtered, fetchedAt };
+  FZ_MEM = { posts, fetchedAt, feedsOk: succeeded };
   try { localStorage.setItem(FZ_STORE_KEY, JSON.stringify(FZ_MEM)); } catch (e) {}
   return FZ_MEM;
 }
@@ -3579,9 +3590,12 @@ function renderFanZone(opts = {}) {
     </div>
 
     ${sorted.length === 0 ? `
-      <div class="fz-empty">No fan stories found yet.
-        <small>Reddit posts will appear here as fans share their experiences.
-        The tournament just started — check back in a few days!</small>
+      <div class="fz-empty">No posts loaded yet.
+        <small>${(opts.feedsOk || 0)} of ${FZ_FEEDS.length} Reddit feeds responded.
+        ${(opts.feedsOk || 0) === 0
+          ? "Reddit may be blocking requests — try again in a moment."
+          : "All posts were filtered. Try switching to New sort."
+        }</small>
       </div>
     ` : `
       <div class="fz-grid">
@@ -3643,8 +3657,8 @@ function renderFanCard(p) {
 function triggerFanZoneLoad(force = false) {
   CURRENT_VIEW = { name: "fanzone" };
   renderFanZone({ loading: true });
-  fetchFanZone(force).then(({ posts, fetchedAt }) => {
-    if (CURRENT_VIEW.name === "fanzone") renderFanZone({ posts, fetchedAt });
+  fetchFanZone(force).then(({ posts, fetchedAt, feedsOk }) => {
+    if (CURRENT_VIEW.name === "fanzone") renderFanZone({ posts, fetchedAt, feedsOk });
   }).catch(err => {
     if (CURRENT_VIEW.name === "fanzone") renderFanZone({ error: err.message || String(err) });
   });
