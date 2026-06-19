@@ -1376,6 +1376,196 @@
     .umatrix-scroll { padding: 4px; }
   }
 
+  /* ---------- fan zone ---------- */
+  .fz-meta {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin: -10px 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .fz-meta .fz-ts { color: var(--ink-faint); }
+  .fz-meta .fz-src { font-weight: 600; }
+
+  .fz-controls {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .fz-controls .fz-lbl {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-right: 4px;
+  }
+  .fz-sort-btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--ink-soft);
+    cursor: pointer;
+    padding: 5px 12px;
+  }
+  .fz-sort-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .fz-sort-btn:hover:not(.active) { border-color: var(--ink-soft); color: var(--ink); }
+
+  .fz-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .fz-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.12s, box-shadow 0.12s;
+    cursor: pointer;
+  }
+  .fz-card:hover {
+    background: var(--paper-deep);
+    box-shadow: 0 4px 16px -6px rgba(28,27,24,0.15);
+  }
+  .fz-card-img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+    border-bottom: 1px solid var(--rule-soft);
+    background: var(--paper-deep);
+  }
+  .fz-card-img.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    line-height: 1;
+  }
+  .fz-card-body {
+    padding: 12px 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .fz-card-flair {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--accent);
+    padding: 2px 6px;
+    align-self: flex-start;
+  }
+  .fz-card-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    line-height: 1.35;
+    color: var(--ink);
+    /* clamp to 3 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .fz-card-foot {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.04em;
+    flex-wrap: wrap;
+  }
+  .fz-card-foot .sub { color: var(--ink-soft); font-weight: 600; }
+  .fz-card-foot .score { display: inline-flex; align-items: center; gap: 3px; }
+  .fz-card-foot .score .arr { color: var(--alive); font-size: 11px; }
+  .fz-card-foot .new-badge {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    background: var(--accent);
+    color: var(--paper);
+    padding: 1px 5px;
+    vertical-align: 1px;
+  }
+  .fz-card-open {
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid var(--rule-soft);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+  }
+  .fz-card:hover .fz-card-open { color: var(--accent); }
+
+  .fz-bottom {
+    text-align: center;
+    padding: 16px 0 32px;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .fz-bottom a {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+    text-decoration: none;
+  }
+  .fz-bottom a:hover { color: var(--accent); }
+
+  .fz-empty {
+    padding: 48px 0;
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    border: 1px dashed var(--rule);
+    margin-bottom: 32px;
+  }
+  .fz-empty small {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 10px;
+    font-weight: 400;
+  }
+
+  /* fan zone mobile */
+  @media (max-width: 900px) {
+    .fz-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .fz-grid { grid-template-columns: 1fr; gap: 8px; }
+    .fz-card-img { aspect-ratio: 16 / 7; }
+    .fz-card-title { font-size: 14px; -webkit-line-clamp: 2; }
+  }
+
   /* ---------- footer ---------- */
   footer {
     border-top: 1px solid var(--rule);
@@ -1396,8 +1586,9 @@
     }
     .brand { font-size: 20px; }
     .brand .sub { display: none; }
-    .nav { margin-left: 0; order: 3; width: 100%; gap: 0; border-top: 1px solid var(--rule-soft); padding-top: 6px; margin-top: 4px; }
-    .nav button { flex: 1; padding: 8px 6px; font-size: 11px; }
+    .nav { margin-left: 0; order: 3; width: 100%; gap: 0; border-top: 1px solid var(--rule-soft); padding-top: 6px; margin-top: 4px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .nav::-webkit-scrollbar { display: none; }
+    .nav button { flex: 0 0 auto; padding: 8px 14px; font-size: 11px; }
     .meta { font-size: 10px; gap: 8px; }
     .meta button.refresh { padding: 4px 8px; font-size: 11px; }
 
@@ -1587,6 +1778,7 @@
     <button id="navGroups" type="button">Groups</button>
     <button id="navDraft" type="button">Draft Performance</button>
     <button id="navUpsets" type="button">Upsets</button>
+    <button id="navFanzone" type="button">Fan Zone</button>
   </nav>
   <div class="meta">
     <span id="status"><span class="dot stale"></span>Loading…</span>
@@ -2178,6 +2370,7 @@ function setNav(view) {
   document.getElementById("navGroups").classList.toggle("active", view === "groups");
   document.getElementById("navDraft").classList.toggle("active", view === "draft");
   document.getElementById("navUpsets").classList.toggle("active", view === "upsets");
+  document.getElementById("navFanzone").classList.toggle("active", view === "fanzone");
 }
 // avatar background style for an owner; gracefully falls back if image missing
 function avatarStyle(owner) {
@@ -2204,6 +2397,7 @@ function render(computed, fetchedAt, isCached = false, rawData = null, history =
   else if (CURRENT_VIEW.name === "groups") renderGroups(computed);
   else if (CURRENT_VIEW.name === "draft")  renderDraftPerformance(computed);
   else if (CURRENT_VIEW.name === "upsets") renderUpsets(computed);
+  else if (CURRENT_VIEW.name === "fanzone") triggerFanZoneLoad(false);
   else if (CURRENT_VIEW.name === "detail") renderDetail(CURRENT_VIEW.owner, computed);
   setStatus(isCached ? "stale" : "ok",
     "Updated " + fmtRelative(fetchedAt) + " · " + fmtDate(fetchedAt));
@@ -3213,6 +3407,239 @@ function renderUpsetOwnerCard(s, c) {
   `;
 }
 
+// ═══════════════════════════════════════════════════════════════
+// FAN ZONE — Reddit fan culture feed
+// ═══════════════════════════════════════════════════════════════
+const FZ_STORE_KEY = "wcpool-fanzone-v1";
+const FZ_CACHE_MS  = 30 * 60 * 1000; // 30 minutes
+let   FZ_MEM       = null;            // in-memory cache { posts, fetchedAt }
+let   FZ_SORT      = "hot";           // "hot" | "new"
+let   FZ_LOADING   = false;
+
+// Subreddits and search queries that surface fan culture content
+const FZ_FEEDS = [
+  // Visiting fan stories & host city experiences (search)
+  "https://www.reddit.com/r/worldcup/search.json?q=fans+visiting+USA+host+city+experience&sort=hot&t=month&limit=15&raw_json=1",
+  // Cultural observations, prices, food, heat (search)
+  "https://www.reddit.com/r/worldcup/search.json?q=American+culture+food+prices+funny+reaction&sort=hot&t=month&limit=15&raw_json=1",
+  // General r/worldcup hot — filtered client-side
+  "https://www.reddit.com/r/worldcup/hot.json?limit=30&raw_json=1",
+  // r/soccer fan culture angle
+  "https://www.reddit.com/r/soccer/search.json?q=world+cup+2026+fans+USA+visiting+host+city&sort=hot&t=month&limit=12&raw_json=1",
+];
+
+// Posts that are pure match infrastructure (not fan culture)
+function isFanCulturePost(post) {
+  const t = post.title || "";
+  if (/^(Match Thread|Post.Match Thread|Pre.Match Thread|Daily Discussion|General Discussion|Friendly Reminder)/i.test(t)) return false;
+  // Pure highlight clips without fan context
+  if (/streamable\.com|clips\.twitch\.tv/.test(post.domain) && !/fan/i.test(t)) return false;
+  return true;
+}
+
+function normalizePost(raw) {
+  // Reddit HTML-encodes URLs in preview — decode &amp;
+  let thumb = null;
+  const preview = raw.preview?.images?.[0];
+  if (preview?.source?.url) {
+    thumb = preview.source.url.replace(/&amp;/g, "&");
+  } else if (raw.thumbnail?.startsWith("http")) {
+    thumb = raw.thumbnail;
+  }
+
+  return {
+    id:          raw.id,
+    title:       raw.title,
+    url:         raw.url,
+    permalink:   "https://reddit.com" + raw.permalink,
+    score:       raw.score,
+    comments:    raw.num_comments,
+    subreddit:   raw.subreddit,
+    author:      raw.author,
+    created:     raw.created_utc * 1000,
+    thumb,
+    domain:      raw.domain,
+    isSelf:      raw.is_self,
+    flair:       raw.link_flair_text || null,
+  };
+}
+
+async function fetchFanZone(force = false) {
+  // In-memory cache first
+  if (!force && FZ_MEM && Date.now() - FZ_MEM.fetchedAt < FZ_CACHE_MS) return FZ_MEM;
+  // localStorage cache
+  if (!force) {
+    try {
+      const raw = localStorage.getItem(FZ_STORE_KEY);
+      if (raw) {
+        const c = JSON.parse(raw);
+        if (c?.posts && Date.now() - c.fetchedAt < FZ_CACHE_MS) {
+          FZ_MEM = c;
+          return c;
+        }
+      }
+    } catch (e) {}
+  }
+
+  // Fetch all feeds in parallel; failures are non-fatal
+  const results = await Promise.allSettled(
+    FZ_FEEDS.map(url => fetch(url, {
+      headers: { "Accept": "application/json" },
+      cache: "no-store",
+    }).then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }))
+  );
+
+  const seen = new Set();
+  const posts = [];
+  for (const res of results) {
+    if (res.status !== "fulfilled") continue;
+    const children = res.value?.data?.children || [];
+    for (const child of children) {
+      const raw = child?.data;
+      if (!raw || seen.has(raw.id)) continue;
+      if (raw.stickied || raw.over_18 || raw.score < 20) continue;
+      if (!isFanCulturePost(raw)) continue;
+      seen.add(raw.id);
+      posts.push(normalizePost(raw));
+    }
+  }
+
+  // Deduplicated; sort by score desc for "hot", created desc for "new"
+  posts.sort((a, b) => b.score - a.score);
+  // Remove very low-engagement relative to field once we have the set
+  const topScore = posts[0]?.score || 1;
+  const filtered = posts.filter(p => p.score >= Math.min(topScore * 0.02, 25));
+
+  const fetchedAt = Date.now();
+  FZ_MEM = { posts: filtered, fetchedAt };
+  try { localStorage.setItem(FZ_STORE_KEY, JSON.stringify(FZ_MEM)); } catch (e) {}
+  return FZ_MEM;
+}
+
+function fmtScore(n) {
+  return n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") + "k" : String(n);
+}
+
+function renderFanZone(opts = {}) {
+  setNav("fanzone");
+  const app = document.getElementById("app");
+
+  if (opts.loading) {
+    app.innerHTML = `
+      <p class="section-label">Fan Zone</p>
+      <h2 class="section-title">Fan life at USA 2026</h2>
+      <div class="panel-msg" style="padding:40px 0">Fetching stories from Reddit…
+        <span class="small">r/worldcup · r/soccer</span>
+      </div>`;
+    return;
+  }
+
+  if (opts.error) {
+    app.innerHTML = `
+      <p class="section-label">Fan Zone</p>
+      <h2 class="section-title">Fan life at USA 2026</h2>
+      <div class="fz-empty">Couldn't reach Reddit right now.
+        <small>${opts.error}</small>
+        <small style="margin-top:8px;"><button onclick="triggerFanZoneLoad(true)"
+          style="font:inherit;background:var(--ink);color:var(--paper);border:none;padding:6px 14px;cursor:pointer;margin-top:6px;">Try again</button></small>
+      </div>`;
+    return;
+  }
+
+  const { posts, fetchedAt } = opts;
+  const sorted = FZ_SORT === "new"
+    ? [...posts].sort((a, b) => b.created - a.created)
+    : posts; // already sorted by score
+
+  app.innerHTML = `
+    <p class="section-label">Fan Zone · r/worldcup · r/soccer</p>
+    <h2 class="section-title">Fan life at USA 2026</h2>
+    <div class="fz-meta">
+      <span class="fz-src">Best of Reddit</span>
+      <span class="fz-ts">Updated ${fmtRelative(fetchedAt)} ·
+        <button onclick="triggerFanZoneLoad(true)"
+          style="font:inherit;font-size:11px;background:none;border:none;cursor:pointer;color:var(--ink-soft);padding:0;text-decoration:underline;">refresh</button>
+      </span>
+    </div>
+
+    <div class="fz-controls">
+      <span class="fz-lbl">Sort</span>
+      <button class="fz-sort-btn ${FZ_SORT === "hot" ? "active" : ""}" data-fzsort="hot">Hot</button>
+      <button class="fz-sort-btn ${FZ_SORT === "new" ? "active" : ""}" data-fzsort="new">New</button>
+    </div>
+
+    ${sorted.length === 0 ? `
+      <div class="fz-empty">No fan stories found yet.
+        <small>Reddit posts will appear here as fans share their experiences.
+        The tournament just started — check back in a few days!</small>
+      </div>
+    ` : `
+      <div class="fz-grid">
+        ${sorted.slice(0, 24).map(renderFanCard).join("")}
+      </div>
+      <div class="fz-bottom">
+        <a href="https://reddit.com/r/worldcup" target="_blank" rel="noopener">
+          See more on r/worldcup ↗
+        </a>
+      </div>
+    `}
+  `;
+
+  // Sort toggles
+  app.querySelectorAll("[data-fzsort]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      FZ_SORT = btn.dataset.fzsort;
+      renderFanZone({ posts, fetchedAt });
+    });
+  });
+}
+
+function renderFanCard(p) {
+  const age     = Date.now() - p.created;
+  const isNew   = age < 6 * 60 * 60 * 1000; // < 6 hours
+  const timeAgo = fmtRelative(p.created);
+  const emoji   = ["⚽", "🌎", "🇺🇸", "🏟️", "🎉", "🤣"][Math.abs(p.id.charCodeAt(0)) % 6];
+
+  const imgHtml = p.thumb
+    ? `<img class="fz-card-img" src="${p.thumb}" alt="" loading="lazy"
+            onerror="this.outerHTML='<div class=\\'fz-card-img placeholder\\'>${emoji}</div>'">`
+    : `<div class="fz-card-img placeholder">${emoji}</div>`;
+
+  const flairHtml = p.flair
+    ? `<span class="fz-card-flair">${p.flair}</span>`
+    : "";
+
+  const newBadge = isNew ? `<span class="new-badge">NEW</span>` : "";
+
+  return `
+    <a class="fz-card" href="${p.permalink}" target="_blank" rel="noopener noreferrer">
+      ${imgHtml}
+      <div class="fz-card-body">
+        ${flairHtml}
+        <div class="fz-card-title">${p.title}</div>
+        <div class="fz-card-foot">
+          <span class="sub">r/${p.subreddit}</span>
+          <span class="score"><span class="arr">▲</span>${fmtScore(p.score)}</span>
+          <span>💬 ${fmtScore(p.comments)}</span>
+          <span>${timeAgo} ${newBadge}</span>
+        </div>
+        <div class="fz-card-open">Read on Reddit ↗</div>
+      </div>
+    </a>
+  `;
+}
+
+// Called from inline onclick (refresh button) and nav click
+function triggerFanZoneLoad(force = false) {
+  CURRENT_VIEW = { name: "fanzone" };
+  renderFanZone({ loading: true });
+  fetchFanZone(force).then(({ posts, fetchedAt }) => {
+    if (CURRENT_VIEW.name === "fanzone") renderFanZone({ posts, fetchedAt });
+  }).catch(err => {
+    if (CURRENT_VIEW.name === "fanzone") renderFanZone({ error: err.message || String(err) });
+  });
+}
+
 function renderDraftPerformance(c) {
   setNav("draft");
   const app = document.getElementById("app");
@@ -3499,7 +3926,8 @@ function navigate(view) {
   if (view.name === "detail") hash = "#" + view.owner;
   else if (view.name === "draft") hash = "#draft";
   else if (view.name === "groups") hash = "#groups";
-  else if (view.name === "upsets") hash = "#upsets";
+  else if (view.name === "upsets")  hash = "#upsets";
+  else if (view.name === "fanzone") hash = "#fanzone";
   else hash = "#";
   history.pushState(view, "", hash);
   if (!LAST) return;
@@ -3507,6 +3935,7 @@ function navigate(view) {
   else if (view.name === "groups") renderGroups(LAST.computed);
   else if (view.name === "draft")  renderDraftPerformance(LAST.computed);
   else if (view.name === "upsets") renderUpsets(LAST.computed);
+  else if (view.name === "fanzone") triggerFanZoneLoad(false);
   else if (view.name === "detail") renderDetail(view.owner, LAST.computed);
   window.scrollTo({ top: 0, behavior: "instant" });
 }
@@ -3521,6 +3950,7 @@ window.addEventListener("popstate", (ev) => {
     if (h === "draft") CURRENT_VIEW = { name: "draft" };
     else if (h === "groups") CURRENT_VIEW = { name: "groups" };
     else if (h === "upsets") CURRENT_VIEW = { name: "upsets" };
+    else if (h === "fanzone") CURRENT_VIEW = { name: "fanzone" };
     else if (OWNERS.includes(h)) CURRENT_VIEW = { name: "detail", owner: h };
     else CURRENT_VIEW = { name: "home" };
   }
@@ -3528,6 +3958,7 @@ window.addEventListener("popstate", (ev) => {
   else if (CURRENT_VIEW.name === "groups") renderGroups(LAST.computed);
   else if (CURRENT_VIEW.name === "draft")  renderDraftPerformance(LAST.computed);
   else if (CURRENT_VIEW.name === "upsets") renderUpsets(LAST.computed);
+  else if (CURRENT_VIEW.name === "fanzone") triggerFanZoneLoad(false);
   else if (CURRENT_VIEW.name === "detail") renderDetail(CURRENT_VIEW.owner, LAST.computed);
 });
 
@@ -3536,14 +3967,16 @@ const initialHash = decodeURIComponent(location.hash.replace(/^#/, ""));
 if (initialHash === "draft") CURRENT_VIEW = { name: "draft" };
 else if (initialHash === "groups") CURRENT_VIEW = { name: "groups" };
 else if (initialHash === "upsets") CURRENT_VIEW = { name: "upsets" };
+else if (initialHash === "fanzone") CURRENT_VIEW = { name: "fanzone" };
 else if (OWNERS.includes(initialHash)) CURRENT_VIEW = { name: "detail", owner: initialHash };
 
 // top-nav wiring
-document.getElementById("navHome").addEventListener("click",   () => navigate({ name: "home" }));
-document.getElementById("navGroups").addEventListener("click", () => navigate({ name: "groups" }));
-document.getElementById("navDraft").addEventListener("click",  () => navigate({ name: "draft" }));
-document.getElementById("navUpsets").addEventListener("click", () => navigate({ name: "upsets" }));
-document.getElementById("brandLink").addEventListener("click", () => navigate({ name: "home" }));
+document.getElementById("navHome").addEventListener("click",    () => navigate({ name: "home" }));
+document.getElementById("navGroups").addEventListener("click",  () => navigate({ name: "groups" }));
+document.getElementById("navDraft").addEventListener("click",   () => navigate({ name: "draft" }));
+document.getElementById("navUpsets").addEventListener("click",  () => navigate({ name: "upsets" }));
+document.getElementById("navFanzone").addEventListener("click", () => navigate({ name: "fanzone" }));
+document.getElementById("brandLink").addEventListener("click",  () => navigate({ name: "home" }));
 document.getElementById("refreshBtn").addEventListener("click", () => load(true));
 
 // ---------- boot ----------
