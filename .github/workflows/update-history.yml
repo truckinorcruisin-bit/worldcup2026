@@ -1,0 +1,39 @@
+name: Update standings history
+
+on:
+  schedule:
+    # Runs 4× per day at 00:00, 06:00, 12:00, 18:00 UTC.
+    # Matches the 6-hour refresh cadence built into index.html.
+    - cron: "0 0,6,12,18 * * *"
+  workflow_dispatch:
+    # Allows manual runs from the Actions tab in GitHub —
+    # useful for backfilling a missed snapshot or testing.
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write   # needed to commit history.json back to the repo
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Compute and record today's standings
+        run: node .github/scripts/update-history.js
+
+      - name: Commit history.json if it changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add history.json
+          # Only commit when there are actual changes (--quiet exits 1 if diff exists)
+          git diff --staged --quiet && echo "No changes to history.json." || \
+            git commit -m "chore: update standings history $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
+          git push
