@@ -1180,134 +1180,149 @@
     margin: -8px 0 28px;
     line-height: 1.6;
   }
-  .upset-list {
+
+  /* ── horizontal bar chart ── */
+  .ubars {
+    border: 1px solid var(--rule);
+    background: var(--rule);
     display: grid;
     gap: 1px;
-    background: var(--rule);
-    border: 1px solid var(--rule);
     margin-bottom: 48px;
   }
-  .upset-row {
+  .ubar-row {
     background: var(--paper);
     display: grid;
-    grid-template-columns: 48px 1fr;
-    gap: 0;
-    padding: 0;
-  }
-  .upset-row.top-upset { background: linear-gradient(to right, rgba(201,162,39,0.07), transparent 60%); }
-  .up-rank {
-    display: flex;
+    grid-template-columns: 32px 1fr 160px 42px;
+    gap: 0 14px;
+    padding: 11px 16px;
     align-items: center;
-    justify-content: center;
+    transition: background 0.1s;
+  }
+  .ubar-row:hover { background: var(--paper-deep); }
+  .ubar-row:first-child { background: linear-gradient(to right, rgba(201,162,39,0.06), transparent 60%); }
+  .ubar-rank {
     font-family: 'Fraunces', serif;
     font-weight: 900;
-    font-size: 26px;
+    font-size: 20px;
     color: var(--ink-faint);
-    border-right: 1px solid var(--rule-soft);
-    padding: 18px 0;
+    text-align: center;
   }
-  .upset-row.top-upset .up-rank { color: var(--gold); }
-  .up-body { padding: 16px 18px; }
-  .up-headline {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-  }
-  .up-teams {
+  .ubar-row:first-child .ubar-rank { color: var(--gold); }
+  .ubar-matchup {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 6px;
     flex-wrap: wrap;
-    flex: 1;
     min-width: 0;
   }
-  .up-team {
+  .ubar-underdog {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 15px;
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    flex-wrap: wrap;
-  }
-  .up-team.winner .up-name { font-weight: 700; color: var(--ink); }
-  .up-name {
-    font-family: 'Fraunces', serif;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--ink-soft);
-    letter-spacing: -0.01em;
-  }
-  .up-seed {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--ink-faint);
+    gap: 5px;
     white-space: nowrap;
   }
-  .up-owner {
-    font-family: 'Inter', sans-serif;
+  .ubar-flag { height: 13px; border: 0.5px solid var(--rule-soft); }
+  .ubar-seed-tag {
+    font-family: 'JetBrains Mono', monospace;
     font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--paper);
-    background: var(--alive);
-    padding: 1px 5px;
+    color: var(--ink-faint);
+    letter-spacing: 0.04em;
   }
-  .up-owner.suffer { background: var(--ink-soft); }
-  .up-result-badge {
+  .ubar-verb {
     font-family: 'Inter', sans-serif;
     font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: 3px 8px;
+    padding: 2px 5px;
     flex-shrink: 0;
-    align-self: center;
   }
-  .up-result-badge.win  { background: var(--alive); color: var(--paper); }
-  .up-result-badge.draw { background: var(--gold);  color: var(--ink); }
-  .up-score-display { flex-shrink: 0; text-align: right; }
-  .up-goals {
+  .ubar-verb.win  { color: var(--paper); background: var(--alive); }
+  .ubar-verb.draw { color: var(--ink);   background: var(--gold);  }
+  .ubar-favorite {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    color: var(--ink-soft);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+  }
+  .ubar-score-inline {
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
-    font-size: 24px;
+    font-size: 12px;
+    color: var(--ink);
+    margin-left: 2px;
+    white-space: nowrap;
   }
-  /* shock meter */
-  .up-meter-row {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .up-meter-track {
-    height: 4px;
+  /* bar */
+  .ubar-track {
+    height: 7px;
     background: var(--rule-soft);
-    border-radius: 2px;
+    border-radius: 4px;
     overflow: hidden;
   }
-  .up-meter-fill {
+  .ubar-fill {
     height: 100%;
-    border-radius: 2px;
-    background: linear-gradient(to right, var(--gold), var(--accent));
-    transition: width 0.4s ease;
+    width: 0;                /* starts at 0, JS animates to target */
+    border-radius: 4px;
+    transition: width 0.65s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .upset-row.top-upset .up-meter-fill { background: linear-gradient(to right, var(--gold), #c9a227); }
-  .up-meta {
-    display: flex;
-    gap: 14px;
-    font-size: 11px;
-    flex-wrap: wrap;
-    align-items: baseline;
-  }
-  .up-score-val {
+  .ubar-fill.draw { opacity: 0.65; }
+  .ubar-pts {
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
-    font-size: 13px;
-    color: var(--accent);
+    font-size: 16px;
+    text-align: right;
+    white-space: nowrap;
   }
-  .up-gap { color: var(--ink-soft); }
-  .up-date { color: var(--ink-faint); }
-  .up-flag { height: 16px; border: 0.5px solid var(--rule-soft); }
+
+  /* ── seed gap matrix ── */
+  .umatrix-wrap { margin-bottom: 48px; }
+  .umatrix-note {
+    font-size: 13px;
+    color: var(--ink-soft);
+    max-width: 580px;
+    margin: -8px 0 16px;
+    line-height: 1.6;
+  }
+  .umatrix-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    font-size: 12px;
+    align-items: center;
+  }
+  .umatrix-legend .it { display: inline-flex; align-items: center; gap: 6px; }
+  .umatrix-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    padding: 8px;
+  }
+  .umatrix-scroll svg { display: block; }
+  /* SVG text classes */
+  .mx-axis-lbl {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    fill: var(--ink-faint);
+  }
+  .mx-cell-lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    fill: var(--ink-faint);
+    pointer-events: none;
+  }
+  .mx-tip-cell { cursor: pointer; }
+  .mx-tip-cell:hover rect { opacity: 0.85; }
 
   /* per-owner cards */
   .upset-owner-grid {
@@ -1324,74 +1339,41 @@
     transition: background 0.12s;
   }
   .upset-ocard:hover { background: var(--paper-deep); }
-  .uo-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-  .uo-name {
-    font-family: 'Fraunces', serif;
-    font-weight: 700;
-    font-size: 18px;
-  }
-  .uo-stats {
-    display: flex;
-    gap: 0;
-    border: 1px solid var(--rule-soft);
-    margin-bottom: 12px;
-  }
+  .uo-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .uo-name { font-family: 'Fraunces', serif; font-weight: 700; font-size: 18px; }
+  .uo-stats { display: flex; border: 1px solid var(--rule-soft); margin-bottom: 12px; }
   .uo-stat {
-    flex: 1;
-    padding: 10px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
+    flex: 1; padding: 10px 12px;
+    display: flex; flex-direction: column; gap: 3px;
     border-right: 1px solid var(--rule-soft);
   }
   .uo-stat:last-child { border-right: none; }
-  .uo-val {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    font-size: 24px;
-    line-height: 1;
-  }
+  .uo-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 24px; line-height: 1; }
   .uo-val.benefit { color: var(--alive); }
   .uo-val.suffer  { color: var(--accent); }
-  .uo-lbl {
-    font-size: 9px;
-    font-family: 'Inter', sans-serif;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-  }
-  .uo-best {
-    font-size: 12px;
-    color: var(--ink-soft);
-    line-height: 1.6;
-  }
+  .uo-lbl { font-size: 9px; font-family: 'Inter', sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); }
+  .uo-best { font-size: 12px; color: var(--ink-soft); line-height: 1.6; }
   .uo-best b { color: var(--ink); }
-  .uo-best .lbl {
-    display: block;
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    margin-bottom: 4px;
-  }
+  .uo-best .lbl { display: block; font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 4px; }
   .uo-best .dim { color: var(--ink-faint); }
   .uo-flag { height: 10px; }
 
   /* upset tab mobile */
   @media (max-width: 760px) {
-    .upset-row { grid-template-columns: 36px 1fr; }
-    .up-rank { font-size: 20px; padding: 14px 0; }
-    .up-body { padding: 12px; }
-    .up-name { font-size: 15px; }
-    .up-goals { font-size: 20px; }
+    .ubar-row {
+      grid-template-columns: 26px 1fr 38px;
+      grid-template-areas: "rank matchup pts" "rank bar     pts";
+      gap: 4px 10px;
+      padding: 10px 12px;
+    }
+    .ubar-rank   { grid-area: rank; font-size: 16px; }
+    .ubar-matchup{ grid-area: matchup; }
+    .ubar-track  { grid-area: bar; }
+    .ubar-pts    { grid-area: pts; font-size: 14px; }
+    .ubar-underdog { font-size: 13px; }
+    .ubar-favorite { font-size: 12px; }
     .upset-owner-grid { grid-template-columns: 1fr; }
-    .up-meta { gap: 10px; }
+    .umatrix-scroll { padding: 4px; }
   }
 
   /* ---------- footer ---------- */
@@ -2972,14 +2954,17 @@ function renderUpsets(c) {
   setNav("upsets");
   const app = document.getElementById("app");
   const upsets = c.upsets || [];
-  const maxScore = upsets.length ? upsets[0].upsetScore : 1;
 
-  // Per-owner upset tally: who benefits (worse seed = my team winning/drawing), who suffers (better seed = my team held/beaten)
+  // per-owner tally
   const ownerStats = {};
   for (const o of OWNERS) ownerStats[o] = { benefited: 0, suffered: 0, bestUpset: null };
   for (const u of upsets) {
-    if (u.worseOwner)  { ownerStats[u.worseOwner].benefited += u.upsetScore; if (!ownerStats[u.worseOwner].bestUpset || u.upsetScore > ownerStats[u.worseOwner].bestUpset.upsetScore) ownerStats[u.worseOwner].bestUpset = u; }
-    if (u.betterOwner) { ownerStats[u.betterOwner].suffered += u.upsetScore; }
+    if (u.worseOwner)  {
+      ownerStats[u.worseOwner].benefited += u.upsetScore;
+      if (!ownerStats[u.worseOwner].bestUpset || u.upsetScore > ownerStats[u.worseOwner].bestUpset.upsetScore)
+        ownerStats[u.worseOwner].bestUpset = u;
+    }
+    if (u.betterOwner) ownerStats[u.betterOwner].suffered += u.upsetScore;
   }
   const sorted = OWNERS.map(o => ({ owner: o, ...ownerStats[o] }))
     .sort((a, b) => b.benefited - a.benefited);
@@ -2989,79 +2974,211 @@ function renderUpsets(c) {
     <p class="section-label">Upset tracker · ${c.playedCount} of ${c.totalMatches} matches played</p>
     <h2 class="section-title">Biggest upsets so far</h2>
     <p class="upset-explainer">
-      Upset score = draft-round gap between the teams. A win by the lower-seeded team scores the full gap;
-      a draw scores half. Only pool-vs-pool matchups count.
+      Upset score = draft-round gap. Win = full gap; draw = half. Only pool-vs-pool matchups count.
+      Bars are colored by the underdog's owner.
     </p>
 
     ${upsets.length === 0 ? `
-      <div class="trend-empty">No upsets yet — better seeds have won every pool matchup so far.
-        <span class="dim">Check back as more matches are played.</span>
-      </div>
+      <div class="trend-empty">No upsets yet — better seeds have won every pool matchup so far.</div>
     ` : `
-      <div class="upset-list">
-        ${upsets.map((u, i) => renderUpsetRow(u, i, maxScore)).join("")}
-      </div>
+      ${renderUpsetBars(upsets)}
+      ${renderSeedMatrix(upsets)}
     `}
 
-    <p class="section-label" style="margin-top:40px;">By owner</p>
+    <p class="section-label" style="margin-top: 40px;">By owner</p>
     <h2 class="section-title">Who's been lucky — and who's been burned</h2>
     <div class="upset-owner-grid">
       ${sorted.map(s => renderUpsetOwnerCard(s, c)).join("")}
     </div>
   `;
 
+  // animate bars (needs one rAF tick so the DOM is painted first)
+  requestAnimationFrame(() => {
+    app.querySelectorAll(".ubar-fill[data-w]").forEach(el => {
+      el.style.width = el.dataset.w;
+    });
+  });
+
+  // tooltips for bars and matrix
+  const tip = document.getElementById("chartTooltip");
+  const showTip = (html, x, y) => {
+    tip.innerHTML = html;
+    const maxX = window.innerWidth - 220;
+    tip.style.left = Math.min(x + 14, maxX) + "px";
+    tip.style.top  = (y + 14) + "px";
+    tip.style.opacity = "1";
+  };
+  const hideTip = () => { tip.style.opacity = "0"; };
+
+  app.querySelectorAll(".ubar-row[data-idx]").forEach(row => {
+    const u = upsets[+row.dataset.idx];
+    const html = `
+      <div><b>${u.worseTeam}</b> <span style="opacity:.7;">(R${u.worseSeed})</span></div>
+      <div style="font-size:11px;opacity:.7;margin:2px 0;">${u.resultType === "W" ? "beat" : "drew"}</div>
+      <div><b>${u.betterTeam}</b> <span style="opacity:.7;">(R${u.betterSeed})</span></div>
+      <div style="margin-top:6px;border-top:1px solid rgba(243,239,230,.25);padding-top:5px;display:flex;justify-content:space-between;gap:12px;">
+        <span style="opacity:.7;">${u.worseGoals}–${u.betterGoals} · ${u.gap}-round gap · ${fmtMatchDate(u.date)}</span>
+        <span class="pts">${u.upsetScore % 1 === 0 ? u.upsetScore : u.upsetScore.toFixed(1)} pts</span>
+      </div>`;
+    row.addEventListener("mouseenter", e => showTip(html, e.clientX, e.clientY));
+    row.addEventListener("mousemove",  e => showTip(html, e.clientX, e.clientY));
+    row.addEventListener("mouseleave", hideTip);
+    row.addEventListener("touchstart", e => {
+      showTip(html, e.touches[0].clientX, e.touches[0].clientY);
+      setTimeout(hideTip, 3000);
+    }, { passive: true });
+  });
+
+  app.querySelectorAll(".mx-tip-cell").forEach(g => {
+    const html = g.dataset.tip.replace(/\|/g, "<br>");
+    g.addEventListener("mouseenter", e => showTip(html, e.clientX, e.clientY));
+    g.addEventListener("mousemove",  e => showTip(html, e.clientX, e.clientY));
+    g.addEventListener("mouseleave", hideTip);
+    g.addEventListener("touchstart", e => {
+      showTip(html, e.touches[0].clientX, e.touches[0].clientY);
+      setTimeout(hideTip, 3000);
+    }, { passive: true });
+  });
+
   app.querySelectorAll("[data-owner-link]").forEach(el => {
     el.addEventListener("click", () => navigate({ name: "detail", owner: el.dataset.ownerLink }));
   });
 }
 
-function renderUpsetRow(u, rank, maxScore) {
-  const pct = Math.round((u.upsetScore / maxScore) * 100);
-  const resultLabel = u.resultType === "W" ? "WIN" : "DRAW";
-  const resultDesc  = u.resultType === "W"
-    ? `${u.worseTeam} won`
-    : `Draw — ${u.worseTeam} held ${u.betterTeam}`;
+// ── horizontal bar chart ──────────────────────────────────────────────────
+function renderUpsets_fmtPts(v) { return v % 1 === 0 ? String(v) : v.toFixed(1); }
 
-  const worseOwnerTag  = u.worseOwner  ? `<span class="up-owner">${u.worseOwner}</span>` : "";
-  const betterOwnerTag = u.betterOwner ? `<span class="up-owner suffer">${u.betterOwner}</span>` : "";
+function renderUpsetBars(upsets) {
+  const maxScore = upsets[0].upsetScore;
+  const rows = upsets.map((u, i) => {
+    const pct  = ((u.upsetScore / maxScore) * 100).toFixed(1) + "%";
+    const color = OWNER_COLOR_HEX[u.worseOwner] || "var(--ink-soft)";
+    const isDraw = u.resultType === "D";
+    return `
+      <div class="ubar-row" data-idx="${i}">
+        <div class="ubar-rank">${i + 1}</div>
+        <div class="ubar-matchup">
+          <span class="ubar-underdog" style="color:${color}">
+            ${flagImg(u.worseTeam,"w20","ubar-flag")}${u.worseTeam}<span class="ubar-seed-tag">R${u.worseSeed}</span>
+          </span>
+          <span class="ubar-verb ${isDraw ? "draw" : "win"}">${isDraw ? "DREW" : "BEAT"}</span>
+          <span class="ubar-favorite">
+            ${flagImg(u.betterTeam,"w20","ubar-flag")}${u.betterTeam}<span class="ubar-seed-tag">R${u.betterSeed}</span>
+          </span>
+          <span class="ubar-score-inline">${u.worseGoals}–${u.betterGoals}</span>
+        </div>
+        <div class="ubar-track">
+          <div class="ubar-fill ${isDraw ? "draw" : "win"}" style="background:${color};" data-w="${pct}"></div>
+        </div>
+        <div class="ubar-pts">${renderUpsets_fmtPts(u.upsetScore)}</div>
+      </div>`;
+  }).join("");
+  return `<div class="ubars">${rows}</div>`;
+}
+
+// ── seed gap matrix ───────────────────────────────────────────────────────
+function renderSeedMatrix(upsets) {
+  // axis: cols = underdog's round (R1..R12), rows = favorite's round (R1..R12)
+  // upset zone = upper-right triangle (underdog round > favorite round)
+  const CELL = 34, PAD_L = 38, PAD_T = 38, PAD_R = 14, PAD_B = 14, N = 12;
+  const W = PAD_L + N * CELL + PAD_R;
+  const H = PAD_T + N * CELL + PAD_B;
+
+  // build cell lookup: key = "undRound,favRound" → upset
+  const cellMap = {};
+  for (const u of upsets) {
+    const key = `${u.worseSeed},${u.betterSeed}`;
+    if (!cellMap[key] || u.upsetScore > cellMap[key].upsetScore) cellMap[key] = u;
+  }
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"
+                  style="min-width:${W}px;" role="img" aria-label="Seed gap matrix">`;
+
+  // column (underdog round) and row (favorite round) labels
+  for (let i = 0; i < N; i++) {
+    const cx = PAD_L + i * CELL + CELL / 2;
+    const ry = PAD_T + i * CELL + CELL / 2;
+    svg += `<text class="mx-cell-lbl" x="${cx}" y="${PAD_T - 6}" text-anchor="middle">R${i+1}</text>`;
+    svg += `<text class="mx-cell-lbl" x="${PAD_L - 6}" y="${ry + 3}" text-anchor="end">R${i+1}</text>`;
+  }
+
+  // axis labels
+  svg += `<text class="mx-axis-lbl" x="${PAD_L + N*CELL/2}" y="10" text-anchor="middle">← Underdog's round</text>`;
+  svg += `<text class="mx-axis-lbl" x="9" y="${PAD_T + N*CELL/2}"
+            text-anchor="middle" transform="rotate(-90,9,${PAD_T + N*CELL/2})">Favorite's round ↓</text>`;
+
+  // cells
+  for (let ri = 0; ri < N; ri++) {          // row = favorite's round (ri+1)
+    for (let ci = 0; ci < N; ci++) {        // col = underdog's round (ci+1)
+      const x = PAD_L + ci * CELL;
+      const y = PAD_T + ri * CELL;
+      const favRound = ri + 1;
+      const undRound = ci + 1;
+      const cx = x + CELL / 2, cy = y + CELL / 2;
+      const r  = CELL / 2 - 6;
+
+      if (undRound <= favRound) {
+        // chalk zone (diagonal + lower-left): no upset territory
+        const diag = undRound === favRound;
+        svg += `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}"
+                  fill="${diag ? "var(--paper-deep)" : "var(--paper-deep)"}"
+                  stroke="var(--rule-soft)" stroke-width="0.5"/>`;
+        if (diag) svg += `<line x1="${x+5}" y1="${y+5}" x2="${x+CELL-5}" y2="${y+CELL-5}"
+                            stroke="var(--rule)" stroke-width="1"/>`;
+      } else {
+        // upset zone — could be empty or filled
+        svg += `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}"
+                  fill="var(--paper)" stroke="var(--rule-soft)" stroke-width="0.5"/>`;
+        const key = `${undRound},${favRound}`;
+        const u = cellMap[key];
+        if (u) {
+          const color = OWNER_COLOR_HEX[u.worseOwner] || "#888";
+          const isDraw = u.resultType === "D";
+          const tipLines = [
+            `<b>${u.worseTeam}</b> (R${u.worseSeed})`,
+            `${isDraw ? "drew" : "beat"} <b>${u.betterTeam}</b> (R${u.betterSeed})`,
+            `${u.worseGoals}–${u.betterGoals} · ${fmtMatchDate(u.date)}`,
+            `${renderUpsets_fmtPts(u.upsetScore)} upset pt${u.upsetScore===1?"":"s"}`,
+          ].join("|");
+          svg += `<g class="mx-tip-cell" data-tip="${tipLines.replace(/"/g,"&quot;")}">
+            <rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" fill="transparent"/>`;
+          if (isDraw) {
+            svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="2.5"/>`;
+          } else {
+            svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}"/>`;
+          }
+          svg += `</g>`;
+        }
+      }
+    }
+  }
+  svg += `</svg>`;
+
+  // legend
+  const ownerDots = OWNERS.map(o =>
+    `<span class="it"><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${OWNER_COLOR_HEX[o]};"></span>${o}</span>`
+  ).join("");
 
   return `
-    <div class="upset-row ${rank === 0 ? "top-upset" : ""}">
-      <div class="up-rank">${rank + 1}</div>
-      <div class="up-body">
-        <div class="up-headline">
-          <div class="up-teams">
-            <span class="up-team winner">
-              ${flagImg(u.worseTeam,"w40","up-flag")}
-              <span class="up-name">${u.worseTeam}</span>
-              <span class="up-seed">R${u.worseSeed} · ${u.worsePick}</span>
-              ${worseOwnerTag}
-            </span>
-            <span class="up-result-badge ${u.resultType === "W" ? "win" : "draw"}">${resultLabel}</span>
-            <span class="up-team">
-              ${flagImg(u.betterTeam,"w40","up-flag")}
-              <span class="up-name">${u.betterTeam}</span>
-              <span class="up-seed">R${u.betterSeed} · ${u.betterPick}</span>
-              ${betterOwnerTag}
-            </span>
-          </div>
-          <div class="up-score-display">
-            <span class="up-goals">${u.worseGoals}–${u.betterGoals}</span>
-          </div>
-        </div>
-        <div class="up-meter-row">
-          <div class="up-meter-track">
-            <div class="up-meter-fill" style="width:${pct}%;"></div>
-          </div>
-          <div class="up-meta">
-            <span class="up-score-val">${u.upsetScore % 1 === 0 ? u.upsetScore : u.upsetScore.toFixed(1)} upset pt${u.upsetScore === 1 ? "" : "s"}</span>
-            <span class="up-gap">${u.gap}-round gap</span>
-            <span class="up-date">${fmtMatchDate(u.date)} · ${u.round}</span>
-          </div>
-        </div>
+    <div class="umatrix-wrap">
+      <p class="section-label">Seed gap map</p>
+      <h2 class="section-title">Who surprised who</h2>
+      <p class="umatrix-note">
+        Each cell is a potential pool-vs-pool matchup. The shaded lower-left triangle is chalk territory
+        (better seed won — expected). The white upper-right triangle is the upset zone.
+        ● = win · ○ = draw · color = underdog's owner. Tap a cell for details.
+      </p>
+      <div class="umatrix-legend">
+        ${ownerDots}
+        <span class="it" style="gap:6px;">
+          <svg width="13" height="13" style="flex-shrink:0;"><circle cx="6.5" cy="6.5" r="5" fill="var(--ink-soft)"/></svg>Win
+        </span>
+        <span class="it" style="gap:6px;">
+          <svg width="13" height="13" style="flex-shrink:0;"><circle cx="6.5" cy="6.5" r="4.5" fill="none" stroke="var(--ink-soft)" stroke-width="2"/></svg>Draw
+        </span>
       </div>
-    </div>
-  `;
+      <div class="umatrix-scroll">${svg}</div>
+    </div>`;
 }
 
 function renderUpsetOwnerCard(s, c) {
