@@ -1,0 +1,58 @@
+[
+  {
+    "date": "2026-06-11",
+    "Matt": 6,
+    "Sean": 0,
+    "Zach": 0,
+    "Rusty": 0,
+    "played": 2
+  },
+  {
+    "date": "2026-06-12",
+    "Matt": 6,
+    "Sean": 4,
+    "Zach": 0,
+    "Rusty": 1,
+    "played": 4
+  },
+  {
+    "date": "2026-06-13",
+    "Matt": 7,
+    "Sean": 7,
+    "Zach": 6,
+    "Rusty": 1,
+    "played": 8
+  },
+  {
+    "date": "2026-06-14",
+    "Matt": 10,
+    "Sean": 10,
+    "Zach": 9,
+    "Rusty": 3,
+    "played": 12
+  },
+  {
+    "date": "2026-06-15",
+    "Matt": 12,
+    "Sean": 13,
+    "Zach": 10,
+    "Rusty": 5,
+    "played": 16
+  },
+  {
+    "date": "2026-06-16",
+    "Matt": 12,
+    "Sean": 16,
+    "Zach": 13,
+    "Rusty": 11,
+    "played": 20
+  },
+  {
+    "date": "2026-06-17",
+    "Matt": 16,
+    "Sean": 17,
+    "Zach": 13,
+    "Rusty": 11,
+    "played": 22
+  }
+]

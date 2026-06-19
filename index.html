@@ -2212,9 +2212,12 @@ function flagImg(team, size, cls) {
 }
 
 // ---------- render orchestrator ----------
-function render(computed, fetchedAt, isCached = false, rawData = null) {
-  LAST = { computed, fetchedAt, rawData: rawData || (LAST && LAST.rawData) || null };
-  recordSnapshot(computed, fetchedAt); // historical trend (localStorage)
+function render(computed, fetchedAt, isCached = false, rawData = null, history = null) {
+  LAST = {
+    computed, fetchedAt,
+    rawData: rawData || (LAST && LAST.rawData) || null,
+    history: history !== null ? history : (LAST && LAST.history) || [],
+  };
   if (CURRENT_VIEW.name === "home")        renderHome(computed);
   else if (CURRENT_VIEW.name === "groups") renderGroups(computed);
   else if (CURRENT_VIEW.name === "draft")  renderDraftPerformance(computed);
@@ -2816,45 +2819,41 @@ function renderGroupTable(letter, rows) {
   `;
 }
 
-// ---------- HISTORICAL TREND (localStorage; per-device) ----------
-const TREND_KEY = "wcpool-2026-trend-v1";
-function recordSnapshot(c, fetchedAt) {
+// ---------- HISTORICAL TREND (from history.json on GitHub) ----------
+async function fetchHistory() {
   try {
-    const dayKey = new Date(fetchedAt).toISOString().slice(0, 10); // one snapshot per day
-    const raw = localStorage.getItem(TREND_KEY);
-    const trend = raw ? JSON.parse(raw) : {};
-    trend[dayKey] = {};
-    for (const o of OWNERS) trend[dayKey][o] = c.owners[o].total;
-    trend[dayKey].__playedCount = c.playedCount;
-    // keep it bounded
-    const days = Object.keys(trend).sort();
-    while (days.length > 90) { delete trend[days.shift()]; }
-    localStorage.setItem(TREND_KEY, JSON.stringify(trend));
-  } catch (e) {}
-}
-function getTrend() {
-  try {
-    const raw = localStorage.getItem(TREND_KEY);
-    if (!raw) return [];
-    const trend = JSON.parse(raw);
-    return Object.keys(trend).sort().map(day => ({ day, ...trend[day] }));
-  } catch (e) { return []; }
+    const resp = await fetch("./history.json", { cache: "no-store" });
+    if (!resp.ok) return [];
+    const data = await resp.json();
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    return [];
+  }
 }
 
 function renderTrendSection() {
-  const trend = getTrend();
-  // need at least 2 distinct days to draw a meaningful line
-  if (trend.length < 2) {
+  const trend = (LAST && LAST.history) || [];
+  if (trend.length === 0) {
     return `
       <p class="section-label">History</p>
       <h2 class="section-title">Points over time</h2>
       <div class="trend-empty">
-        Tracking starts now. This chart fills in as the pool is checked on different days —
-        come back tomorrow to see the first trend line. <span class="dim">(History is stored on this device.)</span>
+        History not available yet.
+        <span class="dim">history.json will appear in your repo after the first GitHub Action run —
+        trigger it manually from the Actions tab if you want it immediately.</span>
+      </div>`;
+  }
+  if (trend.length < 2) {
+    return `
+      <p class="section-label">History · 1 day recorded</p>
+      <h2 class="section-title">Points over time</h2>
+      <div class="trend-empty">
+        One snapshot recorded so far. The trend line appears once there are two or more days of data.
+        <span class="dim">The Action runs every 6 hours and will add the next entry automatically.</span>
       </div>`;
   }
   return `
-    <p class="section-label">History · ${trend.length} day${trend.length===1?"":"s"} tracked on this device</p>
+    <p class="section-label">History · ${trend.length} day${trend.length === 1 ? "" : "s"} recorded</p>
     <h2 class="section-title">Points over time</h2>
     <div class="chart-legend">
       ${OWNERS.map(o => `<span class="it"><span class="sw" style="background:${OWNER_COLOR_HEX[o]};"></span>${o}</span>`).join("")}
@@ -2875,7 +2874,7 @@ function renderTrendChart(trend) {
   const ticks = []; for (let v = 0; v <= yMaxNice; v += tickStep) ticks.push(v);
 
   const n = trend.length;
-  const xAt = i => padL + (n === 1 ? innerW/2 : (innerW / (n - 1)) * i);
+  const xAt = i => padL + (n === 1 ? innerW / 2 : (innerW / (n - 1)) * i);
   const yAt = v => padT + innerH - (v / yMaxNice) * innerH;
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Points over time">`;
@@ -2886,11 +2885,11 @@ function renderTrendChart(trend) {
   }
   svg += `<line class="axis-line" x1="${padL}" y1="${padT+innerH}" x2="${padL+innerW}" y2="${padT+innerH}"/>`;
 
-  // x labels (dates) — show first, last, and a couple between
-  const labelIdx = new Set([0, n - 1, Math.floor((n-1)/2)]);
+  // x labels — first, last, and midpoint
+  const labelIdx = new Set([0, n - 1, Math.floor((n - 1) / 2)]);
   trend.forEach((row, i) => {
     if (!labelIdx.has(i)) return;
-    const d = new Date(row.day + "T12:00:00Z");
+    const d = new Date((row.date || row.day) + "T12:00:00Z");
     const lbl = d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
     svg += `<text class="axis-text" x="${xAt(i)}" y="${padT+innerH+18}" text-anchor="middle">${lbl}</text>`;
   });
@@ -2900,7 +2899,6 @@ function renderTrendChart(trend) {
     const color = OWNER_COLOR_HEX[o];
     const d = smoothPath(pts);
     svg += `<path d="${d}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
-    // end dot + label
     const last = pts[pts.length - 1];
     svg += `<circle cx="${last[0].toFixed(2)}" cy="${last[1].toFixed(2)}" r="4" fill="${color}"/>`;
   }
@@ -3435,9 +3433,16 @@ document.getElementById("refreshBtn").addEventListener("click", () => load(true)
 async function load(force = false) {
   setStatus("stale", force ? "Refreshing…" : "Loading…");
   try {
-    const { data, fetchedAt, fromCache } = await fetchData(force);
+    // Fetch match data and history in parallel; history failure is non-fatal
+    const [matchResult, historyResult] = await Promise.allSettled([
+      fetchData(force),
+      fetchHistory(),
+    ]);
+    if (matchResult.status === "rejected") throw matchResult.reason;
+    const { data, fetchedAt, fromCache } = matchResult.value;
+    const history = historyResult.status === "fulfilled" ? historyResult.value : [];
     const computed = compute(data);
-    render(computed, fetchedAt, fromCache, data);
+    render(computed, fetchedAt, fromCache, data, history);
   } catch (e) {
     console.error(e);
     setStatus("err", "Couldn't reach openfootball — see console");
