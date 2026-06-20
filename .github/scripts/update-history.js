@@ -151,6 +151,126 @@ function computeStandings(matches) {
   return { ...totals, played: playedCount };
 }
 
+// ── odds ───────────────────────────────────────────────────────────────────
+const ODDS_FILE  = path.join(__dirname, "../../odds.json");
+const ODDS_SPORT = "soccer_world_cup";
+
+// Same name map as index.html — keeps team names consistent
+const ODDS_NAME_MAP = {
+  "United States":                "USA",
+  "Bosnia and Herzegovina":       "Bosnia & Herzegovina",
+  "Cote d'Ivoire":                "Ivory Coast",
+  "Ivory Coast":                  "Ivory Coast",
+  "Turkey":                       "Turkey",
+  "Curacao":                      "Curaçao",
+  "Democratic Republic of Congo": "DR Congo",
+};
+function normName(n) { return ODDS_NAME_MAP[n] || n; }
+
+function americanToProb(price) {
+  const dec = price > 0 ? (price / 100) + 1 : (100 / Math.abs(price)) + 1;
+  return 1 / dec;
+}
+function normalizeOutcomes(outcomes) {
+  const raw   = outcomes.map(o => americanToProb(o.price));
+  const total = raw.reduce((s, p) => s + p, 0);
+  return outcomes.map((o, i) => ({ name: normName(o.name), p: raw[i] / total }));
+}
+
+// https.get wrapper that also returns response headers
+function fetchWithHeaders(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, res => {
+      const chunks = [];
+      res.on("data", c => chunks.push(c));
+      res.on("end", () => {
+        try {
+          resolve({
+            status:  res.statusCode,
+            headers: res.headers,
+            body:    JSON.parse(Buffer.concat(chunks).toString()),
+          });
+        } catch(e) { reject(new Error("JSON parse failed: " + e.message)); }
+      });
+    }).on("error", reject);
+  });
+}
+
+async function updateOdds(apiKey) {
+  if (!apiKey) {
+    console.log("ODDS_API_KEY not set — skipping odds update.");
+    return;
+  }
+  console.log("Fetching odds from The Odds API…");
+
+  const url = `https://api.the-odds-api.com/v4/sports/${ODDS_SPORT}/odds` +
+              `?apiKey=${encodeURIComponent(apiKey)}&regions=us&markets=h2h&oddsFormat=american`;
+
+  const { status, headers, body } = await fetchWithHeaders(url);
+  const remaining = headers["x-requests-remaining"] ?? "?";
+  const used      = headers["x-requests-used"]      ?? "?";
+
+  if (status !== 200) {
+    console.warn(`Odds API returned ${status} — skipping odds update. Response: ${JSON.stringify(body).slice(0, 120)}`);
+    return;
+  }
+
+  const now     = Date.now();
+  const teamOdds = {};
+
+  for (const match of body) {
+    const mt = new Date(match.commence_time).getTime();
+    // Include matches not yet started or started within the last 2 hours
+    if (mt < now - 2 * 60 * 60 * 1000) continue;
+    if (!match.bookmakers?.length) continue;
+
+    const home = normName(match.home_team);
+    const away = normName(match.away_team);
+
+    // Collect normalized probabilities from each bookmaker, then average
+    const bookieProbs = [];
+    for (const bk of match.bookmakers) {
+      const h2h = bk.markets?.find(m => m.key === "h2h");
+      if (!h2h?.outcomes?.length) continue;
+      bookieProbs.push(normalizeOutcomes(h2h.outcomes));
+    }
+    if (!bookieProbs.length) continue;
+
+    const avgProb = (nm) => {
+      const vals = bookieProbs.map(bp => bp.find(o => o.name === nm)?.p ?? 0);
+      return vals.reduce((s, v) => s + v, 0) / vals.length;
+    };
+
+    const homeProb = avgProb(home);
+    const awayProb = avgProb(away);
+    const drawProb = avgProb("Draw");
+
+    for (const [team, winP, opp] of [[home, homeProb, away], [away, awayProb, home]]) {
+      // Keep only the next upcoming match per team
+      if (!teamOdds[team] || mt < teamOdds[team].matchTime) {
+        teamOdds[team] = {
+          winProb:  Math.round(winP  * 1000) / 1000,
+          drawProb: Math.round(drawProb * 1000) / 1000,
+          loseProb: Math.round((1 - winP - drawProb) * 1000) / 1000,
+          opp,
+          matchTime: mt,
+        };
+      }
+    }
+  }
+
+  const out = {
+    fetchedAt: new Date().toISOString(),
+    remaining,
+    used,
+    teamCount: Object.keys(teamOdds).length,
+    teamOdds,
+  };
+
+  fs.writeFileSync(ODDS_FILE, JSON.stringify(out, null, 2) + "\n");
+  console.log(`odds.json written — ${out.teamCount} teams, ${remaining} API calls remaining.`);
+}
+
 // ── main ───────────────────────────────────────────────────────────────────
 async function main() {
   console.log("Fetching match data…");
@@ -183,6 +303,9 @@ async function main() {
 
   fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2) + "\n");
   console.log(`history.json written (${history.length} snapshots).`);
+
+  // Odds update — graceful skip if key not set
+  await updateOdds(process.env.ODDS_API_KEY || "");
 }
 
 main().catch(err => {
