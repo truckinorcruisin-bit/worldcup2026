@@ -1095,7 +1095,108 @@
   table.group-table tr.maybe td.pos { color: var(--gold); }
   table.group-table tr.pool .gt-name { color: var(--accent); }
   table.group-table tbody tr:last-child td { border-bottom: none; }
-  /* qualification legend dot under last group handled inline */
+
+  /* group status badges */
+  .gt-status {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 1px 4px;
+    vertical-align: 2px;
+    margin-left: 4px;
+    line-height: 1.5;
+  }
+  .gt-status.adv  { background: var(--alive);      color: var(--paper); }
+  .gt-status.cln  { border: 1px solid var(--alive); color: var(--alive); }
+  .gt-status.m3rd { border: 1px solid var(--gold);  color: var(--gold); }
+  .gt-status.elm  { border: 1px solid var(--eliminated); color: var(--eliminated); }
+
+  /* odds column */
+  .gt-odds-th {
+    text-align: center;
+    white-space: nowrap;
+  }
+  .gt-odds-td { text-align: center; padding: 6px 8px !important; min-width: 60px; }
+  .gt-odds-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    display: block;
+    line-height: 1.2;
+  }
+  .gt-odds-bar {
+    display: flex;
+    height: 3px;
+    background: var(--rule-soft);
+    margin: 3px 0 2px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .gt-odds-w, .gt-odds-d {
+    height: 100%;
+    transition: width 0.3s ease;
+  }
+  .gt-odds-d { background: var(--gold); opacity: 0.6; }
+  .gt-odds-opp {
+    font-size: 9px;
+    color: var(--ink-faint);
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70px;
+    margin: 0 auto;
+  }
+
+  /* odds status bar (shown when odds.json is available) */
+  .odds-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 8px 14px;
+    background: var(--paper-deep);
+    border: 1px solid var(--rule);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+    flex-wrap: wrap;
+  }
+  .odds-status.err { border-color: var(--accent); color: var(--accent); }
+  .odds-status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--alive);
+    flex-shrink: 0;
+  }
+  .odds-status-meta {
+    font-weight: 400;
+    color: var(--ink-faint);
+    font-size: 11px;
+  }
+  .odds-note { color: var(--ink-soft); font-size: 11px; }
+
+  /* legend */
+  .groups-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+  }
+  .gl-it { display: inline-flex; align-items: center; gap: 5px; }
+
+  @media (max-width: 760px) {
+    .gt-odds-opp { display: none; }
+    .gt-odds-td { min-width: 44px; }
+    .gt-odds-val { font-size: 11px; }
+  }
 
   .trend-empty {
     border: 1px dashed var(--rule);
@@ -2289,6 +2390,34 @@ function compute(data) {
     for (const r of arr) r.gd = r.gf - r.ga;
     arr.sort((a,b) => (b.pts - a.pts) || (b.gd - a.gd) || (b.gf - a.gf) || a.team.localeCompare(b.team));
     arr.forEach((r, i) => { r.rank = i + 1; });
+
+    // ----- group status: clinched / eliminated / advanced -----
+    const allDone = arr.every(r => r.played === 3);
+    for (const r of arr) r.remaining = 3 - r.played;
+    // max points each team could still reach
+    for (const r of arr) r.maxPts = r.pts + 3 * r.remaining;
+
+    if (arr.length === 4) {
+      const [p1, p2, p3, p4] = arr;
+      // Clinched top 2: current pts > max possible for 3rd place
+      if (p1.pts > p3.maxPts) p1.groupStatus = "clinched";
+      if (p2.pts > p3.maxPts) p2.groupStatus = "clinched";
+      // Eliminated from top 2: max possible < current 2nd's pts
+      if (p3.maxPts < p2.pts) p3.groupStatus = "eliminated";
+      if (p4.maxPts < p2.pts) p4.groupStatus = "eliminated";
+      // After all games: lock statuses
+      if (allDone) {
+        if (!p1.groupStatus) p1.groupStatus = "clinched";
+        if (!p2.groupStatus) p2.groupStatus = "clinched";
+        if (!p3.groupStatus) p3.groupStatus = "maybe3rd";
+        if (!p4.groupStatus) p4.groupStatus = "eliminated";
+      }
+    }
+    // Override with confirmed data from R32 bracket
+    for (const r of arr) {
+      if (advancedSet.has(r.team)) r.groupStatus = "advanced";
+    }
+
     groupTables[grp] = arr;
   }
 
@@ -2394,7 +2523,7 @@ function render(computed, fetchedAt, isCached = false, rawData = null, history =
     history: history !== null ? history : (LAST && LAST.history) || [],
   };
   if (CURRENT_VIEW.name === "home")        renderHome(computed);
-  else if (CURRENT_VIEW.name === "groups") renderGroups(computed);
+  else if (CURRENT_VIEW.name === "groups") loadGroupsWithOdds(computed);
   else if (CURRENT_VIEW.name === "draft")  renderDraftPerformance(computed);
   else if (CURRENT_VIEW.name === "upsets") renderUpsets(computed);
   else if (CURRENT_VIEW.name === "fanzone") triggerFanZoneLoad(false);
@@ -2925,21 +3054,51 @@ function startCountdownTicker() {
 }
 
 // ---------- GROUPS (group-stage tables) ----------
-function renderGroups(c) {
+function renderGroups(c, oddsData, oddsError) {
   setNav("groups");
   const app = document.getElementById("app");
   const groups = "ABCDEFGHIJKL".split("");
+  const hasOdds = oddsData && Object.keys(oddsData.teamOdds || {}).length > 0;
+
+  // Odds status bar — shown only when we have data (or an error)
+  let oddsBar = "";
+  if (hasOdds) {
+    const when = oddsData.fetchedAt
+      ? `Updated ${fmtRelative(new Date(oddsData.fetchedAt).getTime())}`
+      : "";
+    const rem = oddsData.remaining ? ` · ${oddsData.remaining} API calls left this month` : "";
+    oddsBar = `
+      <div class="odds-status">
+        <span class="odds-status-dot"></span>
+        <span>Win% odds live</span>
+        <span class="odds-status-meta">${when}${rem} · refreshed by GitHub Actions every 6 h</span>
+      </div>`;
+  } else if (oddsError) {
+    oddsBar = `
+      <div class="odds-status err">
+        <span>Odds unavailable</span>
+        <span class="odds-status-meta">${oddsError}</span>
+      </div>`;
+  }
 
   app.innerHTML = `
     ${renderMatchBanner(c)}
-    <p class="section-label">Group stage</p>
+    <p class="section-label">Group stage · ${c.playedCount} of ${c.totalMatches} matches played</p>
     <h2 class="section-title">All 12 groups</h2>
-    <p style="color:var(--ink-soft); margin:0 0 22px; max-width:640px; font-size:14px;">
-      Live group tables. Pool teams are highlighted with their owner; top two in each group
-      (and the best third-placed teams) advance to the Round of 32. Tap a pool team to jump to its owner.
+    <p style="color:var(--ink-soft);margin:0 0 16px;max-width:640px;font-size:14px;">
+      Live group tables. Pool teams highlighted with their owner. Top two in each group
+      (plus best 8 third-placed teams) advance to the Round of 32. Tap a pool team to go to their page.
     </p>
+    ${oddsBar}
     <div class="groups-grid">
-      ${groups.map(g => renderGroupTable(g, c.groupTables[g])).join("")}
+      ${groups.map(g => renderGroupTable(g, c.groupTables[g], oddsData?.teamOdds)).join("")}
+    </div>
+    <div class="groups-legend">
+      <span class="gl-it"><span class="gt-status adv">ADV</span> Confirmed through</span>
+      <span class="gl-it"><span class="gt-status cln">CLN</span> Clinched top 2</span>
+      <span class="gl-it"><span class="gt-status m3rd">3RD?</span> Possible best-3rd</span>
+      <span class="gl-it"><span class="gt-status elm">OUT</span> Eliminated from top 2</span>
+      ${hasOdds ? `<span class="gl-it odds-note">Win% = implied probability of winning next match (vig-free avg across bookmakers)</span>` : ""}
     </div>
   `;
 
@@ -2948,10 +3107,18 @@ function renderGroups(c) {
   });
 }
 
-function renderGroupTable(letter, rows) {
+function loadGroupsWithOdds(c, force = false) {
+  renderGroups(c, ODDS_MEM, null);  // render immediately with whatever we have cached
+  fetchOddsFile(force)
+    .then(od => { if (CURRENT_VIEW.name === "groups") renderGroups(c, od, null); })
+    .catch(err => { if (CURRENT_VIEW.name === "groups") renderGroups(c, ODDS_MEM, err?.message); });
+}
+
+function renderGroupTable(letter, rows, teamOdds) {
   if (!rows || rows.length === 0) {
     return `<div class="group-card"><div class="group-hd">Group ${letter}</div><div class="empty" style="padding:12px;">No data yet.</div></div>`;
   }
+  const hasOdds = teamOdds && Object.keys(teamOdds).length > 0;
   return `
     <div class="group-card">
       <div class="group-hd">Group ${letter}</div>
@@ -2966,12 +3133,44 @@ function renderGroupTable(letter, rows) {
             <th title="Lost">L</th>
             <th title="Goal difference">GD</th>
             <th title="Points">Pts</th>
+            ${hasOdds ? `<th class="gt-odds-th" title="Implied win probability for next match">Win%</th>` : ""}
           </tr>
         </thead>
         <tbody>
           ${rows.map(r => {
+            // Status badge
+            const st = r.groupStatus;
+            const stHtml = st
+              ? `<span class="gt-status ${st === "advanced" ? "adv" : st === "clinched" ? "cln" : st === "maybe3rd" ? "m3rd" : "elm"}">${
+                  st === "advanced" ? "ADV" : st === "clinched" ? "CLN" : st === "maybe3rd" ? "3RD?" : "OUT"
+                }</span>`
+              : "";
+
+            // Odds
+            let oddsHtml = "";
+            if (hasOdds) {
+              const od = teamOdds[r.team];
+              if (od) {
+                const winPct = Math.round(od.winProb * 100);
+                const drawPct = Math.round(od.drawProb * 100);
+                const losePct = 100 - winPct - drawPct;
+                const color = winPct >= 60 ? "var(--alive)" : winPct >= 40 ? "var(--gold)" : "var(--accent)";
+                oddsHtml = `
+                  <td class="gt-odds-td" title="vs ${od.opp}: Win ${winPct}% / Draw ${drawPct}% / Loss ${losePct}%">
+                    <span class="gt-odds-val" style="color:${color}">${winPct}%</span>
+                    <div class="gt-odds-bar">
+                      <div class="gt-odds-w" style="width:${winPct}%;background:${color};"></div>
+                      <div class="gt-odds-d" style="width:${drawPct}%;"></div>
+                    </div>
+                    <span class="gt-odds-opp">vs ${od.opp}</span>
+                  </td>`;
+              } else {
+                oddsHtml = `<td class="gt-odds-td"><span style="color:var(--ink-faint);font-size:11px;">—</span></td>`;
+              }
+            }
+
             const qualZone = r.rank <= 2 ? "qual" : (r.rank === 3 ? "maybe" : "");
-            const poolCls = r.inPool ? "pool" : "";
+            const poolCls  = r.inPool ? "pool" : "";
             const clickable = r.inPool ? `data-owner-link="${r.owner}" style="cursor:pointer;"` : "";
             return `
               <tr class="${qualZone} ${poolCls}" ${clickable}>
@@ -2979,6 +3178,7 @@ function renderGroupTable(letter, rows) {
                 <td class="gt-team">
                   ${flagImg(r.team,"w20","gt-flag")}
                   <span class="gt-name">${r.team}</span>
+                  ${stHtml}
                   ${r.inPool ? `<span class="gt-owner">${r.owner}</span>` : ""}
                 </td>
                 <td>${r.played}</td>
@@ -2987,12 +3187,41 @@ function renderGroupTable(letter, rows) {
                 <td>${r.l}</td>
                 <td>${r.gd > 0 ? "+" + r.gd : r.gd}</td>
                 <td class="gt-pts">${r.pts}</td>
+                ${oddsHtml}
               </tr>`;
           }).join("")}
         </tbody>
       </table>
     </div>
   `;
+}
+
+// ---------- ODDS — read from odds.json committed by GitHub Actions ----------
+// The Odds API key lives as a GitHub repository secret and is never in this file.
+// The scheduled Action fetches odds and writes odds.json; we just read that file.
+const ODDS_CACHE_KEY = "wcpool-odds-v1";
+const ODDS_CACHE_MS  = 30 * 60 * 1000; // re-read the file at most every 30 min
+let   ODDS_MEM       = null;
+
+async function fetchOddsFile(force = false) {
+  if (!force && ODDS_MEM && Date.now() - ODDS_MEM._cachedAt < ODDS_CACHE_MS) return ODDS_MEM;
+  if (!force) {
+    try {
+      const raw = localStorage.getItem(ODDS_CACHE_KEY);
+      if (raw) {
+        const c = JSON.parse(raw);
+        if (c?._cachedAt && Date.now() - c._cachedAt < ODDS_CACHE_MS) { ODDS_MEM = c; return c; }
+      }
+    } catch(e) {}
+  }
+  const resp = await fetch("./odds.json", { cache: "no-store" });
+  if (!resp.ok) return null;
+  const data = await resp.json();
+  if (!data?.teamOdds) return null;
+  const result = { ...data, _cachedAt: Date.now() };
+  ODDS_MEM = result;
+  try { localStorage.setItem(ODDS_CACHE_KEY, JSON.stringify(result)); } catch(e) {}
+  return result;
 }
 
 // ---------- HISTORICAL TREND (from history.json on GitHub) ----------
@@ -3956,7 +4185,7 @@ function navigate(view) {
   history.pushState(view, "", hash);
   if (!LAST) return;
   if (view.name === "home")        renderHome(LAST.computed);
-  else if (view.name === "groups") renderGroups(LAST.computed);
+  else if (view.name === "groups") loadGroupsWithOdds(LAST.computed);
   else if (view.name === "draft")  renderDraftPerformance(LAST.computed);
   else if (view.name === "upsets") renderUpsets(LAST.computed);
   else if (view.name === "fanzone") triggerFanZoneLoad(false);
@@ -3979,7 +4208,7 @@ window.addEventListener("popstate", (ev) => {
     else CURRENT_VIEW = { name: "home" };
   }
   if (CURRENT_VIEW.name === "home")        renderHome(LAST.computed);
-  else if (CURRENT_VIEW.name === "groups") renderGroups(LAST.computed);
+  else if (CURRENT_VIEW.name === "groups") loadGroupsWithOdds(LAST.computed);
   else if (CURRENT_VIEW.name === "draft")  renderDraftPerformance(LAST.computed);
   else if (CURRENT_VIEW.name === "upsets") renderUpsets(LAST.computed);
   else if (CURRENT_VIEW.name === "fanzone") triggerFanZoneLoad(false);
