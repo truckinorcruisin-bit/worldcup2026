@@ -27,6 +27,8 @@ jobs:
 
       - name: Compute and record today's standings
         run: node .github/scripts/update-history.js
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
 
       - name: Commit history.json if it changed
         run: |
