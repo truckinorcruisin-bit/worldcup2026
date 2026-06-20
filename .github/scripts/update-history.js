@@ -1,10 +1,8 @@
 /**
  * update-history.js
  *
- * Fetches the latest openfootball/worldcup.json, computes pool standings,
- * and appends (or updates) today's snapshot in history.json.
- *
- * Run by GitHub Actions on a schedule.  Mirrors the scoring logic in index.html.
+ * Fetches openfootball match data, updates history.json standings snapshots,
+ * and (if ODDS_API_KEY is set) fetches H2H odds from The Odds API and writes odds.json.
  */
 
 "use strict";
@@ -12,8 +10,9 @@ const https = require("https");
 const fs    = require("fs");
 const path  = require("path");
 
-const DATA_URL    = "https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json";
+const DATA_URL     = "https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json";
 const HISTORY_FILE = path.join(__dirname, "../../history.json");
+const ODDS_FILE    = path.join(__dirname, "../../odds.json");
 
 // ── draft roster (must stay in sync with index.html) ───────────────────────
 const DRAFT = [
@@ -67,14 +66,9 @@ const DRAFT = [
   { owner:"Rusty", team:"Haiti",                  round:12 },
 ];
 
-const OWNERS    = ["Matt", "Sean", "Zach", "Rusty"];
+const OWNERS     = ["Matt", "Sean", "Zach", "Rusty"];
 const TEAM_OWNER = Object.fromEntries(DRAFT.map(d => [d.team, d.owner]));
-
-// ── scoring constants (must stay in sync with index.html) ──────────────────
-const POINTS = {
-  groupWin: 3, groupDraw: 1, advance: 5,
-  r32Win: 10, r16Win: 10, qfWin: 10, sfWin: 15, champion: 20,
-};
+const POINTS     = { groupWin:3, groupDraw:1, advance:5, r32Win:10, r16Win:10, qfWin:10, sfWin:15, champion:20 };
 
 // ── helpers ────────────────────────────────────────────────────────────────
 function fetchJSON(url) {
@@ -84,7 +78,23 @@ function fetchJSON(url) {
       res.on("data", c => chunks.push(c));
       res.on("end", () => {
         try { resolve(JSON.parse(Buffer.concat(chunks).toString())); }
-        catch (e) { reject(new Error(`JSON parse failed: ${e.message}`)); }
+        catch (e) { reject(new Error("JSON parse failed: " + e.message)); }
+      });
+    }).on("error", reject);
+  });
+}
+
+// Like fetchJSON but also returns status code and response headers
+function fetchFull(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, res => {
+      const chunks = [];
+      res.on("data", c => chunks.push(c));
+      res.on("end", () => {
+        const raw = Buffer.concat(chunks).toString();
+        let body;
+        try { body = JSON.parse(raw); } catch(e) { body = raw; }
+        resolve({ status: res.statusCode, headers: res.headers, body });
       });
     }).on("error", reject);
   });
@@ -97,35 +107,25 @@ function isPlayed(m) {
 // ── standings computation ──────────────────────────────────────────────────
 function computeStandings(matches) {
   const totals = Object.fromEntries(OWNERS.map(o => [o, 0]));
-  let playedCount = 0;
-
-  // Group stage
   for (const m of matches) {
     if (!m.group || !isPlayed(m)) continue;
     const o1 = TEAM_OWNER[m.team1], o2 = TEAM_OWNER[m.team2];
     if (!o1 || !o2) continue;
     const [g1, g2] = m.score.ft;
-    playedCount++;
     if      (g1 > g2) { totals[o1] += POINTS.groupWin; }
     else if (g2 > g1) { totals[o2] += POINTS.groupWin; }
     else              { totals[o1] += POINTS.groupDraw; totals[o2] += POINTS.groupDraw; }
   }
-
-  // Group-stage advance bonus (teams named in R32 bracket)
   const advanced = new Set();
   for (const m of matches) {
     if (m.round !== "Round of 32") continue;
     if (m.team1 in TEAM_OWNER) advanced.add(m.team1);
     if (m.team2 in TEAM_OWNER) advanced.add(m.team2);
   }
-  for (const tm of advanced) totals[TEAM_OWNER[tm]] += POINTS.advance;
-
-  // Knockout rounds
+  for (const t of advanced) totals[TEAM_OWNER[t]] += POINTS.advance;
   const koRounds = [
-    ["Round of 32",   POINTS.r32Win],
-    ["Round of 16",   POINTS.r16Win],
-    ["Quarter-final", POINTS.qfWin],
-    ["Semi-final",    POINTS.sfWin],
+    ["Round of 32",   POINTS.r32Win], ["Round of 16",   POINTS.r16Win],
+    ["Quarter-final", POINTS.qfWin],  ["Semi-final",    POINTS.sfWin],
     ["Final",         POINTS.champion],
   ];
   for (const [round, pts] of koRounds) {
@@ -136,26 +136,18 @@ function computeStandings(matches) {
       if      (g1 > g2) winner = m.team1;
       else if (g2 > g1) winner = m.team2;
       else {
-        const p  = m.score.p;
-        const et = m.score.et;
-        if (Array.isArray(p)  && p.length === 2  && p[0]  !== p[1])  winner = p[0]  > p[1]  ? m.team1 : m.team2;
+        const p  = m.score.p,  et = m.score.et;
+        if (Array.isArray(p)  && p.length  === 2 && p[0]  !== p[1])  winner = p[0]  > p[1]  ? m.team1 : m.team2;
         else if (Array.isArray(et) && et.length === 2 && et[0] !== et[1]) winner = et[0] > et[1] ? m.team1 : m.team2;
       }
       if (winner && TEAM_OWNER[winner]) totals[TEAM_OWNER[winner]] += pts;
     }
   }
-
-  // Count total played matches (all rounds)
-  playedCount = matches.filter(isPlayed).length;
-
-  return { ...totals, played: playedCount };
+  return { ...totals, played: matches.filter(isPlayed).length };
 }
 
 // ── odds ───────────────────────────────────────────────────────────────────
-const ODDS_FILE  = path.join(__dirname, "../../odds.json");
-const ODDS_SPORT = "soccer_world_cup";
-
-// Same name map as index.html — keeps team names consistent
+// Team name normalisation — The Odds API spellings → our spellings
 const ODDS_NAME_MAP = {
   "United States":                "USA",
   "Bosnia and Herzegovina":       "Bosnia & Herzegovina",
@@ -165,7 +157,7 @@ const ODDS_NAME_MAP = {
   "Curacao":                      "Curaçao",
   "Democratic Republic of Congo": "DR Congo",
 };
-function normName(n) { return ODDS_NAME_MAP[n] || n; }
+const normName = n => ODDS_NAME_MAP[n] || n;
 
 function americanToProb(price) {
   const dec = price > 0 ? (price / 100) + 1 : (100 / Math.abs(price)) + 1;
@@ -177,57 +169,77 @@ function normalizeOutcomes(outcomes) {
   return outcomes.map((o, i) => ({ name: normName(o.name), p: raw[i] / total }));
 }
 
-// https.get wrapper that also returns response headers
-function fetchWithHeaders(url) {
-  return new Promise((resolve, reject) => {
-    https.get(url, res => {
-      const chunks = [];
-      res.on("data", c => chunks.push(c));
-      res.on("end", () => {
-        try {
-          resolve({
-            status:  res.statusCode,
-            headers: res.headers,
-            body:    JSON.parse(Buffer.concat(chunks).toString()),
-          });
-        } catch(e) { reject(new Error("JSON parse failed: " + e.message)); }
-      });
-    }).on("error", reject);
-  });
-}
-
 async function updateOdds(apiKey) {
   if (!apiKey) {
     console.log("ODDS_API_KEY not set — skipping odds update.");
+    console.log("  → Add it as a GitHub repository secret named ODDS_API_KEY");
     return;
   }
-  console.log("Fetching odds from The Odds API…");
+  console.log("ODDS_API_KEY is set ✓");
 
-  const url = `https://api.the-odds-api.com/v4/sports/${ODDS_SPORT}/odds` +
-              `?apiKey=${encodeURIComponent(apiKey)}&regions=us&markets=h2h&oddsFormat=american`;
+  // ── Step 1: list available sports to find the World Cup key ──────────────
+  console.log("\nListing available sports to find the World Cup event key…");
+  const sportsResp = await fetchFull(
+    `https://api.the-odds-api.com/v4/sports?apiKey=${encodeURIComponent(apiKey)}&all=true`
+  );
+  console.log(`Sports list: HTTP ${sportsResp.status}`);
 
-  const { status, headers, body } = await fetchWithHeaders(url);
-  const remaining = headers["x-requests-remaining"] ?? "?";
-  const used      = headers["x-requests-used"]      ?? "?";
-
-  if (status !== 200) {
-    console.warn(`Odds API returned ${status} — skipping odds update. Response: ${JSON.stringify(body).slice(0, 120)}`);
+  if (sportsResp.status !== 200) {
+    console.error("Could not retrieve sports list. Check that ODDS_API_KEY is valid.");
+    console.error("Response:", JSON.stringify(sportsResp.body).slice(0, 300));
     return;
   }
 
-  const now     = Date.now();
+  const allSports = Array.isArray(sportsResp.body) ? sportsResp.body : [];
+  const soccerAll = allSports.filter(s =>
+    s.group?.toLowerCase().includes("soccer") ||
+    s.group?.toLowerCase().includes("football") ||
+    s.key?.includes("soccer") || s.key?.includes("football")
+  );
+  console.log(`\nAll soccer/football sports (${soccerAll.length}):`);
+  soccerAll.forEach(s => console.log(`  [${s.active ? "ACTIVE" : "inactive"}] key="${s.key}"  title="${s.title}"`));
+
+  const wcCandidates = allSports.filter(s =>
+    s.key?.toLowerCase().includes("world_cup") ||
+    s.title?.toLowerCase().includes("world cup")
+  );
+  console.log(`\nWorld Cup candidates: ${wcCandidates.length}`);
+  wcCandidates.forEach(s => console.log(`  [${s.active?"ACTIVE":"inactive"}] key="${s.key}"  title="${s.title}"`));
+
+  // Prefer an active World Cup sport; fall back to first candidate or default
+  const sportKey = (wcCandidates.find(s => s.active) || wcCandidates[0])?.key || "soccer_world_cup";
+  console.log(`\nUsing sport key: "${sportKey}"`);
+
+  // ── Step 2: fetch H2H odds for that sport ─────────────────────────────────
+  console.log("Fetching H2H match odds…");
+  const oddsResp = await fetchFull(
+    `https://api.the-odds-api.com/v4/sports/${sportKey}/odds` +
+    `?apiKey=${encodeURIComponent(apiKey)}&regions=us&markets=h2h&oddsFormat=american`
+  );
+  const remaining = oddsResp.headers["x-requests-remaining"] ?? "?";
+  const used      = oddsResp.headers["x-requests-used"]      ?? "?";
+  console.log(`H2H odds: HTTP ${oddsResp.status} | used=${used} remaining=${remaining}`);
+
+  if (oddsResp.status !== 200) {
+    console.error("Odds request failed:", JSON.stringify(oddsResp.body).slice(0, 300));
+    return;
+  }
+
+  const matches = Array.isArray(oddsResp.body) ? oddsResp.body : [];
+  console.log(`Received ${matches.length} match objects.`);
+
+  // ── Step 3: compute per-team implied win probability ──────────────────────
+  const now      = Date.now();
   const teamOdds = {};
 
-  for (const match of body) {
+  for (const match of matches) {
     const mt = new Date(match.commence_time).getTime();
-    // Include matches not yet started or started within the last 2 hours
-    if (mt < now - 2 * 60 * 60 * 1000) continue;
+    if (mt < now - 2 * 60 * 60 * 1000) continue;   // skip matches started > 2 h ago
     if (!match.bookmakers?.length) continue;
 
     const home = normName(match.home_team);
     const away = normName(match.away_team);
 
-    // Collect normalized probabilities from each bookmaker, then average
     const bookieProbs = [];
     for (const bk of match.bookmakers) {
       const h2h = bk.markets?.find(m => m.key === "h2h");
@@ -236,7 +248,7 @@ async function updateOdds(apiKey) {
     }
     if (!bookieProbs.length) continue;
 
-    const avgProb = (nm) => {
+    const avgProb = nm => {
       const vals = bookieProbs.map(bp => bp.find(o => o.name === nm)?.p ?? 0);
       return vals.reduce((s, v) => s + v, 0) / vals.length;
     };
@@ -246,47 +258,42 @@ async function updateOdds(apiKey) {
     const drawProb = avgProb("Draw");
 
     for (const [team, winP, opp] of [[home, homeProb, away], [away, awayProb, home]]) {
-      // Keep only the next upcoming match per team
       if (!teamOdds[team] || mt < teamOdds[team].matchTime) {
         teamOdds[team] = {
-          winProb:  Math.round(winP  * 1000) / 1000,
-          drawProb: Math.round(drawProb * 1000) / 1000,
-          loseProb: Math.round((1 - winP - drawProb) * 1000) / 1000,
-          opp,
-          matchTime: mt,
+          winProb:  Math.round(winP               * 1000) / 1000,
+          drawProb: Math.round(drawProb           * 1000) / 1000,
+          loseProb: Math.round((1-winP-drawProb)  * 1000) / 1000,
+          opp, matchTime: mt,
         };
       }
     }
   }
 
-  const out = {
-    fetchedAt: new Date().toISOString(),
-    remaining,
-    used,
-    teamCount: Object.keys(teamOdds).length,
-    teamOdds,
-  };
-
+  const teamCount = Object.keys(teamOdds).length;
+  const out = { fetchedAt: new Date().toISOString(), remaining, used, sportKey, teamCount, teamOdds };
   fs.writeFileSync(ODDS_FILE, JSON.stringify(out, null, 2) + "\n");
-  console.log(`odds.json written — ${out.teamCount} teams, ${remaining} API calls remaining.`);
+
+  if (teamCount > 0) {
+    console.log(`\nodds.json written ✓ — ${teamCount} teams, ${remaining} calls remaining this month.`);
+    Object.entries(teamOdds).slice(0, 4).forEach(([t, o]) =>
+      console.log(`  ${t} vs ${o.opp}: Win ${Math.round(o.winProb*100)}% / Draw ${Math.round(o.drawProb*100)}%`)
+    );
+  } else {
+    console.log(`\nodds.json written — 0 teams found. The sport may be between stages or bookmakers haven't posted odds yet.`);
+  }
 }
 
 // ── main ───────────────────────────────────────────────────────────────────
 async function main() {
+  // --- history ---
   console.log("Fetching match data…");
   const data = await fetchJSON(DATA_URL);
   const snap = computeStandings(data.matches);
-
-  // Today's date in UTC (Actions runs in UTC)
   const today = new Date().toISOString().slice(0, 10);
 
-  // Load existing history (or start fresh)
   let history = [];
-  if (fs.existsSync(HISTORY_FILE)) {
-    history = JSON.parse(fs.readFileSync(HISTORY_FILE, "utf8"));
-  }
+  if (fs.existsSync(HISTORY_FILE)) history = JSON.parse(fs.readFileSync(HISTORY_FILE, "utf8"));
 
-  // Always update today's entry (scores can change during the day)
   const existingIdx = history.findIndex(h => h.date === today);
   const entry = { date: today, ...snap };
   if (existingIdx >= 0) {
@@ -297,18 +304,16 @@ async function main() {
     console.log(`Added snapshot for ${today}: Matt=${snap.Matt} Sean=${snap.Sean} Zach=${snap.Zach} Rusty=${snap.Rusty} played=${snap.played}`);
   }
 
-  // Keep sorted by date, cap at 120 entries (well past the tournament)
   history.sort((a, b) => a.date.localeCompare(b.date));
   if (history.length > 120) history = history.slice(-120);
-
   fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2) + "\n");
   console.log(`history.json written (${history.length} snapshots).`);
 
-  // Odds update — graceful skip if key not set
+  // --- odds ---
   await updateOdds(process.env.ODDS_API_KEY || "");
 }
 
 main().catch(err => {
-  console.error("Error:", err.message);
+  console.error("Fatal error:", err.message);
   process.exit(1);
 });
