@@ -1511,166 +1511,150 @@
   }
 
   /* ---------- fan zone ---------- */
-  .fz-meta {
-    font-size: 12px;
+  .fz-intro {
     color: var(--ink-soft);
-    margin: -10px 0 20px;
+    font-size: 14px;
+    max-width: 640px;
+    margin: -8px 0 28px;
+    line-height: 1.6;
+  }
+  .fz-section { margin-bottom: 40px; }
+  .fz-section-head {
     display: flex;
-    align-items: center;
-    gap: 14px;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 14px;
     flex-wrap: wrap;
   }
-  .fz-meta .fz-ts { color: var(--ink-faint); }
-  .fz-meta .fz-src { font-weight: 600; }
-
-  .fz-controls {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    align-items: center;
+  .fz-section-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 18px;
+    margin: 0;
   }
-  .fz-controls .fz-lbl {
+  .fz-section-count {
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+  .fz-scroll-hint {
     font-size: 10px;
     font-weight: 600;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--ink-faint);
-    margin-right: 4px;
-  }
-  .fz-sort-btn {
-    font-family: 'Inter', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    background: transparent;
-    border: 1px solid var(--rule);
-    color: var(--ink-soft);
-    cursor: pointer;
-    padding: 5px 12px;
-  }
-  .fz-sort-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .fz-sort-btn:hover:not(.active) { border-color: var(--ink-soft); color: var(--ink); }
-
-  .fz-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 32px;
+    margin-left: auto;
   }
 
-  .fz-card {
-    background: var(--paper);
-    border: 1px solid var(--rule);
+  /* ── TikTok carousel ── */
+  .fz-carousel {
     display: flex;
-    flex-direction: column;
-    text-decoration: none;
-    color: inherit;
-    transition: background 0.12s, box-shadow 0.12s;
-    cursor: pointer;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 0 16px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) transparent;
   }
-  .fz-card:hover {
-    background: var(--paper-deep);
-    box-shadow: 0 4px 16px -6px rgba(28,27,24,0.15);
-  }
-  .fz-card-img {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    object-fit: cover;
-    display: block;
-    border-bottom: 1px solid var(--rule-soft);
-    background: var(--paper-deep);
-  }
-  .fz-card-img.placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    line-height: 1;
-  }
-  .fz-card-body {
-    padding: 12px 14px;
-    flex: 1;
+  .fz-carousel::-webkit-scrollbar { height: 6px; }
+  .fz-carousel::-webkit-scrollbar-track { background: transparent; }
+  .fz-carousel::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+  .fz-tiktok-card {
+    flex: 0 0 auto;
+    width: 325px;
+    scroll-snap-align: start;
     display: flex;
     flex-direction: column;
     gap: 8px;
   }
-  .fz-card-flair {
+  .fz-tiktok-card blockquote {
+    margin: 0 !important;
+  }
+  .fz-card-caption {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    color: var(--ink-soft);
+    padding: 0 4px;
+  }
+  .fz-card-user {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--ink);
+  }
+  .fz-card-note {
+    color: var(--ink-soft);
+    font-size: 12px;
+  }
+  .fz-tag {
     font-family: 'Inter', sans-serif;
     font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
+    font-weight: 600;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--paper);
-    background: var(--accent);
     padding: 2px 6px;
-    align-self: flex-start;
+    background: var(--chip-bg);
+    color: var(--ink-faint);
   }
-  .fz-card-title {
+
+  /* ── Threads embed ── */
+  .fz-threads-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 14px;
+  }
+  .fz-threads-card {
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    overflow: hidden;
+  }
+  .fz-threads-iframe {
+    width: 100%;
+    min-height: 400px;
+    border: none;
+    display: block;
+  }
+
+  /* ── Article / link cards ── */
+  .fz-articles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px;
+  }
+  .fz-article-card {
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.12s;
+  }
+  .fz-article-card:hover { background: var(--paper-deep); }
+  .fz-article-source {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .fz-article-title {
     font-family: 'Fraunces', serif;
     font-weight: 600;
     font-size: 15px;
-    letter-spacing: -0.01em;
-    line-height: 1.35;
     color: var(--ink);
-    /* clamp to 3 lines */
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    line-height: 1.35;
   }
-  .fz-card-foot {
-    margin-top: auto;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: 'Inter', sans-serif;
-    font-size: 10px;
-    color: var(--ink-faint);
-    letter-spacing: 0.04em;
-    flex-wrap: wrap;
-  }
-  .fz-card-foot .sub { color: var(--ink-soft); font-weight: 600; }
-  .fz-card-foot .score { display: inline-flex; align-items: center; gap: 3px; }
-  .fz-card-foot .score .arr { color: var(--alive); font-size: 11px; }
-  .fz-card-foot .new-badge {
-    font-size: 8px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    background: var(--accent);
-    color: var(--paper);
-    padding: 1px 5px;
-    vertical-align: 1px;
-  }
-  .fz-card-open {
-    margin-top: auto;
-    padding-top: 8px;
-    border-top: 1px solid var(--rule-soft);
-    font-size: 11px;
-    font-weight: 600;
+  .fz-article-note {
+    font-size: 12px;
     color: var(--ink-soft);
-    letter-spacing: 0.04em;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 4px;
+    font-style: italic;
   }
-  .fz-card:hover .fz-card-open { color: var(--accent); }
-
-  .fz-bottom {
-    text-align: center;
-    padding: 16px 0 32px;
-    border-top: 1px solid var(--rule-soft);
-  }
-  .fz-bottom a {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink-soft);
-    letter-spacing: 0.04em;
-    text-decoration: none;
-  }
-  .fz-bottom a:hover { color: var(--accent); }
 
   .fz-empty {
     padding: 48px 0;
@@ -1689,16 +1673,30 @@
     margin-top: 10px;
     font-weight: 400;
   }
+  .fz-empty code, .fz-contribute code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--chip-bg);
+    padding: 2px 5px;
+  }
+  .fz-contribute {
+    font-size: 12px;
+    color: var(--ink-faint);
+    border-top: 1px solid var(--rule-soft);
+    padding-top: 16px;
+    margin-top: 16px;
+    margin-bottom: 32px;
+    letter-spacing: 0.02em;
+  }
 
   /* fan zone mobile */
-  @media (max-width: 900px) {
-    .fz-grid { grid-template-columns: repeat(2, 1fr); }
-  }
   @media (max-width: 600px) {
-    .fz-grid { grid-template-columns: 1fr; gap: 8px; }
-    .fz-card-img { aspect-ratio: 16 / 7; }
-    .fz-card-title { font-size: 14px; -webkit-line-clamp: 2; }
+    .fz-tiktok-card { width: 290px; }
+    .fz-threads-grid { grid-template-columns: 1fr; }
+    .fz-articles { grid-template-columns: 1fr; }
+    .fz-threads-iframe { min-height: 350px; }
   }
+
 
   /* ---------- group advancement tracker ---------- */
   .adv-wrap {
@@ -3343,7 +3341,7 @@ function renderGroups(c, oddsData, oddsError) {
       ${groups.map(g => renderGroupTable(g, c.groupTables[g], oddsData?.teamOdds)).join("")}
     </div>
     <div class="groups-legend">
-      <span class="gl-it"><span class="gl-bar zone-clinched"></span>Clinched advanced <span class="gt-status adv">CLINCHED</span></span>
+      <span class="gl-it"><span class="gl-bar zone-clinched"></span>Clinched advanced</span>
       <span class="gl-it"><span class="gl-bar zone-top"></span>Currently top 2</span>
       <span class="gl-it"><span class="gl-bar zone-third"></span>Currently advancing as 3rd <span class="gt-status m3rd">3RD ·#n</span></span>
       <span class="gl-it"><span class="gt-star">★</span> Clinched group winner</span>
@@ -3395,8 +3393,7 @@ function renderGroupTable(letter, rows, teamOdds) {
                           : (st === "eliminated") ? "zone-out" : "";
             // status marker next to the name
             let stHtml = "";
-            if (st === "clinchedAdv") stHtml = `<span class="gt-status adv">CLINCHED</span>`;
-            else if (st === "third-in") stHtml = `<span class="gt-status m3rd">3RD ·#${r.thirdRank}</span>`;
+            if (st === "third-in") stHtml = `<span class="gt-status m3rd">3RD ·#${r.thirdRank}</span>`;
             else if (st === "eliminated") stHtml = `<span class="gt-status elm">OUT</span>`;
             // group-winner star (clinched 1st specifically)
             const starHtml = r.wonGroup ? `<span class="gt-star" title="Clinched group winner">★</span>` : "";
@@ -3891,138 +3888,32 @@ function renderUpsetOwnerCard(s, c) {
   `;
 }
 
+
 // ═══════════════════════════════════════════════════════════════
-// FAN ZONE — Reddit fan culture feed
+// FAN ZONE — curated links from links.json (TikTok, Threads, articles)
 // ═══════════════════════════════════════════════════════════════
-const FZ_STORE_KEY = "wcpool-fanzone-v1";
-const FZ_CACHE_MS  = 30 * 60 * 1000; // 30 minutes
-let   FZ_MEM       = null;            // in-memory cache { posts, fetchedAt }
-let   FZ_SORT      = "hot";           // "hot" | "new"
-let   FZ_LOADING   = false;
+const FZ_CACHE_KEY = "wcpool-fanzone-v2";
+const FZ_CACHE_MS  = 15 * 60 * 1000;
+let   FZ_MEM       = null;
 
-// Broad feeds that always have posts — we filter client-side rather than searching
-const FZ_FEEDS = [
-  // Primary: r/worldcup hot — the main community feed
-  "https://www.reddit.com/r/worldcup/hot.json?limit=50&raw_json=1",
-  // Rising: catches newer breakout posts before they hit hot
-  "https://www.reddit.com/r/worldcup/rising.json?limit=25&raw_json=1",
-  // r/soccer for broader World Cup fan discussion
-  "https://www.reddit.com/r/soccer/search.json?q=world+cup+2026&sort=hot&t=week&limit=20&raw_json=1",
-];
-
-// Only remove the truly mechanical automated posts (match threads etc).
-// Everything else — fan discussion, culture, reactions, travel — we keep.
-function isFanCulturePost(post) {
-  const t = post.title || "";
-  return !/^(Match Thread:|Post.Match Thread:|Pre-Match Thread:|Daily Discussion|Friendly Reminder|Mod Post)/i.test(t);
-}
-
-function normalizePost(raw) {
-  let thumb = null;
-  const preview = raw.preview?.images?.[0];
-  if (preview?.source?.url) {
-    thumb = preview.source.url.replace(/&amp;/g, "&");
-  } else if (raw.thumbnail?.startsWith("http")) {
-    thumb = raw.thumbnail;
-  }
-  return {
-    id:        raw.id,
-    title:     raw.title,
-    url:       raw.url,
-    permalink: "https://reddit.com" + raw.permalink,
-    score:     raw.score,
-    comments:  raw.num_comments,
-    subreddit: raw.subreddit,
-    author:    raw.author,
-    created:   raw.created_utc * 1000,
-    thumb,
-    domain:    raw.domain,
-    isSelf:    raw.is_self,
-    flair:     raw.link_flair_text || null,
-  };
-}
-
-// Fetch one Reddit URL.
-// Strategy:
-//   1. Direct browser fetch — Reddit's public JSON API allows CORS from any origin.
-//   2. If that fails (some networks block reddit.com), fall back to allorigins.win
-//      using the /get endpoint which wraps the response in a JSON object so we
-//      can distinguish a proxy-200/reddit-403 from a real success.
-async function fzFetchOne(url) {
-  // --- try 1: direct ---
-  try {
-    const r = await fetch(url, { cache: "no-store" });
-    if (r.ok) {
-      const data = await r.json();
-      if (data?.data?.children) {
-        console.log("[FanZone] direct OK:", url.slice(0, 60));
-        return data;
-      }
-    }
-  } catch (e) {
-    console.warn("[FanZone] direct failed:", e.message);
-  }
-  // --- try 2: allorigins.win /get (always returns 200; wraps Reddit response) ---
-  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-  const r = await fetch(proxy, { cache: "no-store" });
-  if (!r.ok) throw new Error("Proxy HTTP " + r.status);
-  const wrapper = await r.json();
-  const code = wrapper?.status?.http_code;
-  if (!wrapper.contents) throw new Error(`Reddit → ${code ?? "no content"}`);
-  const data = JSON.parse(wrapper.contents);
-  if (!data?.data?.children) throw new Error("Unexpected Reddit response shape");
-  console.log("[FanZone] proxy OK:", url.slice(0, 60));
-  return data;
-}
-
-async function fetchFanZone(force = false) {
-  if (!force && FZ_MEM && Date.now() - FZ_MEM.fetchedAt < FZ_CACHE_MS) return FZ_MEM;
+async function fetchLinks(force = false) {
+  if (!force && FZ_MEM && Date.now() - FZ_MEM._cachedAt < FZ_CACHE_MS) return FZ_MEM;
   if (!force) {
     try {
-      const raw = localStorage.getItem(FZ_STORE_KEY);
+      const raw = localStorage.getItem(FZ_CACHE_KEY);
       if (raw) {
         const c = JSON.parse(raw);
-        if (c?.posts && Date.now() - c.fetchedAt < FZ_CACHE_MS) { FZ_MEM = c; return c; }
+        if (c?.links && Date.now() - c._cachedAt < FZ_CACHE_MS) { FZ_MEM = c; return c; }
       }
-    } catch (e) {}
+    } catch(e) {}
   }
-
-  const results = await Promise.allSettled(FZ_FEEDS.map(fzFetchOne));
-
-  const succeeded = results.filter(r => r.status === "fulfilled").length;
-  console.log(`[FanZone] ${succeeded}/${FZ_FEEDS.length} feeds succeeded`);
-  if (succeeded === 0) {
-    // Report what went wrong
-    results.forEach((r, i) => r.status === "rejected" &&
-      console.warn(`[FanZone] Feed ${i} error:`, r.reason?.message || r.reason));
-  }
-
-  const seen = new Set();
-  const posts = [];
-  for (const res of results) {
-    if (res.status !== "fulfilled") continue;
-    const children = res.value?.data?.children || [];
-    for (const child of children) {
-      const raw = child?.data;
-      if (!raw || seen.has(raw.id)) continue;
-      if (raw.stickied || raw.over_18) continue;
-      if (!isFanCulturePost(raw)) continue;
-      seen.add(raw.id);
-      posts.push(normalizePost(raw));
-    }
-  }
-
-  posts.sort((a, b) => b.score - a.score);
-  console.log(`[FanZone] ${posts.length} posts collected from ${succeeded} feeds`);
-
-  const fetchedAt = Date.now();
-  FZ_MEM = { posts, fetchedAt, feedsOk: succeeded };
-  try { localStorage.setItem(FZ_STORE_KEY, JSON.stringify(FZ_MEM)); } catch (e) {}
-  return FZ_MEM;
-}
-
-function fmtScore(n) {
-  return n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") + "k" : String(n);
+  const resp = await fetch("./links.json", { cache: "no-store" });
+  if (!resp.ok) return { links: [], _cachedAt: Date.now() };
+  const links = await resp.json();
+  const result = { links: Array.isArray(links) ? links : [], _cachedAt: Date.now() };
+  FZ_MEM = result;
+  try { localStorage.setItem(FZ_CACHE_KEY, JSON.stringify(result)); } catch(e) {}
+  return result;
 }
 
 function renderFanZone(opts = {}) {
@@ -4033,116 +3924,153 @@ function renderFanZone(opts = {}) {
     app.innerHTML = `
       <p class="section-label">Fan Zone</p>
       <h2 class="section-title">Fan life at USA 2026</h2>
-      <div class="panel-msg" style="padding:40px 0">Fetching stories from Reddit…
-        <span class="small">r/worldcup · r/soccer</span>
-      </div>`;
+      <div class="panel-msg" style="padding:40px 0">Loading curated content…</div>`;
     return;
   }
-
   if (opts.error) {
     app.innerHTML = `
       <p class="section-label">Fan Zone</p>
       <h2 class="section-title">Fan life at USA 2026</h2>
-      <div class="fz-empty">Couldn't reach Reddit right now.
-        <small>${opts.error}</small>
-        <small style="margin-top:8px;"><button onclick="triggerFanZoneLoad(true)"
-          style="font:inherit;background:var(--ink);color:var(--paper);border:none;padding:6px 14px;cursor:pointer;margin-top:6px;">Try again</button></small>
-      </div>`;
+      <div class="fz-empty">Couldn't load links.json. <small>${opts.error}</small></div>`;
     return;
   }
 
-  const { posts, fetchedAt } = opts;
-  const sorted = FZ_SORT === "new"
-    ? [...posts].sort((a, b) => b.created - a.created)
-    : posts; // already sorted by score
+  const links = (opts.links || []).slice().sort((a,b) => (b.added || "").localeCompare(a.added || ""));
+  const tiktoks  = links.filter(l => l.type === "tiktok");
+  const threads  = links.filter(l => l.type === "threads");
+  const articles = links.filter(l => l.type === "article" || l.type === "link");
+
+  const tiktokSection = tiktoks.length ? `
+    <div class="fz-section">
+      <div class="fz-section-head">
+        <h3 class="fz-section-title">\u{1f3ac} TikTok</h3>
+        <span class="fz-section-count">${tiktoks.length} clip${tiktoks.length === 1 ? "" : "s"}</span>
+        <span class="fz-scroll-hint">\u2190 scroll \u2192</span>
+      </div>
+      <div class="fz-carousel" id="fzCarousel">
+        ${tiktoks.map(renderTikTokEmbed).join("")}
+      </div>
+    </div>` : "";
+
+  const threadsSection = threads.length ? `
+    <div class="fz-section">
+      <h3 class="fz-section-title">\u{1f9f5} Threads</h3>
+      <div class="fz-threads-grid">
+        ${threads.map(renderThreadsEmbed).join("")}
+      </div>
+    </div>` : "";
+
+  const articlesSection = articles.length ? `
+    <div class="fz-section">
+      <h3 class="fz-section-title">\u{1f4f0} Articles & links</h3>
+      <div class="fz-articles">
+        ${articles.map(renderArticleCard).join("")}
+      </div>
+    </div>` : "";
+
+  const isEmpty = !tiktoks.length && !threads.length && !articles.length;
 
   app.innerHTML = `
-    <p class="section-label">Fan Zone · r/worldcup · r/soccer</p>
+    <p class="section-label">Fan Zone \u00b7 curated by the pool</p>
     <h2 class="section-title">Fan life at USA 2026</h2>
-    <div class="fz-meta">
-      <span class="fz-src">Best of Reddit</span>
-      <span class="fz-ts">Updated ${fmtRelative(fetchedAt)} ·
-        <button onclick="triggerFanZoneLoad(true)"
-          style="font:inherit;font-size:11px;background:none;border:none;cursor:pointer;color:var(--ink-soft);padding:0;text-decoration:underline;">refresh</button>
-      </span>
-    </div>
-
-    <div class="fz-controls">
-      <span class="fz-lbl">Sort</span>
-      <button class="fz-sort-btn ${FZ_SORT === "hot" ? "active" : ""}" data-fzsort="hot">Hot</button>
-      <button class="fz-sort-btn ${FZ_SORT === "new" ? "active" : ""}" data-fzsort="new">New</button>
-    </div>
-
-    ${sorted.length === 0 ? `
-      <div class="fz-empty">No posts loaded yet.
-        <small>${(opts.feedsOk || 0)} of ${FZ_FEEDS.length} Reddit feeds responded.
-        ${(opts.feedsOk || 0) === 0
-          ? "Reddit may be blocking requests — try again in a moment."
-          : "All posts were filtered. Try switching to New sort."
-        }</small>
+    <p class="fz-intro">
+      The best viral moments, fan reactions, and cultural collisions from the World Cup.
+      All hand-picked \u2014 no algorithm, no ads.
+    </p>
+    ${isEmpty ? `
+      <div class="fz-empty">No links yet.
+        <small>Add entries to <code>links.json</code> in the repo to populate this page.</small>
       </div>
     ` : `
-      <div class="fz-grid">
-        ${sorted.slice(0, 24).map(renderFanCard).join("")}
-      </div>
-      <div class="fz-bottom">
-        <a href="https://reddit.com/r/worldcup" target="_blank" rel="noopener">
-          See more on r/worldcup ↗
-        </a>
-      </div>
+      ${tiktokSection}
+      ${threadsSection}
+      ${articlesSection}
     `}
+    <div class="fz-contribute">
+      Found something good? Add it to <code>links.json</code> in the repo \u2014
+      TikTok, Threads, articles, anything goes.
+    </div>
   `;
 
-  // Sort toggles
-  app.querySelectorAll("[data-fzsort]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      FZ_SORT = btn.dataset.fzsort;
-      renderFanZone({ posts, fetchedAt });
-    });
-  });
+  if (tiktoks.length) loadTikTokSDK();
+  if (threads.length) loadThreadsSDK();
 }
 
-function renderFanCard(p) {
-  const age     = Date.now() - p.created;
-  const isNew   = age < 6 * 60 * 60 * 1000; // < 6 hours
-  const timeAgo = fmtRelative(p.created);
-  const emoji   = ["⚽", "🌎", "🇺🇸", "🏟️", "🎉", "🤣"][Math.abs(p.id.charCodeAt(0)) % 6];
-
-  const imgHtml = p.thumb
-    ? `<img class="fz-card-img" src="${p.thumb}" alt="" loading="lazy"
-            onerror="this.outerHTML='<div class=\\'fz-card-img placeholder\\'>${emoji}</div>'">`
-    : `<div class="fz-card-img placeholder">${emoji}</div>`;
-
-  const flairHtml = p.flair
-    ? `<span class="fz-card-flair">${p.flair}</span>`
-    : "";
-
-  const newBadge = isNew ? `<span class="new-badge">NEW</span>` : "";
-
+function renderTikTokEmbed(link) {
   return `
-    <a class="fz-card" href="${p.permalink}" target="_blank" rel="noopener noreferrer">
-      ${imgHtml}
-      <div class="fz-card-body">
-        ${flairHtml}
-        <div class="fz-card-title">${p.title}</div>
-        <div class="fz-card-foot">
-          <span class="sub">r/${p.subreddit}</span>
-          <span class="score"><span class="arr">▲</span>${fmtScore(p.score)}</span>
-          <span>💬 ${fmtScore(p.comments)}</span>
-          <span>${timeAgo} ${newBadge}</span>
-        </div>
-        <div class="fz-card-open">Read on Reddit ↗</div>
+    <div class="fz-tiktok-card">
+      <blockquote class="tiktok-embed"
+                  cite="${link.url}"
+                  data-video-id="${link.videoId}"
+                  style="max-width:325px; min-width:275px;">
+        <section>
+          <a target="_blank" href="${link.url}">${link.username}</a>
+          <p>${link.caption || ""}</p>
+        </section>
+      </blockquote>
+      <div class="fz-card-caption">
+        <span class="fz-card-user">${link.username}</span>
+        ${(link.tags || []).map(t => '<span class="fz-tag">' + t + '</span>').join("")}
       </div>
-    </a>
-  `;
+    </div>`;
 }
 
-// Called from inline onclick (refresh button) and nav click
+let tiktokSDKLoaded = false;
+function loadTikTokSDK() {
+  if (tiktokSDKLoaded && window.tiktokEmbed) {
+    try { window.tiktokEmbed.reload(); } catch(e) {}
+    return;
+  }
+  const s = document.createElement("script");
+  s.src = "https://www.tiktok.com/embed.js";
+  s.async = true;
+  s.onload = () => { tiktokSDKLoaded = true; };
+  document.body.appendChild(s);
+}
+
+function renderThreadsEmbed(link) {
+  const embedUrl = link.url + "/embed";
+  return `
+    <div class="fz-threads-card">
+      <iframe class="fz-threads-iframe"
+              src="${embedUrl}"
+              allowtransparency="true"
+              allowfullscreen="true"
+              frameborder="0"
+              scrolling="no"
+              loading="lazy">
+      </iframe>
+      <div class="fz-card-caption">
+        <span class="fz-card-user">${link.username}</span>
+        <span class="fz-card-note">${link.caption || ""}</span>
+      </div>
+    </div>`;
+}
+
+function loadThreadsSDK() {
+  if (document.querySelector('script[src*="instagram.com/embed"]')) return;
+  const s = document.createElement("script");
+  s.src = "https://www.instagram.com/embed.js";
+  s.async = true;
+  s.onload = () => { if (window.instgrm) window.instgrm.Embeds.process(); };
+  document.body.appendChild(s);
+}
+
+function renderArticleCard(link) {
+  const domain = link.source || (link.url ? new URL(link.url).hostname.replace("www.", "") : "");
+  return `
+    <a class="fz-article-card" href="${link.url}" target="_blank" rel="noopener">
+      <span class="fz-article-source">${domain}</span>
+      <span class="fz-article-title">${link.caption || link.title || link.url}</span>
+      ${link.note ? '<span class="fz-article-note">' + link.note + '</span>' : ""}
+    </a>`;
+}
+
 function triggerFanZoneLoad(force = false) {
   CURRENT_VIEW = { name: "fanzone" };
   renderFanZone({ loading: true });
-  fetchFanZone(force).then(({ posts, fetchedAt, feedsOk }) => {
-    if (CURRENT_VIEW.name === "fanzone") renderFanZone({ posts, fetchedAt, feedsOk });
+  fetchLinks(force).then(({ links }) => {
+    if (CURRENT_VIEW.name === "fanzone") renderFanZone({ links });
   }).catch(err => {
     if (CURRENT_VIEW.name === "fanzone") renderFanZone({ error: err.message || String(err) });
   });
