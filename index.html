@@ -21,6 +21,7 @@
     --accent-deep:  #8a2614;
     --gold:         #c9a227;
     --alive:        #2f6b3a;
+    --zone-blue:    #3b6ea5;
     --eliminated:   #8a857a;
     --chip-bg:      #ece6d6;
 
@@ -1090,11 +1091,39 @@
     vertical-align: 1px;
   }
   table.group-table td.gt-pts { font-weight: 700; color: var(--ink); }
-  table.group-table tr.qual td.pos { color: var(--alive); font-weight: 700; }
-  table.group-table tr.qual { background: rgba(47,107,58,0.05); }
-  table.group-table tr.maybe td.pos { color: var(--gold); }
   table.group-table tr.pool .gt-name { color: var(--accent); }
   table.group-table tbody tr:last-child td { border-bottom: none; }
+
+  /* left-edge advancement zone bar (blue = top 2 / clinched, amber = 3rd in-zone) */
+  table.group-table tbody tr { position: relative; }
+  table.group-table tbody tr td:first-child { position: relative; }
+  table.group-table tbody tr.zone-top   td.pos { box-shadow: inset 4px 0 0 var(--zone-blue); }
+  table.group-table tbody tr.zone-third td.pos { box-shadow: inset 4px 0 0 var(--gold); }
+  table.group-table tbody tr.zone-out   td.pos { box-shadow: inset 4px 0 0 transparent; }
+  table.group-table tbody tr.zone-top   td.pos { color: var(--zone-blue); font-weight: 700; }
+  table.group-table tbody tr.zone-third td.pos { color: var(--gold); font-weight: 700; }
+  table.group-table tbody tr.zone-out  { opacity: 0.55; }
+  table.group-table tbody tr.zone-top   { background: rgba(44,92,138,0.05); }
+  table.group-table tbody tr.zone-third { background: rgba(201,162,39,0.06); }
+
+  /* group-winner star */
+  .gt-star {
+    color: var(--gold);
+    font-size: 12px;
+    margin-left: 4px;
+    vertical-align: 0;
+    line-height: 1;
+  }
+  /* legend zone bar swatch */
+  .gl-bar {
+    display: inline-block;
+    width: 4px;
+    height: 14px;
+    border-radius: 1px;
+    vertical-align: -2px;
+  }
+  .gl-bar.zone-top   { background: var(--zone-blue); }
+  .gl-bar.zone-third { background: var(--gold); }
 
   /* group status badges */
   .gt-status {
@@ -1109,8 +1138,8 @@
     margin-left: 4px;
     line-height: 1.5;
   }
-  .gt-status.adv  { background: var(--alive);      color: var(--paper); }
-  .gt-status.cln  { border: 1px solid var(--alive); color: var(--alive); }
+  .gt-status.adv  { background: var(--zone-blue); color: var(--paper); }
+  .gt-status.cln  { border: 1px solid var(--zone-blue); color: var(--zone-blue); }
   .gt-status.m3rd { border: 1px solid var(--gold);  color: var(--gold); }
   .gt-status.elm  { border: 1px solid var(--eliminated); color: var(--eliminated); }
 
@@ -1665,6 +1694,70 @@
     .fz-grid { grid-template-columns: 1fr; gap: 8px; }
     .fz-card-img { aspect-ratio: 16 / 7; }
     .fz-card-title { font-size: 14px; -webkit-line-clamp: 2; }
+  }
+
+  /* ---------- group advancement tracker ---------- */
+  .adv-wrap {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    margin-bottom: 36px;
+    padding: 20px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    flex-wrap: wrap;
+  }
+  .adv-chart { flex-shrink: 0; }
+  .adv-donut { width: 180px; height: 180px; }
+  .adv-ring { transition: stroke-dasharray 0.5s ease, stroke-dashoffset 0.5s ease; }
+  .adv-center-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 38px;
+    fill: var(--ink);
+  }
+  .adv-center-lbl {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    fill: var(--ink-faint);
+  }
+  .adv-legend {
+    flex: 1;
+    min-width: 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .adv-leg-row {
+    display: grid;
+    grid-template-columns: 14px 60px 28px 1fr;
+    gap: 10px;
+    align-items: baseline;
+    font-size: 13px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .adv-leg-row:last-child { border-bottom: none; }
+  .adv-leg-row.tbd { opacity: 0.7; }
+  .adv-sw { width: 14px; height: 14px; border-radius: 3px; align-self: center; }
+  .adv-leg-owner { font-family: 'Fraunces', serif; font-weight: 700; font-size: 15px; }
+  .adv-leg-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 15px;
+    text-align: right;
+    color: var(--ink);
+  }
+  .adv-leg-teams { font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
+  .adv-none { color: var(--ink-faint); font-style: italic; }
+
+  @media (max-width: 600px) {
+    .adv-wrap { gap: 20px; justify-content: center; padding: 16px; }
+    .adv-leg-row { grid-template-columns: 14px 52px 24px 1fr; font-size: 12px; }
+    .adv-leg-teams { font-size: 11px; }
   }
 
   /* ---------- footer ---------- */
@@ -2391,34 +2484,72 @@ function compute(data) {
     arr.sort((a,b) => (b.pts - a.pts) || (b.gd - a.gd) || (b.gf - a.gf) || a.team.localeCompare(b.team));
     arr.forEach((r, i) => { r.rank = i + 1; });
 
-    // ----- group status: clinched / eliminated / advanced -----
-    const allDone = arr.every(r => r.played === 3);
-    for (const r of arr) r.remaining = 3 - r.played;
-    // max points each team could still reach
-    for (const r of arr) r.maxPts = r.pts + 3 * r.remaining;
+    // ----- per-group advancement math -----
+    for (const r of arr) {
+      r.remaining = 3 - r.played;
+      r.maxPts    = r.pts + 3 * r.remaining;
+      r.groupStatus = null;   // "clinchedAdv" | "top2" | "third-in" | "third-out" | "eliminated"
+      r.wonGroup    = false;  // clinched 1st place specifically
+    }
 
     if (arr.length === 4) {
       const [p1, p2, p3, p4] = arr;
-      // Clinched top 2: current pts > max possible for 3rd place
-      if (p1.pts > p3.maxPts) p1.groupStatus = "clinched";
-      if (p2.pts > p3.maxPts) p2.groupStatus = "clinched";
-      // Eliminated from top 2: max possible < current 2nd's pts
-      if (p3.maxPts < p2.pts) p3.groupStatus = "eliminated";
-      if (p4.maxPts < p2.pts) p4.groupStatus = "eliminated";
-      // After all games: lock statuses
-      if (allDone) {
-        if (!p1.groupStatus) p1.groupStatus = "clinched";
-        if (!p2.groupStatus) p2.groupStatus = "clinched";
-        if (!p3.groupStatus) p3.groupStatus = "maybe3rd";
-        if (!p4.groupStatus) p4.groupStatus = "eliminated";
+
+      // Clinched a top-2 spot: current pts strictly greater than the max the
+      // current 3rd-place team could still reach (so cannot be overtaken for top 2).
+      if (p1.pts > p3.maxPts) p1.clinchedTop2 = true;
+      if (p2.pts > p3.maxPts) p2.clinchedTop2 = true;
+
+      // Clinched 1st specifically: pts greater than what 2nd could ever reach.
+      if (p1.pts > p2.maxPts) p1.wonGroup = true;
+
+      // Eliminated from a top-2 finish: can't reach current 2nd's points.
+      if (p3.maxPts < p2.pts) p3.elimTop2 = true;
+      if (p4.maxPts < p2.pts) p4.elimTop2 = true;
+
+      // Once all three group games are played, ranks are final.
+      if (arr.every(r => r.played === 3)) {
+        p1.clinchedTop2 = true; p1.wonGroup = (p1.pts > p2.pts) || (p1.pts === p2.pts);
+        p2.clinchedTop2 = true;
+        p3.groupFinal3rd = true;
+        p4.elimTop2 = true;
       }
     }
-    // Override with confirmed data from R32 bracket
-    for (const r of arr) {
-      if (advancedSet.has(r.team)) r.groupStatus = "advanced";
-    }
+
+    // Confirmed via the R32 bracket (openfootball names teams once set)
+    for (const r of arr) if (advancedSet.has(r.team)) r.bracketConfirmed = true;
 
     groupTables[grp] = arr;
+  }
+
+  // ----- cross-group third-place ranking (FIFA: best 8 of 12 third-place teams advance) -----
+  const thirdPlace = [];
+  for (const grp of "ABCDEFGHIJKL") {
+    const arr = groupTables[grp];
+    if (arr && arr[2]) thirdPlace.push(arr[2]); // index 2 = 3rd place
+  }
+  // Rank third-place teams by pts, GD, GF (same tiebreaker chain)
+  thirdPlace.sort((a,b) => (b.pts - a.pts) || (b.gd - a.gd) || (b.gf - a.gf) || a.team.localeCompare(b.team));
+  const top8thirds = new Set(thirdPlace.slice(0, 8).map(r => r.team));
+  thirdPlace.forEach((r, i) => { r.thirdRank = i + 1; });
+
+  // ----- assign final groupStatus to every team -----
+  for (const grp of "ABCDEFGHIJKL") {
+    const arr = groupTables[grp] || [];
+    arr.forEach((r, i) => {
+      const rank = i + 1;
+      if (r.bracketConfirmed || r.clinchedTop2) {
+        r.groupStatus = "clinchedAdv";
+      } else if (rank <= 2) {
+        r.groupStatus = "top2";
+      } else if (rank === 3) {
+        // 3rd place: advancing only if currently among the best 8 thirds
+        if (r.elimTop2 && !top8thirds.has(r.team)) r.groupStatus = "eliminated";
+        else r.groupStatus = top8thirds.has(r.team) ? "third-in" : "third-out";
+      } else {
+        r.groupStatus = r.elimTop2 ? "eliminated" : "fourth";
+      }
+    });
   }
 
   // ----- upsets: lower-seeded team wins or draws against a higher-seeded one -----
@@ -3053,6 +3184,97 @@ function startCountdownTicker() {
   }, 1000);
 }
 
+// ---------- GROUP ADVANCEMENT TRACKER (doughnut of clinched advancers) ----------
+const ADVANCE_SLOTS = 32; // 2026 format: 24 top-2 + 8 best thirds = 32 advance
+
+function renderAdvancementTracker(c) {
+  // Count clinched-advanced teams per owner, with the team list for tooltips
+  const byOwner = {};
+  for (const o of OWNERS) byOwner[o] = [];
+  for (const grp of "ABCDEFGHIJKL") {
+    for (const r of (c.groupTables[grp] || [])) {
+      if (r.groupStatus === "clinchedAdv" && r.owner) {
+        byOwner[r.owner].push({ team: r.team, group: grp, won: r.wonGroup });
+      }
+    }
+  }
+  const clinchedTotal = OWNERS.reduce((s, o) => s + byOwner[o].length, 0);
+  const tbd = Math.max(ADVANCE_SLOTS - clinchedTotal, 0);
+
+  // Build segments: one per owner (if they have any) + a TBD remainder
+  const segments = [];
+  for (const o of OWNERS) {
+    if (byOwner[o].length > 0) {
+      segments.push({ label: o, count: byOwner[o].length, color: OWNER_COLOR_HEX[o], teams: byOwner[o] });
+    }
+  }
+  segments.push({ label: "TBD", count: tbd, color: "var(--rule)", teams: null });
+
+  // ----- doughnut geometry (stroke-dasharray technique) -----
+  const size = 180, stroke = 26, r = (size - stroke) / 2, cx = size / 2, cy = size / 2;
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
+  const rings = segments.map((seg, i) => {
+    const frac = seg.count / ADVANCE_SLOTS;
+    const dash = frac * circ;
+    const ring = `
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+        stroke="${seg.color}" stroke-width="${stroke}"
+        stroke-dasharray="${dash.toFixed(2)} ${(circ - dash).toFixed(2)}"
+        stroke-dashoffset="${(-offset).toFixed(2)}"
+        transform="rotate(-90 ${cx} ${cy})"
+        class="adv-ring" data-seg="${i}">
+        <title>${seg.label}: ${seg.count} ${seg.label === "TBD" ? "slots open" : "clinched"}</title>
+      </circle>`;
+    offset += dash;
+    return ring;
+  }).join("");
+
+  const doughnut = `
+    <svg viewBox="0 0 ${size} ${size}" class="adv-donut" role="img"
+         aria-label="${clinchedTotal} of ${ADVANCE_SLOTS} advancement slots clinched">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--rule-soft)" stroke-width="${stroke}" opacity="0.4"/>
+      ${rings}
+      <text x="${cx}" y="${cy - 4}" text-anchor="middle" class="adv-center-num">${clinchedTotal}</text>
+      <text x="${cx}" y="${cy + 14}" text-anchor="middle" class="adv-center-lbl">of ${ADVANCE_SLOTS} clinched</text>
+    </svg>`;
+
+  // ----- legend / owner breakdown -----
+  const ownerRows = OWNERS.map(o => {
+    const teams = byOwner[o];
+    const teamList = teams.length
+      ? teams.map(t => `${t.team}${t.won ? " ★" : ""}`).join(", ")
+      : `<span class="adv-none">none clinched yet</span>`;
+    return `
+      <div class="adv-leg-row">
+        <span class="adv-sw" style="background:${OWNER_COLOR_HEX[o]};"></span>
+        <span class="adv-leg-owner">${o}</span>
+        <span class="adv-leg-count">${teams.length}</span>
+        <span class="adv-leg-teams">${teamList}</span>
+      </div>`;
+  }).join("");
+
+  const tbdRow = `
+    <div class="adv-leg-row tbd">
+      <span class="adv-sw" style="background:var(--rule);"></span>
+      <span class="adv-leg-owner">TBD</span>
+      <span class="adv-leg-count">${tbd}</span>
+      <span class="adv-leg-teams"><span class="adv-none">advancement slots not yet claimed</span></span>
+    </div>`;
+
+  return `
+    <p class="section-label">Group advancement tracker</p>
+    <h2 class="section-title">Race to the Round of 32</h2>
+    <div class="adv-wrap">
+      <div class="adv-chart">${doughnut}</div>
+      <div class="adv-legend">
+        ${ownerRows}
+        ${tbdRow}
+      </div>
+    </div>
+  `;
+}
+
 // ---------- GROUPS (group-stage tables) ----------
 function renderGroups(c, oddsData, oddsError) {
   setNav("groups");
@@ -3083,6 +3305,7 @@ function renderGroups(c, oddsData, oddsError) {
 
   app.innerHTML = `
     ${renderMatchBanner(c)}
+    ${renderAdvancementTracker(c)}
     <p class="section-label">Group stage · ${c.playedCount} of ${c.totalMatches} matches played</p>
     <h2 class="section-title">All 12 groups</h2>
     <p style="color:var(--ink-soft);margin:0 0 16px;max-width:640px;font-size:14px;">
@@ -3094,10 +3317,10 @@ function renderGroups(c, oddsData, oddsError) {
       ${groups.map(g => renderGroupTable(g, c.groupTables[g], oddsData?.teamOdds)).join("")}
     </div>
     <div class="groups-legend">
-      <span class="gl-it"><span class="gt-status adv">ADV</span> Confirmed through</span>
-      <span class="gl-it"><span class="gt-status cln">CLN</span> Clinched top 2</span>
-      <span class="gl-it"><span class="gt-status m3rd">3RD?</span> Possible best-3rd</span>
-      <span class="gl-it"><span class="gt-status elm">OUT</span> Eliminated from top 2</span>
+      <span class="gl-it"><span class="gl-bar zone-top"></span>Clinched advanced <span class="gt-status adv">CLINCHED</span></span>
+      <span class="gl-it"><span class="gl-bar zone-top"></span>Currently top 2</span>
+      <span class="gl-it"><span class="gl-bar zone-third"></span>Currently advancing as 3rd <span class="gt-status m3rd">3RD ·#n</span></span>
+      <span class="gl-it"><span class="gt-star">★</span> Clinched group winner</span>
       ${hasOdds ? `<span class="gl-it odds-note">Win% = implied probability of winning next match (vig-free avg across bookmakers)</span>` : ""}
     </div>
   `;
@@ -3138,13 +3361,18 @@ function renderGroupTable(letter, rows, teamOdds) {
         </thead>
         <tbody>
           ${rows.map(r => {
-            // Status badge
             const st = r.groupStatus;
-            const stHtml = st
-              ? `<span class="gt-status ${st === "advanced" ? "adv" : st === "clinched" ? "cln" : st === "maybe3rd" ? "m3rd" : "elm"}">${
-                  st === "advanced" ? "ADV" : st === "clinched" ? "CLN" : st === "maybe3rd" ? "3RD?" : "OUT"
-                }</span>`
-              : "";
+            // zone → left-edge bar color class
+            const zoneCls = (st === "clinchedAdv" || st === "top2") ? "zone-top"
+                          : (st === "third-in") ? "zone-third"
+                          : (st === "eliminated") ? "zone-out" : "";
+            // status marker next to the name
+            let stHtml = "";
+            if (st === "clinchedAdv") stHtml = `<span class="gt-status adv">CLINCHED</span>`;
+            else if (st === "third-in") stHtml = `<span class="gt-status m3rd">3RD ·#${r.thirdRank}</span>`;
+            else if (st === "eliminated") stHtml = `<span class="gt-status elm">OUT</span>`;
+            // group-winner star (clinched 1st specifically)
+            const starHtml = r.wonGroup ? `<span class="gt-star" title="Clinched group winner">★</span>` : "";
 
             // Odds
             let oddsHtml = "";
@@ -3169,15 +3397,15 @@ function renderGroupTable(letter, rows, teamOdds) {
               }
             }
 
-            const qualZone = r.rank <= 2 ? "qual" : (r.rank === 3 ? "maybe" : "");
             const poolCls  = r.inPool ? "pool" : "";
             const clickable = r.inPool ? `data-owner-link="${r.owner}" style="cursor:pointer;"` : "";
             return `
-              <tr class="${qualZone} ${poolCls}" ${clickable}>
+              <tr class="${zoneCls} ${poolCls}" ${clickable}>
                 <td class="pos">${r.rank}</td>
                 <td class="gt-team">
                   ${flagImg(r.team,"w20","gt-flag")}
                   <span class="gt-name">${r.team}</span>
+                  ${starHtml}
                   ${stHtml}
                   ${r.inPool ? `<span class="gt-owner">${r.owner}</span>` : ""}
                 </td>
