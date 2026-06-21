@@ -1097,14 +1097,17 @@
   /* left-edge advancement zone bar (blue = top 2 / clinched, amber = 3rd in-zone) */
   table.group-table tbody tr { position: relative; }
   table.group-table tbody tr td:first-child { position: relative; }
-  table.group-table tbody tr.zone-top   td.pos { box-shadow: inset 4px 0 0 var(--zone-blue); }
-  table.group-table tbody tr.zone-third td.pos { box-shadow: inset 4px 0 0 var(--gold); }
-  table.group-table tbody tr.zone-out   td.pos { box-shadow: inset 4px 0 0 transparent; }
-  table.group-table tbody tr.zone-top   td.pos { color: var(--zone-blue); font-weight: 700; }
-  table.group-table tbody tr.zone-third td.pos { color: var(--gold); font-weight: 700; }
+  table.group-table tbody tr.zone-clinched td.pos { box-shadow: inset 4px 0 0 var(--alive); }
+  table.group-table tbody tr.zone-top      td.pos { box-shadow: inset 4px 0 0 var(--zone-blue); }
+  table.group-table tbody tr.zone-third    td.pos { box-shadow: inset 4px 0 0 var(--gold); }
+  table.group-table tbody tr.zone-out      td.pos { box-shadow: inset 4px 0 0 transparent; }
+  table.group-table tbody tr.zone-clinched td.pos { color: var(--alive); font-weight: 700; }
+  table.group-table tbody tr.zone-top      td.pos { color: var(--zone-blue); font-weight: 700; }
+  table.group-table tbody tr.zone-third    td.pos { color: var(--gold); font-weight: 700; }
   table.group-table tbody tr.zone-out  { opacity: 0.55; }
-  table.group-table tbody tr.zone-top   { background: rgba(44,92,138,0.05); }
-  table.group-table tbody tr.zone-third { background: rgba(201,162,39,0.06); }
+  table.group-table tbody tr.zone-clinched { background: rgba(47,107,58,0.07); }
+  table.group-table tbody tr.zone-top      { background: rgba(44,92,138,0.05); }
+  table.group-table tbody tr.zone-third    { background: rgba(201,162,39,0.06); }
 
   /* group-winner star */
   .gt-star {
@@ -1122,8 +1125,9 @@
     border-radius: 1px;
     vertical-align: -2px;
   }
-  .gl-bar.zone-top   { background: var(--zone-blue); }
-  .gl-bar.zone-third { background: var(--gold); }
+  .gl-bar.zone-clinched { background: var(--alive); }
+  .gl-bar.zone-top      { background: var(--zone-blue); }
+  .gl-bar.zone-third    { background: var(--gold); }
 
   /* group status badges */
   .gt-status {
@@ -1138,7 +1142,7 @@
     margin-left: 4px;
     line-height: 1.5;
   }
-  .gt-status.adv  { background: var(--zone-blue); color: var(--paper); }
+  .gt-status.adv  { background: var(--alive); color: var(--paper); }
   .gt-status.cln  { border: 1px solid var(--zone-blue); color: var(--zone-blue); }
   .gt-status.m3rd { border: 1px solid var(--gold);  color: var(--gold); }
   .gt-status.elm  { border: 1px solid var(--eliminated); color: var(--eliminated); }
@@ -2127,6 +2131,21 @@ const POINTS = {
   r32Win: 10, r16Win: 10, qfWin: 10, sfWin: 15, champion: 20,
 };
 
+// ---------- manual advancement overrides ----------
+// Use these to flag clinches that the points-only math can't detect on its own
+// (e.g. head-to-head tiebreakers). The automatic math still runs; these only ADD
+// clinches it would otherwise miss. Remove entries once a group is fully decided.
+//   CLINCHED_ADVANCE — team is mathematically through to the Round of 32
+//   CLINCHED_FIRST   — team has clinched 1st place in its group (gets the ★)
+// Example: USA beat both Australia and Paraguay head-to-head, so they cannot
+// finish below 2nd even if all three end level on points.
+const CLINCHED_ADVANCE = new Set([
+  "USA",
+]);
+const CLINCHED_FIRST = new Set([
+  // add teams here once they've clinched the #1 seed via tiebreakers
+]);
+
 // ---------- country → ISO code (for flag images via flagcdn.com) ----------
 const FLAG_ISO = {
   "Mexico": "mx", "South Africa": "za", "South Korea": "kr", "Czech Republic": "cz",
@@ -2507,9 +2526,10 @@ function compute(data) {
       if (p3.maxPts < p2.pts) p3.elimTop2 = true;
       if (p4.maxPts < p2.pts) p4.elimTop2 = true;
 
-      // Once all three group games are played, ranks are final.
+      // Once all three group games are played, ranks are final (sort already
+      // applied the tiebreaker chain, so p1 is definitively the group winner).
       if (arr.every(r => r.played === 3)) {
-        p1.clinchedTop2 = true; p1.wonGroup = (p1.pts > p2.pts) || (p1.pts === p2.pts);
+        p1.clinchedTop2 = true; p1.wonGroup = true;
         p2.clinchedTop2 = true;
         p3.groupFinal3rd = true;
         p4.elimTop2 = true;
@@ -2518,6 +2538,12 @@ function compute(data) {
 
     // Confirmed via the R32 bracket (openfootball names teams once set)
     for (const r of arr) if (advancedSet.has(r.team)) r.bracketConfirmed = true;
+
+    // Manual overrides for tiebreaker-based clinches the points math can't see
+    for (const r of arr) {
+      if (CLINCHED_ADVANCE.has(r.team)) r.clinchedTop2 = true;
+      if (CLINCHED_FIRST.has(r.team))   { r.clinchedTop2 = true; r.wonGroup = true; }
+    }
 
     groupTables[grp] = arr;
   }
@@ -3317,7 +3343,7 @@ function renderGroups(c, oddsData, oddsError) {
       ${groups.map(g => renderGroupTable(g, c.groupTables[g], oddsData?.teamOdds)).join("")}
     </div>
     <div class="groups-legend">
-      <span class="gl-it"><span class="gl-bar zone-top"></span>Clinched advanced <span class="gt-status adv">CLINCHED</span></span>
+      <span class="gl-it"><span class="gl-bar zone-clinched"></span>Clinched advanced <span class="gt-status adv">CLINCHED</span></span>
       <span class="gl-it"><span class="gl-bar zone-top"></span>Currently top 2</span>
       <span class="gl-it"><span class="gl-bar zone-third"></span>Currently advancing as 3rd <span class="gt-status m3rd">3RD ·#n</span></span>
       <span class="gl-it"><span class="gt-star">★</span> Clinched group winner</span>
@@ -3363,7 +3389,8 @@ function renderGroupTable(letter, rows, teamOdds) {
           ${rows.map(r => {
             const st = r.groupStatus;
             // zone → left-edge bar color class
-            const zoneCls = (st === "clinchedAdv" || st === "top2") ? "zone-top"
+            const zoneCls = (st === "clinchedAdv") ? "zone-clinched"
+                          : (st === "top2") ? "zone-top"
                           : (st === "third-in") ? "zone-third"
                           : (st === "eliminated") ? "zone-out" : "";
             // status marker next to the name
