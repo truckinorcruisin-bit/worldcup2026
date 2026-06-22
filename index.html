@@ -1606,16 +1606,28 @@
   }
   .fz-tweet-card {
     flex: 0 0 auto;
-    width: 380px;
+    width: 350px;
     scroll-snap-align: start;
     display: flex;
     flex-direction: column;
     gap: 6px;
   }
-  .fz-tweet-card blockquote {
-    margin: 0 !important;
-    max-width: 380px !important;
+  .fz-tweet-iframe {
+    width: 100%;
+    height: 420px;
+    border: 1px solid var(--rule-soft);
+    border-radius: 2px;
+    background: var(--paper);
+    display: block;
   }
+  .fz-card-open-link {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .fz-card-open-link:hover { color: var(--accent); }
 
   /* ── Reddit link cards ── */
   .fz-link-grid {
@@ -4062,7 +4074,6 @@ function renderFanZone(opts = {}) {
   // Load embed SDKs on demand
   if (byType.tiktok)  loadTikTokSDK();
   if (byType.threads) loadThreadsSDK();
-  if (byType.tweet)   loadTwitterSDK();
 }
 
 function renderFzSection(title, countLabel, showScrollHint, innerHtml) {
@@ -4111,35 +4122,32 @@ function loadTikTokSDK() {
   document.body.appendChild(s);
 }
 
-// \u2500\u2500 X / Twitter embed \u2500\u2500
+// ── X / Twitter embed (direct iframe — no SDK needed, works in all browsers) ──
 function renderTweetEmbed(link) {
+  // platform.twitter.com/embed/Tweet.html is the same iframe Twitter's own SDK
+  // creates, but loaded directly so it works even with JS/privacy blockers.
+  const embedSrc = `https://platform.twitter.com/embed/Tweet.html` +
+    `?id=${link.tweetId}&conversation=none&theme=light&dnt=true&lang=en`;
   return `
     <div class="fz-tweet-card">
-      <blockquote class="twitter-tweet" data-dnt="true" data-theme="light">
-        <a href="${link.url}">${link.caption || ""}</a>
-      </blockquote>
+      <iframe
+        src="${embedSrc}"
+        class="fz-tweet-iframe"
+        scrolling="no"
+        frameborder="0"
+        loading="lazy"
+        allowtransparency="true"
+        title="Tweet by ${link.username}">
+      </iframe>
       <div class="fz-card-caption">
         <span class="fz-card-user">${link.username}</span>
         ${(link.tags || []).map(t => '<span class="fz-tag">' + t + '</span>').join("")}
+        <a class="fz-card-open-link" href="${link.url}" target="_blank" rel="noopener">View on \u{1d54f} \u2197</a>
       </div>
     </div>`;
 }
 
-let twitterSDKLoaded = false;
-function loadTwitterSDK() {
-  if (twitterSDKLoaded && window.twttr) {
-    try { window.twttr.widgets.load(); } catch(e) {}
-    return;
-  }
-  if (document.querySelector('script[src*="platform.twitter.com"]')) return;
-  const s = document.createElement("script");
-  s.src = "https://platform.twitter.com/widgets.js";
-  s.async = true;
-  s.onload = () => { twitterSDKLoaded = true; };
-  document.body.appendChild(s);
-}
-
-// \u2500\u2500 Threads embed \u2500\u2500
+// ── Threads embed ──
 function renderThreadsEmbed(link) {
   const embedUrl = link.url + "/embed";
   return `
