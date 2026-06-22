@@ -36,15 +36,6 @@
     "tags": ["culture-shock", "hospitality"]
   },
   {
-    "type": "threads",
-    "url": "https://www.threads.net/@tsa/post/DZcvd8xgIvT",
-    "postId": "DZcvd8xgIvT",
-    "username": "@tsa",
-    "caption": "TSA weighs in on World Cup fans going through airport security",
-    "added": "2026-06-20",
-    "tags": ["travel", "official"]
-  },
-  {
     "type": "tiktok",
     "url": "https://www.tiktok.com/@cynthiastravels/video/7651322593504529678",
     "videoId": "7651322593504529678",
@@ -61,5 +52,84 @@
     "caption": "World Cup visitors meet Texas summer heat",
     "added": "2026-06-20",
     "tags": ["weather", "texas"]
+  },
+  {
+    "type": "threads",
+    "url": "https://www.threads.net/@tsa/post/DZcvd8xgIvT",
+    "postId": "DZcvd8xgIvT",
+    "username": "@tsa",
+    "caption": "TSA weighs in on World Cup fans going through airport security",
+    "added": "2026-06-20",
+    "tags": ["travel", "official"]
+  },
+  {
+    "type": "reddit",
+    "url": "https://www.reddit.com/r/Scotland/s/qw5jwb5UNF",
+    "subreddit": "r/Scotland",
+    "caption": "Scottish fans share their American World Cup experience",
+    "added": "2026-06-21",
+    "tags": ["scotland", "fans"]
+  },
+  {
+    "type": "reddit",
+    "url": "https://www.reddit.com/r/worldcup/s/dGsFaeIwqD",
+    "subreddit": "r/worldcup",
+    "caption": "r/worldcup reacts to the fan atmosphere in the US",
+    "added": "2026-06-21",
+    "tags": ["fans", "atmosphere"]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/jersiegel/status/2066916973934457167",
+    "tweetId": "2066916973934457167",
+    "username": "@jersiegel",
+    "caption": "World Cup vibes stateside",
+    "added": "2026-06-21",
+    "tags": ["fans"]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/barstoolsports/status/2067645636200013968",
+    "tweetId": "2067645636200013968",
+    "username": "@barstoolsports",
+    "caption": "Barstool captures the World Cup energy",
+    "added": "2026-06-21",
+    "tags": ["viral", "fans"]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/barstoolsports/status/2068737919347470365",
+    "tweetId": "2068737919347470365",
+    "username": "@barstoolsports",
+    "caption": "More fan chaos from Barstool",
+    "added": "2026-06-21",
+    "tags": ["viral"]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/polymarketsport/status/2068436515672182965",
+    "tweetId": "2068436515672182965",
+    "username": "@polymarketsport",
+    "caption": "Prediction markets react to the World Cup",
+    "added": "2026-06-21",
+    "tags": ["odds", "data"]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/rainmaker1973/status/2068576039047925994",
+    "tweetId": "2068576039047925994",
+    "username": "@rainmaker1973",
+    "caption": "World Cup from a different angle",
+    "added": "2026-06-21",
+    "tags": ["viral"]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/JohnMcCloy/status/2067967137935774018",
+    "tweetId": "2067967137935774018",
+    "username": "@JohnMcCloy",
+    "caption": "Fan scene on the ground",
+    "added": "2026-06-21",
+    "tags": ["fans", "atmosphere"]
   }
 ]

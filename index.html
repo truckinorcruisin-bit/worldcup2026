@@ -1600,6 +1600,61 @@
     color: var(--ink-faint);
   }
 
+  /* ── X/Twitter carousel ── */
+  .fz-carousel-tweets {
+    align-items: flex-start;
+  }
+  .fz-tweet-card {
+    flex: 0 0 auto;
+    width: 380px;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .fz-tweet-card blockquote {
+    margin: 0 !important;
+    max-width: 380px !important;
+  }
+
+  /* ── Reddit link cards ── */
+  .fz-link-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 10px;
+  }
+  .fz-reddit-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.12s, box-shadow 0.12s;
+  }
+  .fz-reddit-card:hover { background: var(--paper-deep); box-shadow: 0 2px 8px -4px rgba(0,0,0,0.12); }
+  .fz-reddit-icon { font-size: 28px; flex-shrink: 0; }
+  .fz-reddit-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .fz-reddit-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .fz-reddit-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+    line-height: 1.35;
+  }
+  .fz-reddit-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 2px; }
+  .fz-reddit-arrow { color: var(--ink-faint); font-size: 18px; flex-shrink: 0; }
+  .fz-reddit-card:hover .fz-reddit-arrow { color: var(--accent); }
+
   /* ── Threads embed ── */
   .fz-threads-grid {
     display: grid;
@@ -1692,9 +1747,14 @@
   /* fan zone mobile */
   @media (max-width: 600px) {
     .fz-tiktok-card { width: 290px; }
+    .fz-tweet-card { width: 320px; }
+    .fz-tweet-card blockquote { max-width: 320px !important; }
     .fz-threads-grid { grid-template-columns: 1fr; }
+    .fz-link-grid { grid-template-columns: 1fr; }
     .fz-articles { grid-template-columns: 1fr; }
     .fz-threads-iframe { min-height: 350px; }
+    .fz-reddit-card { padding: 12px; gap: 10px; }
+    .fz-reddit-title { font-size: 14px; }
   }
 
 
@@ -3916,6 +3976,20 @@ async function fetchLinks(force = false) {
   return result;
 }
 
+
+// Shuffle array in place (Fisher-Yates). Uses a daily seed so the layout
+// stays consistent within a single day but changes each day.
+function fzShuffle(arr) {
+  let seed = new Date().toISOString().slice(0, 10).split("-").reduce((s,n) => s * 31 + +n, 7);
+  const rng = () => { seed = (seed * 16807 + 0) % 2147483647; return (seed - 1) / 2147483646; };
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function renderFanZone(opts = {}) {
   setNav("fanzone");
   const app = document.getElementById("app");
@@ -3924,78 +3998,86 @@ function renderFanZone(opts = {}) {
     app.innerHTML = `
       <p class="section-label">Fan Zone</p>
       <h2 class="section-title">Fan life at USA 2026</h2>
-      <div class="panel-msg" style="padding:40px 0">Loading curated content…</div>`;
+      <div class="panel-msg" style="padding:40px 0">Loading curated content\u2026</div>`;
     return;
   }
   if (opts.error) {
     app.innerHTML = `
       <p class="section-label">Fan Zone</p>
       <h2 class="section-title">Fan life at USA 2026</h2>
-      <div class="fz-empty">Couldn't load links.json. <small>${opts.error}</small></div>`;
+      <div class="fz-empty">Couldn\u2019t load links.json. <small>${opts.error}</small></div>`;
     return;
   }
 
-  const links = (opts.links || []).slice().sort((a,b) => (b.added || "").localeCompare(a.added || ""));
-  const tiktoks  = links.filter(l => l.type === "tiktok");
-  const threads  = links.filter(l => l.type === "threads");
-  const articles = links.filter(l => l.type === "article" || l.type === "link");
+  const links = opts.links || [];
 
-  const tiktokSection = tiktoks.length ? `
-    <div class="fz-section">
-      <div class="fz-section-head">
-        <h3 class="fz-section-title">\u{1f3ac} TikTok</h3>
-        <span class="fz-section-count">${tiktoks.length} clip${tiktoks.length === 1 ? "" : "s"}</span>
-        <span class="fz-scroll-hint">\u2190 scroll \u2192</span>
-      </div>
-      <div class="fz-carousel" id="fzCarousel">
-        ${tiktoks.map(renderTikTokEmbed).join("")}
-      </div>
-    </div>` : "";
+  // Group by type, shuffle items within each group
+  const byType = {};
+  for (const l of links) { (byType[l.type] = byType[l.type] || []).push(l); }
+  for (const t of Object.keys(byType)) { byType[t] = fzShuffle(byType[t]); }
 
-  const threadsSection = threads.length ? `
-    <div class="fz-section">
-      <h3 class="fz-section-title">\u{1f9f5} Threads</h3>
-      <div class="fz-threads-grid">
-        ${threads.map(renderThreadsEmbed).join("")}
-      </div>
-    </div>` : "";
+  // Section renderers keyed by type
+  const sectionRenderers = {
+    tiktok:  (items) => renderFzSection("\ud83c\udfac TikTok", items.length + " clip" + (items.length===1?"":"s"), true,
+                `<div class="fz-carousel">${items.map(renderTikTokEmbed).join("")}</div>`),
+    tweet:   (items) => renderFzSection("\ud835\udd4f / Twitter", items.length + " post" + (items.length===1?"":"s"), true,
+                `<div class="fz-carousel fz-carousel-tweets">${items.map(renderTweetEmbed).join("")}</div>`),
+    reddit:  (items) => renderFzSection("\ud83e\udd16 Reddit", items.length + " post" + (items.length===1?"":"s"), false,
+                `<div class="fz-link-grid">${items.map(renderRedditCard).join("")}</div>`),
+    threads: (items) => renderFzSection("\ud83e\uddf5 Threads", items.length + " post" + (items.length===1?"":"s"), false,
+                `<div class="fz-threads-grid">${items.map(renderThreadsEmbed).join("")}</div>`),
+    article: (items) => renderFzSection("\ud83d\udcf0 Articles", items.length + " link" + (items.length===1?"":"s"), false,
+                `<div class="fz-link-grid">${items.map(renderArticleCard).join("")}</div>`),
+    link:    (items) => renderFzSection("\ud83d\udd17 Links", items.length, false,
+                `<div class="fz-link-grid">${items.map(renderArticleCard).join("")}</div>`),
+  };
 
-  const articlesSection = articles.length ? `
-    <div class="fz-section">
-      <h3 class="fz-section-title">\u{1f4f0} Articles & links</h3>
-      <div class="fz-articles">
-        ${articles.map(renderArticleCard).join("")}
-      </div>
-    </div>` : "";
+  // Randomize section order
+  const sectionTypes = fzShuffle(Object.keys(byType));
+  const sectionsHtml = sectionTypes.map(t => {
+    const fn = sectionRenderers[t] || sectionRenderers.link;
+    return fn(byType[t]);
+  }).join("");
 
-  const isEmpty = !tiktoks.length && !threads.length && !articles.length;
+  const isEmpty = links.length === 0;
 
   app.innerHTML = `
     <p class="section-label">Fan Zone \u00b7 curated by the pool</p>
     <h2 class="section-title">Fan life at USA 2026</h2>
     <p class="fz-intro">
       The best viral moments, fan reactions, and cultural collisions from the World Cup.
-      All hand-picked \u2014 no algorithm, no ads.
+      All hand-picked \u2014 no algorithm, no ads. Order shuffles daily.
     </p>
     ${isEmpty ? `
       <div class="fz-empty">No links yet.
         <small>Add entries to <code>links.json</code> in the repo to populate this page.</small>
       </div>
-    ` : `
-      ${tiktokSection}
-      ${threadsSection}
-      ${articlesSection}
-    `}
+    ` : sectionsHtml}
     <div class="fz-contribute">
       Found something good? Add it to <code>links.json</code> in the repo \u2014
-      TikTok, Threads, articles, anything goes.
+      TikTok, X/Twitter, Reddit, Threads, articles \u2014 anything goes.
     </div>
   `;
 
-  if (tiktoks.length) loadTikTokSDK();
-  if (threads.length) loadThreadsSDK();
+  // Load embed SDKs on demand
+  if (byType.tiktok)  loadTikTokSDK();
+  if (byType.threads) loadThreadsSDK();
+  if (byType.tweet)   loadTwitterSDK();
 }
 
+function renderFzSection(title, countLabel, showScrollHint, innerHtml) {
+  return `
+    <div class="fz-section">
+      <div class="fz-section-head">
+        <h3 class="fz-section-title">${title}</h3>
+        <span class="fz-section-count">${countLabel}</span>
+        ${showScrollHint ? '<span class="fz-scroll-hint">\u2190 scroll \u2192</span>' : ""}
+      </div>
+      ${innerHtml}
+    </div>`;
+}
+
+// \u2500\u2500 TikTok embed \u2500\u2500
 function renderTikTokEmbed(link) {
   return `
     <div class="fz-tiktok-card">
@@ -4021,6 +4103,7 @@ function loadTikTokSDK() {
     try { window.tiktokEmbed.reload(); } catch(e) {}
     return;
   }
+  if (document.querySelector('script[src*="tiktok.com/embed"]')) return;
   const s = document.createElement("script");
   s.src = "https://www.tiktok.com/embed.js";
   s.async = true;
@@ -4028,6 +4111,35 @@ function loadTikTokSDK() {
   document.body.appendChild(s);
 }
 
+// \u2500\u2500 X / Twitter embed \u2500\u2500
+function renderTweetEmbed(link) {
+  return `
+    <div class="fz-tweet-card">
+      <blockquote class="twitter-tweet" data-dnt="true" data-theme="light">
+        <a href="${link.url}">${link.caption || ""}</a>
+      </blockquote>
+      <div class="fz-card-caption">
+        <span class="fz-card-user">${link.username}</span>
+        ${(link.tags || []).map(t => '<span class="fz-tag">' + t + '</span>').join("")}
+      </div>
+    </div>`;
+}
+
+let twitterSDKLoaded = false;
+function loadTwitterSDK() {
+  if (twitterSDKLoaded && window.twttr) {
+    try { window.twttr.widgets.load(); } catch(e) {}
+    return;
+  }
+  if (document.querySelector('script[src*="platform.twitter.com"]')) return;
+  const s = document.createElement("script");
+  s.src = "https://platform.twitter.com/widgets.js";
+  s.async = true;
+  s.onload = () => { twitterSDKLoaded = true; };
+  document.body.appendChild(s);
+}
+
+// \u2500\u2500 Threads embed \u2500\u2500
 function renderThreadsEmbed(link) {
   const embedUrl = link.url + "/embed";
   return `
@@ -4056,6 +4168,22 @@ function loadThreadsSDK() {
   document.body.appendChild(s);
 }
 
+// \u2500\u2500 Reddit card (link card style \u2014 Reddit embeds are unreliable) \u2500\u2500
+function renderRedditCard(link) {
+  const sub = link.subreddit || "reddit";
+  return `
+    <a class="fz-reddit-card" href="${link.url}" target="_blank" rel="noopener">
+      <div class="fz-reddit-icon">\ud83e\udd16</div>
+      <div class="fz-reddit-body">
+        <span class="fz-reddit-sub">${sub}</span>
+        <span class="fz-reddit-title">${link.caption || "View post on Reddit"}</span>
+        ${(link.tags || []).length ? '<div class="fz-reddit-tags">' + link.tags.map(t => '<span class="fz-tag">' + t + '</span>').join("") + '</div>' : ""}
+      </div>
+      <span class="fz-reddit-arrow">\u2192</span>
+    </a>`;
+}
+
+// \u2500\u2500 Article / generic link card \u2500\u2500
 function renderArticleCard(link) {
   const domain = link.source || (link.url ? new URL(link.url).hostname.replace("www.", "") : "");
   return `
