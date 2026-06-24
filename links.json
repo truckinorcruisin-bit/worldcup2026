@@ -6,7 +6,10 @@
     "username": "@lisandru_susini",
     "caption": "European fans discover American portion sizes",
     "added": "2026-06-20",
-    "tags": ["food", "culture-shock"]
+    "tags": [
+      "food",
+      "culture-shock"
+    ]
   },
   {
     "type": "tiktok",
@@ -15,7 +18,10 @@
     "username": "@ashleymount71",
     "caption": "World Cup fans experiencing their first American tailgate",
     "added": "2026-06-20",
-    "tags": ["tailgate", "fans"]
+    "tags": [
+      "tailgate",
+      "fans"
+    ]
   },
   {
     "type": "tiktok",
@@ -24,7 +30,10 @@
     "username": "@user4579019779493",
     "caption": "Visitors react to the sheer scale of American stadiums",
     "added": "2026-06-20",
-    "tags": ["stadium", "fans"]
+    "tags": [
+      "stadium",
+      "fans"
+    ]
   },
   {
     "type": "tiktok",
@@ -33,7 +42,10 @@
     "username": "@kamxsoto",
     "caption": "World Cup tourist discovers American hospitality",
     "added": "2026-06-20",
-    "tags": ["culture-shock", "hospitality"]
+    "tags": [
+      "culture-shock",
+      "hospitality"
+    ]
   },
   {
     "type": "tiktok",
@@ -42,7 +54,10 @@
     "username": "@cynthiastravels",
     "caption": "International fans navigating American highways for the first time",
     "added": "2026-06-20",
-    "tags": ["travel", "driving"]
+    "tags": [
+      "travel",
+      "driving"
+    ]
   },
   {
     "type": "tiktok",
@@ -51,7 +66,10 @@
     "username": "@karagriffis",
     "caption": "World Cup visitors meet Texas summer heat",
     "added": "2026-06-20",
-    "tags": ["weather", "texas"]
+    "tags": [
+      "weather",
+      "texas"
+    ]
   },
   {
     "type": "threads",
@@ -60,7 +78,10 @@
     "username": "@tsa",
     "caption": "TSA weighs in on World Cup fans going through airport security",
     "added": "2026-06-20",
-    "tags": ["travel", "official"]
+    "tags": [
+      "travel",
+      "official"
+    ]
   },
   {
     "type": "reddit",
@@ -68,7 +89,10 @@
     "subreddit": "r/Scotland",
     "caption": "Scottish fans share their American World Cup experience",
     "added": "2026-06-21",
-    "tags": ["scotland", "fans"]
+    "tags": [
+      "scotland",
+      "fans"
+    ]
   },
   {
     "type": "reddit",
@@ -76,7 +100,10 @@
     "subreddit": "r/worldcup",
     "caption": "r/worldcup reacts to the fan atmosphere in the US",
     "added": "2026-06-21",
-    "tags": ["fans", "atmosphere"]
+    "tags": [
+      "fans",
+      "atmosphere"
+    ]
   },
   {
     "type": "tweet",
@@ -85,7 +112,9 @@
     "username": "@jersiegel",
     "caption": "World Cup vibes stateside",
     "added": "2026-06-21",
-    "tags": ["fans"]
+    "tags": [
+      "fans"
+    ]
   },
   {
     "type": "tweet",
@@ -94,7 +123,10 @@
     "username": "@barstoolsports",
     "caption": "Barstool captures the World Cup energy",
     "added": "2026-06-21",
-    "tags": ["viral", "fans"]
+    "tags": [
+      "viral",
+      "fans"
+    ]
   },
   {
     "type": "tweet",
@@ -103,7 +135,9 @@
     "username": "@barstoolsports",
     "caption": "More fan chaos from Barstool",
     "added": "2026-06-21",
-    "tags": ["viral"]
+    "tags": [
+      "viral"
+    ]
   },
   {
     "type": "tweet",
@@ -112,7 +146,10 @@
     "username": "@polymarketsport",
     "caption": "Prediction markets react to the World Cup",
     "added": "2026-06-21",
-    "tags": ["odds", "data"]
+    "tags": [
+      "odds",
+      "data"
+    ]
   },
   {
     "type": "tweet",
@@ -121,7 +158,9 @@
     "username": "@rainmaker1973",
     "caption": "World Cup from a different angle",
     "added": "2026-06-21",
-    "tags": ["viral"]
+    "tags": [
+      "viral"
+    ]
   },
   {
     "type": "tweet",
@@ -130,6 +169,33 @@
     "username": "@JohnMcCloy",
     "caption": "Fan scene on the ground",
     "added": "2026-06-21",
-    "tags": ["fans", "atmosphere"]
+    "tags": [
+      "fans",
+      "atmosphere"
+    ]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/meninblazers/status/2068846804091679063",
+    "tweetId": "2068846804091679063",
+    "username": "@meninblazers",
+    "caption": "Men in Blazers on the World Cup atmosphere",
+    "added": "2026-06-22",
+    "tags": [
+      "fans",
+      "atmosphere"
+    ]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/dallastexastv/status/2068342670200537458",
+    "tweetId": "2068342670200537458",
+    "username": "@dallastexastv",
+    "caption": "Dallas TV covers the World Cup fan scene",
+    "added": "2026-06-22",
+    "tags": [
+      "dallas",
+      "fans"
+    ]
   }
 ]
