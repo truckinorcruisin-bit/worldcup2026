@@ -2699,23 +2699,30 @@ function compute(data) {
     });
   }
 
-  // ----- reconcile eliminated flags with groupStatus -----
-  // The group-stage elimination pass above (line ~2432) only knows about
-  // advancedSet (R32 bracket names from openfootball). When openfootball
-  // lags behind — e.g. a group is fully played but R32 teams aren't named yet —
-  // teams that actually finished top 2 get incorrectly marked eliminated.
-  // groupStatus is the authoritative source, so use it to correct the flags.
+  // ----- reconcile eliminated/alive flags with groupStatus -----
+  // groupStatus (from groupTables math) is the authoritative source.
+  // The upstream elimination pass can produce both false positives (team marked
+  // eliminated but actually safe — e.g. Switzerland) and false negatives (team
+  // NOT marked eliminated but mathematically out — e.g. Senegal, Iraq).
+  // This reconciliation corrects both directions.
   const SAFE_STATUSES = new Set(["clinchedAdv", "top2", "third-in", "maybe3rd"]);
   for (const grp of "ABCDEFGHIJKL") {
     for (const row of (groupTables[grp] || [])) {
+      if (!(row.team in t)) continue;
       if (SAFE_STATUSES.has(row.groupStatus)) {
+        // Definitively safe — clear any false elimination
         t[row.team].eliminated = false;
         t[row.team].alive      = true;
+      } else if (row.groupStatus === "eliminated") {
+        // Definitively out — ensure eliminated flag is set
+        t[row.team].eliminated = true;
+        t[row.team].alive      = false;
       }
+      // "top2" already in SAFE_STATUSES; "fourth" / "third-out" are still
+      // mathematically in play — leave their flags unchanged.
     }
   }
-  // teamsAlive is a cached integer computed before reconciliation — recount now
-  // so the "X/12 alive" display matches the tile styling.
+  // teamsAlive is a cached integer — recount from corrected alive flags
   for (const o of OWNERS) {
     owners[o].teamsAlive = owners[o].teams.filter(tr => tr.alive).length;
   }
