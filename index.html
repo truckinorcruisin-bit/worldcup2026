@@ -2388,6 +2388,56 @@ function compute(data) {
   }
   const r32HasAnyNamed = advancedSet.size > 0;
 
+  // ----- pre-pass: clinch detection for advance bonus accuracy -----
+  // advancedSet (R32 bracket names) only covers teams openfootball has already written
+  // into the bracket. But clinchedAdv on the Groups page is set later from groupTables —
+  // after per-team totals and owner standings are already computed. This pre-pass fills
+  // the gap so that ALL clinched teams get advanceBonus = +5, not just those in the bracket.
+
+  // 1. Manual tiebreaker overrides (teams clinched via head-to-head or other tiebreakers
+  //    that the points math can't detect automatically)
+  for (const tm of CLINCHED_ADVANCE) {
+    if (tm in t && !t[tm].advanced) { advancedSet.add(tm); t[tm].advanced = true; }
+  }
+  for (const tm of CLINCHED_FIRST) {
+    if (tm in t && !t[tm].advanced) { advancedSet.add(tm); t[tm].advanced = true; }
+  }
+
+  // 2. Points-math clinch: scan all 4 teams in each group (including non-pool teams)
+  //    to find teams that are mathematically guaranteed a top-2 finish.
+  for (const grp of "ABCDEFGHIJKL") {
+    const gms = groupMatches.filter(m => m.group === `Group ${grp}` && isPlayed(m));
+    if (!gms.length) continue;
+
+    // Accumulate W/D/L/pts/GD/GF for every team in this group from match results
+    const gs = {};
+    for (const m of gms) {
+      for (const [tm, gf, ga] of [[m.team1, m.score.ft[0], m.score.ft[1]], [m.team2, m.score.ft[1], m.score.ft[0]]]) {
+        if (!gs[tm]) gs[tm] = { pts: 0, gd: 0, gf: 0, played: 0 };
+        gs[tm].pts    += gf > ga ? 3 : gf === ga ? 1 : 0;
+        gs[tm].gd     += gf - ga;
+        gs[tm].gf     += gf;
+        gs[tm].played += 1;
+      }
+    }
+
+    const rows = Object.entries(gs)
+      .sort(([, a], [, b]) => (b.pts - a.pts) || (b.gd - a.gd) || (b.gf - a.gf));
+    if (rows.length < 3) continue;
+
+    const thirdMax = rows[2][1].pts + 3 * (3 - rows[2][1].played);
+
+    for (const [tm, stats] of rows.slice(0, 2)) {
+      if (!(tm in t)) continue;
+      const mathClinched = stats.pts > thirdMax;      // can't be caught by 3rd
+      const groupDone    = groupFullyComplete[grp];   // all games played → rank is final
+      if ((mathClinched || groupDone) && !t[tm].advanced) {
+        advancedSet.add(tm);
+        t[tm].advanced = true;
+      }
+    }
+  }
+
   // ----- knockouts -----
   const knockoutRounds = [
     { key: "Round of 32",   field: "r32Wins", pts: POINTS.r32Win },
