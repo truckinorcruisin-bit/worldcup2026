@@ -2714,6 +2714,11 @@ function compute(data) {
       }
     }
   }
+  // teamsAlive is a cached integer computed before reconciliation — recount now
+  // so the "X/12 alive" display matches the tile styling.
+  for (const o of OWNERS) {
+    owners[o].teamsAlive = owners[o].teams.filter(tr => tr.alive).length;
+  }
 
   // ----- upsets: lower-seeded team wins or draws against a higher-seeded one -----
   // seed = draft round (1 = best, 12 = last). Score = gap for win, gap×0.5 for draw.
