@@ -116,12 +116,58 @@ function computeStandings(matches) {
     else if (g2 > g1) { totals[o2] += POINTS.groupWin; }
     else              { totals[o1] += POINTS.groupDraw; totals[o2] += POINTS.groupDraw; }
   }
+  // ── advance bonus (+5): must stay in sync with browser compute() pre-pass ──
   const advanced = new Set();
+
+  // 1. R32 bracket — teams openfootball has already named
   for (const m of matches) {
     if (m.round !== "Round of 32") continue;
     if (m.team1 in TEAM_OWNER) advanced.add(m.team1);
     if (m.team2 in TEAM_OWNER) advanced.add(m.team2);
   }
+
+  // 2. Manual tiebreaker overrides (matches browser's CLINCHED_ADVANCE set)
+  //    Update this whenever index.html's CLINCHED_ADVANCE is updated.
+  const CLINCHED_ADVANCE = new Set(["USA", "Argentina"]);
+  for (const tm of CLINCHED_ADVANCE) {
+    if (tm in TEAM_OWNER) advanced.add(tm);
+  }
+
+  // 3. Mathematical clinch: scan every group, mark top-2 of complete groups
+  //    and any team whose pts strictly exceed 3rd-place's max possible.
+  //    Uses all 4 teams per group (including non-pool teams) for accurate standings.
+  for (const grp of "ABCDEFGHIJKL") {
+    const gms = matches.filter(m => m.group === `Group ${grp}` && isPlayed(m));
+    if (!gms.length) continue;
+
+    const gs = {};
+    for (const m of gms) {
+      for (const [tm, gf, ga] of [[m.team1, m.score.ft[0], m.score.ft[1]], [m.team2, m.score.ft[1], m.score.ft[0]]]) {
+        if (!gs[tm]) gs[tm] = { pts: 0, gd: 0, gf: 0, played: 0 };
+        gs[tm].pts    += gf > ga ? 3 : gf === ga ? 1 : 0;
+        gs[tm].gd     += gf - ga;
+        gs[tm].gf     += gf;
+        gs[tm].played += 1;
+      }
+    }
+
+    const rows = Object.entries(gs)
+      .sort(([, a], [, b]) => (b.pts - a.pts) || (b.gd - a.gd) || (b.gf - a.gf));
+    if (rows.length < 3) continue;
+
+    const thirdMax  = rows[2][1].pts + 3 * (3 - rows[2][1].played);
+    const groupDone = rows.every(([, r]) => r.played === 3);
+
+    for (const [tm, stats] of rows.slice(0, 2)) {
+      if (!(tm in TEAM_OWNER)) continue;
+      if ((stats.pts > thirdMax || groupDone) && !advanced.has(tm)) {
+        advanced.add(tm);
+        console.log(`  [clinch] ${tm} (Group ${grp}) pts=${stats.pts} thirdMax=${thirdMax} groupDone=${groupDone}`);
+      }
+    }
+  }
+
+  console.log(`  Advance bonus applied to: ${[...advanced].join(", ")}`);
   for (const t of advanced) totals[TEAM_OWNER[t]] += POINTS.advance;
   const koRounds = [
     ["Round of 32",   POINTS.r32Win], ["Round of 16",   POINTS.r16Win],
