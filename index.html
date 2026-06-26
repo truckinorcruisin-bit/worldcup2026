@@ -1834,6 +1834,204 @@
     .adv-leg-teams { font-size: 11px; }
   }
 
+  /* ---------- draft board table ---------- */
+  .db-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--rule);
+    margin-bottom: 40px;
+    -webkit-overflow-scrolling: touch;
+  }
+  table.draft-board {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 640px;
+    background: var(--paper);
+  }
+  table.draft-board th, table.draft-board td {
+    border-right: 1px solid var(--rule-soft);
+    border-bottom: 1px solid var(--rule-soft);
+    text-align: left;
+  }
+  table.draft-board th:last-child, table.draft-board td:last-child { border-right: none; }
+  table.draft-board tbody tr:last-child td { border-bottom: none; }
+  .db-round-h, .db-owner-h {
+    background: var(--paper-deep);
+    padding: 10px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    position: sticky;
+    top: 0;
+  }
+  .db-owner-h { color: var(--ink); }
+  .db-owner-dot {
+    display: inline-block;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: 0;
+  }
+  .db-round-h { width: 44px; text-align: center; color: var(--ink-faint); }
+  .db-round {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--ink-faint);
+    background: var(--paper-deep);
+    width: 44px;
+  }
+  .db-cell {
+    padding: 8px 12px;
+    vertical-align: middle;
+    min-width: 130px;
+  }
+  .db-pick { display: flex; align-items: center; gap: 7px; }
+  .db-flag { height: 13px; border: 0.5px solid var(--rule-soft); flex-shrink: 0; }
+  .db-team {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.2;
+  }
+  .db-pickno {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-faint);
+    margin-top: 2px;
+    margin-left: 20px;
+  }
+  .db-cell.db-advanced { background: rgba(47,107,58,0.08); }
+  .db-cell.db-advanced .db-team { color: var(--alive); }
+  .db-cell.db-eliminated .db-team { text-decoration: line-through; color: var(--ink-faint); }
+  .db-cell.db-eliminated .db-flag { opacity: 0.4; }
+  .db-cell.db-empty { color: var(--ink-faint); text-align: center; }
+
+  @media (max-width: 600px) {
+    .db-team { font-size: 12px; }
+    .db-cell { min-width: 110px; padding: 6px 8px; }
+  }
+
+  /* ---------- knockout bracket ---------- */
+  .bk-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .bk-leg { display: inline-flex; align-items: center; gap: 6px; }
+  .bk-leg-sw { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
+  .bk-leg-sw.adv { background: rgba(47,107,58,0.18); border: 1px solid var(--alive); }
+  .bk-leg-sw.out { background: var(--paper-deep); border: 1px solid var(--rule); }
+  .bk-leg-sw.tbd { background: var(--paper); border: 1px dashed var(--ink-faint); }
+
+  .bk-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 16px;
+    margin-bottom: 32px;
+  }
+  .bk-board {
+    display: flex;
+    gap: 16px;
+    min-width: min-content;
+    align-items: flex-start;
+  }
+  .bk-col {
+    flex: 0 0 auto;
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .bk-col-head {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .bk-col-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+  }
+  .bk-match {
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    padding: 8px 10px;
+  }
+  .bk-match-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    color: var(--ink-faint);
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .bk-num { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+  .bk-date { font-weight: 600; color: var(--ink-soft); }
+  .bk-venue { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  .bk-team-row { display: flex; align-items: center; gap: 6px; }
+  .bk-team-row + .bk-team-row { margin-top: 3px; }
+  .bk-team {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    padding: 3px 0;
+  }
+  .bk-flag { height: 13px; border: 0.5px solid var(--rule-soft); flex-shrink: 0; }
+  .bk-team-name {
+    font-family: 'Fraunces', serif;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bk-team-tbd .bk-team-name { font-family: 'Inter', sans-serif; font-size: 11px; color: var(--ink-faint); font-weight: 500; font-style: italic; }
+  .bk-team-adv .bk-team-name { color: var(--alive); }
+  .bk-team-out { opacity: 0.5; }
+  .bk-team-out .bk-team-name { text-decoration: line-through; }
+  .bk-owner {
+    font-family: 'Inter', sans-serif;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--paper);
+    padding: 1px 4px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .bk-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-faint);
+    flex-shrink: 0;
+    min-width: 14px;
+    text-align: right;
+  }
+  .bk-score-win { color: var(--ink); }
+
+  @media (max-width: 600px) {
+    .bk-col { width: 180px; }
+    .bk-team-name { font-size: 12px; }
+  }
+
   /* ---------- footer ---------- */
   footer {
     border-top: 1px solid var(--rule);
@@ -2044,6 +2242,7 @@
   <nav class="nav">
     <button id="navHome" class="active" type="button">Standings</button>
     <button id="navGroups" type="button">Groups</button>
+    <button id="navBracket" type="button">Bracket</button>
     <button id="navDraft" type="button">Draft Performance</button>
     <button id="navUpsets" type="button">Upsets</button>
     <button id="navFanzone" type="button">Fan Zone</button>
@@ -2803,6 +3002,7 @@ function setStatus(kind, text) {
 function setNav(view) {
   document.getElementById("navHome").classList.toggle("active", view === "home" || view === "detail");
   document.getElementById("navGroups").classList.toggle("active", view === "groups");
+  document.getElementById("navBracket").classList.toggle("active", view === "bracket");
   document.getElementById("navDraft").classList.toggle("active", view === "draft");
   document.getElementById("navUpsets").classList.toggle("active", view === "upsets");
   document.getElementById("navFanzone").classList.toggle("active", view === "fanzone");
@@ -2830,6 +3030,7 @@ function render(computed, fetchedAt, isCached = false, rawData = null, history =
   };
   if (CURRENT_VIEW.name === "home")        renderHome(computed);
   else if (CURRENT_VIEW.name === "groups") loadGroupsWithOdds(computed);
+  else if (CURRENT_VIEW.name === "bracket") renderBracket(computed);
   else if (CURRENT_VIEW.name === "draft")  renderDraftPerformance(computed);
   else if (CURRENT_VIEW.name === "upsets") renderUpsets(computed);
   else if (CURRENT_VIEW.name === "fanzone") triggerFanZoneLoad(false);
@@ -4291,6 +4492,161 @@ function triggerFanZoneLoad(force = false) {
   });
 }
 
+// ═══════════════════════════════════════════════════════════════
+// KNOCKOUT BRACKET
+// ═══════════════════════════════════════════════════════════════
+
+// Ground string from openfootball → clean venue + city label
+const VENUE_MAP = {
+  "Atlanta": ["Mercedes-Benz Stadium", "Atlanta"],
+  "Boston (Foxborough)": ["Gillette Stadium", "Boston"],
+  "Dallas (Arlington)": ["AT&T Stadium", "Dallas"],
+  "Guadalajara": ["Estadio Akron", "Guadalajara"],
+  "Houston": ["NRG Stadium", "Houston"],
+  "Kansas City": ["Arrowhead Stadium", "Kansas City"],
+  "Los Angeles (Inglewood)": ["SoFi Stadium", "Los Angeles"],
+  "Mexico City": ["Estadio Azteca", "Mexico City"],
+  "Miami (Miami Gardens)": ["Hard Rock Stadium", "Miami"],
+  "Monterrey (Guadalupe)": ["Estadio BBVA", "Monterrey"],
+  "New York/New Jersey (East Rutherford)": ["MetLife Stadium", "New York/NJ"],
+  "Philadelphia": ["Lincoln Financial Field", "Philadelphia"],
+  "San Francisco Bay Area (Santa Clara)": ["Levi's Stadium", "San Francisco"],
+  "Seattle": ["Lumen Field", "Seattle"],
+  "Toronto": ["BMO Field", "Toronto"],
+  "Vancouver": ["BC Place", "Vancouver"],
+};
+function venueLabel(ground) {
+  if (!ground) return ["TBD", ""];
+  return VENUE_MAP[ground] || [ground, ""];
+}
+
+// Resolve an openfootball slot string into a display object.
+// Real team names → { team, resolved:true }. Position codes (2A, 1E) and
+// third-place options (3A/B/C/D/F) and winner codes (W73) → readable placeholder.
+function resolveSlot(code, teamsMap) {
+  if (!code) return { label: "TBD", resolved: false };
+  // Real team name (in our roster or has a flag)
+  if (teamsMap[code] || FLAG_ISO[code]) {
+    const tm = teamsMap[code];
+    return {
+      team: code, resolved: true,
+      owner: tm?.owner || null,
+      inPool: !!tm?.inPool,
+      advanced: !!tm?.advanced,
+      eliminated: !!tm?.eliminated,
+    };
+  }
+  // Position code like "1A", "2B"
+  let m = code.match(/^([12])([A-L])$/);
+  if (m) return { label: (m[1] === "1" ? "Winner " : "Runner-up ") + "Group " + m[2], resolved: false };
+  // Third-place option "3A/B/C/D/F"
+  if (/^3[A-L/]+$/.test(code)) return { label: "3rd: " + code.slice(1), resolved: false };
+  // Winner/loser of match code "W73", "L73"
+  m = code.match(/^([WL])(\d+)$/);
+  if (m) return { label: (m[1] === "W" ? "Winner" : "Loser") + " of #" + m[2], resolved: false };
+  // Fallback: show raw
+  return { label: code, resolved: false };
+}
+
+function bracketTeamHtml(slot) {
+  if (slot.resolved) {
+    const cls = slot.eliminated ? "bk-team-out" : slot.advanced ? "bk-team-adv" : "";
+    const ownerTag = slot.inPool ? `<span class="bk-owner" style="background:${OWNER_COLOR_HEX[slot.owner]};">${slot.owner}</span>` : "";
+    return `
+      <div class="bk-team ${cls}">
+        ${flagImg(slot.team, "w20", "bk-flag")}
+        <span class="bk-team-name">${slot.team}</span>
+        ${ownerTag}
+      </div>`;
+  }
+  return `
+    <div class="bk-team bk-team-tbd">
+      <span class="bk-team-name">${slot.label}</span>
+    </div>`;
+}
+
+function renderBracketMatch(m, teamsMap) {
+  const s1 = resolveSlot(m.team1, teamsMap);
+  const s2 = resolveSlot(m.team2, teamsMap);
+  const [venue, city] = venueLabel(m.ground);
+  const played = m.score && Array.isArray(m.score.ft) && m.score.ft.length === 2;
+  const ft = played ? m.score.ft : null;
+
+  // Date label
+  let dateLabel = "";
+  if (m.date) {
+    const d = new Date(m.date + "T12:00:00Z");
+    dateLabel = d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+  }
+
+  const scoreHtml = (slot, idx) => played
+    ? `<span class="bk-score ${ft[idx] > ft[1-idx] ? "bk-score-win" : ""}">${ft[idx]}</span>`
+    : "";
+
+  return `
+    <div class="bk-match">
+      <div class="bk-match-meta">
+        <span class="bk-num">#${m.num || ""}</span>
+        <span class="bk-date">${dateLabel}</span>
+        <span class="bk-venue">${venue}${city ? " · " + city : ""}</span>
+      </div>
+      <div class="bk-team-row">${bracketTeamHtml(s1)}${scoreHtml(s1, 0)}</div>
+      <div class="bk-team-row">${bracketTeamHtml(s2)}${scoreHtml(s2, 1)}</div>
+    </div>`;
+}
+
+function renderBracket(c) {
+  setNav("bracket");
+  const app = document.getElementById("app");
+  const raw = (LAST && LAST.rawData && LAST.rawData.matches) || [];
+
+  const ROUND_DEFS = [
+    { key: "Round of 32",        label: "Round of 32" },
+    { key: "Round of 16",        label: "Round of 16" },
+    { key: "Quarter-final",      label: "Quarter-finals" },
+    { key: "Semi-final",         label: "Semi-finals" },
+    { key: "Match for third place", label: "Third place" },
+    { key: "Final",              label: "Final" },
+  ];
+
+  const teamsMap = c.teams || {};
+  const haveData = raw.length > 0;
+
+  const columns = ROUND_DEFS.map(rd => {
+    const ms = raw.filter(m => m.round === rd.key).sort((a,b) => (a.num||0) - (b.num||0));
+    if (!ms.length) return "";
+    return `
+      <div class="bk-col">
+        <div class="bk-col-head">${rd.label}<span class="bk-col-count">${ms.length}</span></div>
+        ${ms.map(m => renderBracketMatch(m, teamsMap)).join("")}
+      </div>`;
+  }).filter(Boolean).join("");
+
+  app.innerHTML = `
+    <p class="section-label">Knockout stage</p>
+    <h2 class="section-title">The road to the final</h2>
+    <p style="color:var(--ink-soft);margin:0 0 8px;max-width:640px;font-size:14px;">
+      All 32 knockout matches with dates and venues. Slots fill with real teams as the group
+      stage resolves; until then they show the qualifying position (e.g. "Winner Group A").
+      Pool teams are tagged with their owner.
+    </p>
+    <div class="bk-legend">
+      <span class="bk-leg"><span class="bk-leg-sw adv"></span>Advanced / won</span>
+      <span class="bk-leg"><span class="bk-leg-sw out"></span>Eliminated</span>
+      <span class="bk-leg"><span class="bk-leg-sw tbd"></span>Not yet determined</span>
+    </div>
+    ${haveData ? `
+      <div class="bk-scroll">
+        <div class="bk-board">${columns}</div>
+      </div>
+    ` : `
+      <div class="fz-empty">Bracket data not loaded yet.
+        <small>The knockout schedule appears once match data is available.</small>
+      </div>
+    `}
+  `;
+}
+
 function renderDraftPerformance(c) {
   setNav("draft");
   const app = document.getElementById("app");
@@ -4327,11 +4683,63 @@ function renderDraftPerformance(c) {
     <div class="summary-cards">
       ${OWNERS.map(o => renderOwnerDraftCard(model.byOwner[o])).join("")}
     </div>
+
+    <p class="section-label" style="margin-top:40px;">The board</p>
+    <h2 class="section-title">Every pick, in draft order</h2>
+    <p style="color:var(--ink-soft);margin:0 0 16px;max-width:640px;font-size:14px;">
+      All 48 picks by round. <span style="color:var(--alive);font-weight:600;">Green</span> = advanced to the knockouts,
+      <span style="text-decoration:line-through;color:var(--ink-faint);">struck through</span> = eliminated, plain = still alive in the group stage.
+    </p>
+    ${renderDraftBoard(c)}
   `;
 
   wireDraftFilters(c);
   wireDraftChartPoints(model);
   wireQuartileBars();
+}
+
+function renderDraftBoard(c) {
+  // Build a round × owner grid from the DRAFT array.
+  // Serpentine draft: slot order within each round maps to a fixed owner sequence,
+  // but we key strictly by (round, owner) so each owner column is correct.
+  const rounds = [...new Set(DRAFT.map(d => d.round))].sort((a,b) => a - b);
+  const cellFor = (round, owner) => {
+    const pick = DRAFT.find(d => d.round === round && d.owner === owner);
+    if (!pick) return `<td class="db-cell db-empty">—</td>`;
+    const tm = c.teams[pick.team];
+    const status = tm ? (tm.advanced ? "advanced" : tm.eliminated ? "eliminated" : "alive") : "alive";
+    const flag = flagImg(pick.team, "w20", "db-flag");
+    return `
+      <td class="db-cell db-${status}">
+        <div class="db-pick">
+          ${flag}
+          <span class="db-team">${pick.team}</span>
+        </div>
+        <span class="db-pickno">${pick.pick}</span>
+      </td>`;
+  };
+
+  return `
+    <div class="db-wrap">
+      <table class="draft-board">
+        <thead>
+          <tr>
+            <th class="db-round-h">Rd</th>
+            ${OWNERS.map(o => `
+              <th class="db-owner-h">
+                <span class="db-owner-dot" style="background:${OWNER_COLOR_HEX[o]};"></span>${o}
+              </th>`).join("")}
+          </tr>
+        </thead>
+        <tbody>
+          ${rounds.map(r => `
+            <tr>
+              <td class="db-round">R${r}</td>
+              ${OWNERS.map(o => cellFor(r, o)).join("")}
+            </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>`;
 }
 
 function wireQuartileBars() {
@@ -4577,6 +4985,7 @@ function navigate(view) {
   if (view.name === "detail") hash = "#" + view.owner;
   else if (view.name === "draft") hash = "#draft";
   else if (view.name === "groups") hash = "#groups";
+  else if (view.name === "bracket") hash = "#bracket";
   else if (view.name === "upsets")  hash = "#upsets";
   else if (view.name === "fanzone") hash = "#fanzone";
   else hash = "#";
@@ -4584,6 +4993,7 @@ function navigate(view) {
   if (!LAST) return;
   if (view.name === "home")        renderHome(LAST.computed);
   else if (view.name === "groups") loadGroupsWithOdds(LAST.computed);
+  else if (view.name === "bracket") renderBracket(LAST.computed);
   else if (view.name === "draft")  renderDraftPerformance(LAST.computed);
   else if (view.name === "upsets") renderUpsets(LAST.computed);
   else if (view.name === "fanzone") triggerFanZoneLoad(false);
@@ -4600,6 +5010,7 @@ window.addEventListener("popstate", (ev) => {
     const h = decodeURIComponent(location.hash.replace(/^#/, ""));
     if (h === "draft") CURRENT_VIEW = { name: "draft" };
     else if (h === "groups") CURRENT_VIEW = { name: "groups" };
+    else if (h === "bracket") CURRENT_VIEW = { name: "bracket" };
     else if (h === "upsets") CURRENT_VIEW = { name: "upsets" };
     else if (h === "fanzone") CURRENT_VIEW = { name: "fanzone" };
     else if (OWNERS.includes(h)) CURRENT_VIEW = { name: "detail", owner: h };
@@ -4607,6 +5018,7 @@ window.addEventListener("popstate", (ev) => {
   }
   if (CURRENT_VIEW.name === "home")        renderHome(LAST.computed);
   else if (CURRENT_VIEW.name === "groups") loadGroupsWithOdds(LAST.computed);
+  else if (CURRENT_VIEW.name === "bracket") renderBracket(LAST.computed);
   else if (CURRENT_VIEW.name === "draft")  renderDraftPerformance(LAST.computed);
   else if (CURRENT_VIEW.name === "upsets") renderUpsets(LAST.computed);
   else if (CURRENT_VIEW.name === "fanzone") triggerFanZoneLoad(false);
@@ -4617,6 +5029,7 @@ window.addEventListener("popstate", (ev) => {
 const initialHash = decodeURIComponent(location.hash.replace(/^#/, ""));
 if (initialHash === "draft") CURRENT_VIEW = { name: "draft" };
 else if (initialHash === "groups") CURRENT_VIEW = { name: "groups" };
+else if (initialHash === "bracket") CURRENT_VIEW = { name: "bracket" };
 else if (initialHash === "upsets") CURRENT_VIEW = { name: "upsets" };
 else if (initialHash === "fanzone") CURRENT_VIEW = { name: "fanzone" };
 else if (OWNERS.includes(initialHash)) CURRENT_VIEW = { name: "detail", owner: initialHash };
@@ -4624,6 +5037,7 @@ else if (OWNERS.includes(initialHash)) CURRENT_VIEW = { name: "detail", owner: i
 // top-nav wiring
 document.getElementById("navHome").addEventListener("click",    () => navigate({ name: "home" }));
 document.getElementById("navGroups").addEventListener("click",  () => navigate({ name: "groups" }));
+document.getElementById("navBracket").addEventListener("click", () => navigate({ name: "bracket" }));
 document.getElementById("navDraft").addEventListener("click",   () => navigate({ name: "draft" }));
 document.getElementById("navUpsets").addEventListener("click",  () => navigate({ name: "upsets" }));
 document.getElementById("navFanzone").addEventListener("click", () => navigate({ name: "fanzone" }));
