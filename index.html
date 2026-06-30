@@ -2663,7 +2663,8 @@ function compute(data) {
         else continue;
       }
       if (loser in t) {
-        t[loser].eliminated = true;
+        t[loser].eliminated   = true;
+        t[loser].koEliminated = true;   // reconciliation must not clear this
         t[loser].matchHistory.push({ date: m.date, time: m.time, ground: m.ground, round: ko.key, opp: winner, gf: (loser===a?ga:gb), ga: (loser===a?gb:ga), result: "L", pts: 0 });
       }
       if (winner in t) {
@@ -2908,17 +2909,16 @@ function compute(data) {
   for (const grp of "ABCDEFGHIJKL") {
     for (const row of (groupTables[grp] || [])) {
       if (!(row.team in t)) continue;
+      if (t[row.team].koEliminated) continue; // lost a knockout match — leave as-is
       if (SAFE_STATUSES.has(row.groupStatus)) {
-        // Definitively safe — clear any false elimination
+        // Definitively safe — clear any false group-stage elimination
         t[row.team].eliminated = false;
         t[row.team].alive      = true;
       } else if (row.groupStatus === "eliminated") {
-        // Definitively out — ensure eliminated flag is set
+        // Definitively out of group stage — ensure eliminated flag is set
         t[row.team].eliminated = true;
         t[row.team].alive      = false;
       }
-      // "top2" already in SAFE_STATUSES; "fourth" / "third-out" are still
-      // mathematically in play — leave their flags unchanged.
     }
   }
   // teamsAlive is a cached integer — recount from corrected alive flags
