@@ -4193,15 +4193,20 @@ function renderSeedMatrix(upsets) {
           const isPKWin = u.resultType === "P";
           const tipLines = [
             `<b>${u.worseTeam}</b> (R${u.worseSeed})`,
-            `${isDraw ? "drew" : "beat"} <b>${u.betterTeam}</b> (R${u.betterSeed})`,
-            `${u.worseGoals}–${u.betterGoals} · ${fmtMatchDate(u.date)}`,
+            `${isDraw ? "drew" : isPKWin ? "beat on PKs" : "beat"} <b>${u.betterTeam}</b> (R${u.betterSeed})`,
+            `${u.worseGoals}–${u.betterGoals}${isPKWin ? " (PKs)" : ""} · ${fmtMatchDate(u.date)}`,
             `${renderUpsets_fmtPts(u.upsetScore)} upset pt${u.upsetScore===1?"":"s"}`,
           ].join("|");
           svg += `<g class="mx-tip-cell" data-tip="${tipLines.replace(/"/g,"&quot;")}">
             <rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" fill="transparent"/>`;
           if (isDraw) {
+            // Draw: outlined circle only — no fill
             svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="2.5"/>`;
+          } else if (isPKWin) {
+            // PK win: filled circle at reduced opacity — same owner color, visually between win and draw
+            svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" fill-opacity="0.45" stroke="${color}" stroke-width="1.5"/>`;
           } else {
+            // Outright win: solid filled circle — full owner color
             svg += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}"/>`;
           }
           svg += `</g>`;
@@ -4231,10 +4236,7 @@ function renderSeedMatrix(upsets) {
           <svg width="13" height="13" style="flex-shrink:0;"><circle cx="6.5" cy="6.5" r="5" fill="var(--ink-soft)"/></svg>Win (90 min)
         </span>
         <span class="it" style="gap:6px;">
-          <svg width="13" height="13" style="flex-shrink:0;">
-            <circle cx="6.5" cy="6.5" r="5" fill="none" stroke="var(--ink-soft)" stroke-width="2"/>
-            <path d="M6.5 1.5 A5 5 0 0 1 6.5 11.5 Z" fill="var(--ink-soft)"/>
-          </svg>Win (PKs)
+          <svg width="13" height="13" style="flex-shrink:0;"><circle cx="6.5" cy="6.5" r="5" fill="var(--ink-soft)" fill-opacity="0.45" stroke="var(--ink-soft)" stroke-width="1.5"/></svg>Win (PKs)
         </span>
         <span class="it" style="gap:6px;">
           <svg width="13" height="13" style="flex-shrink:0;"><circle cx="6.5" cy="6.5" r="4.5" fill="none" stroke="var(--ink-soft)" stroke-width="2"/></svg>Draw

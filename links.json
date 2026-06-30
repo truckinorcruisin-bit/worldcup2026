@@ -197,5 +197,40 @@
       "dallas",
       "fans"
     ]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/michaelmathes/status/2069511739834524103",
+    "tweetId": "2069511739834524103",
+    "username": "@michaelmathes",
+    "caption": "World Cup fan reacts to being in America",
+    "added": "2026-06-29",
+    "tags": [
+      "fans",
+      "viral"
+    ]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/playbracco/status/2069782730485669963",
+    "tweetId": "2069782730485669963",
+    "username": "@playbracco",
+    "caption": "The World Cup experience",
+    "added": "2026-06-29",
+    "tags": [
+      "fans"
+    ]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/footyhumour/status/2070952807100776801",
+    "tweetId": "2070952807100776801",
+    "username": "@footyhumour",
+    "caption": "Footy Humour on the World Cup",
+    "added": "2026-06-29",
+    "tags": [
+      "funny",
+      "viral"
+    ]
   }
 ]
