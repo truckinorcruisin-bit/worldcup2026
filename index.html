@@ -4523,7 +4523,7 @@ function venueLabel(ground) {
 // Resolve an openfootball slot string into a display object.
 // Real team names → { team, resolved:true }. Position codes (2A, 1E) and
 // third-place options (3A/B/C/D/F) and winner codes (W73) → readable placeholder.
-function resolveSlot(code, teamsMap) {
+function resolveSlot(code, teamsMap, matchWinners) {
   if (!code) return { label: "TBD", resolved: false };
   // Real team name (in our roster or has a flag)
   if (teamsMap[code] || FLAG_ISO[code]) {
@@ -4541,9 +4541,15 @@ function resolveSlot(code, teamsMap) {
   if (m) return { label: (m[1] === "1" ? "Winner " : "Runner-up ") + "Group " + m[2], resolved: false };
   // Third-place option "3A/B/C/D/F"
   if (/^3[A-L/]+$/.test(code)) return { label: "3rd: " + code.slice(1), resolved: false };
-  // Winner/loser of match code "W73", "L73"
+  // Winner/loser of match code "W73", "L73" — self-resolve from computed results
   m = code.match(/^([WL])(\d+)$/);
-  if (m) return { label: (m[1] === "W" ? "Winner" : "Loser") + " of #" + m[2], resolved: false };
+  if (m) {
+    const num = +m[2];
+    const isWinner = m[1] === "W";
+    const resolvedTeam = matchWinners && (isWinner ? matchWinners.w[num] : matchWinners.l[num]);
+    if (resolvedTeam) return resolveSlot(resolvedTeam, teamsMap, matchWinners); // recurse in case chain
+    return { label: (isWinner ? "Winner" : "Loser") + " of #" + num, resolved: false };
+  }
   // Fallback: show raw
   return { label: code, resolved: false };
 }
@@ -4565,9 +4571,9 @@ function bracketTeamHtml(slot) {
     </div>`;
 }
 
-function renderBracketMatch(m, teamsMap) {
-  const s1 = resolveSlot(m.team1, teamsMap);
-  const s2 = resolveSlot(m.team2, teamsMap);
+function renderBracketMatch(m, teamsMap, matchWinners) {
+  const s1 = resolveSlot(m.team1, teamsMap, matchWinners);
+  const s2 = resolveSlot(m.team2, teamsMap, matchWinners);
   const [venue, city] = venueLabel(m.ground);
   const played = m.score && Array.isArray(m.score.ft) && m.score.ft.length === 2;
   const ft = played ? m.score.ft : null;
@@ -4612,13 +4618,30 @@ function renderBracket(c) {
   const teamsMap = c.teams || {};
   const haveData = raw.length > 0;
 
+  // Pre-compute winners and losers from all played matches so we can resolve
+  // W-code slots (e.g. "W73" → "Canada") even before openfootball back-fills them.
+  const matchWinners = { w: {}, l: {} };
+  for (const m of raw) {
+    if (!m.num || !m.score || !Array.isArray(m.score.ft)) continue;
+    const [g1, g2] = m.score.ft;
+    let winner = null, loser = null;
+    if      (g1 > g2) { winner = m.team1; loser = m.team2; }
+    else if (g2 > g1) { winner = m.team2; loser = m.team1; }
+    else {
+      const p = m.score.p, et = m.score.et;
+      if (Array.isArray(p)  && p.length  === 2 && p[0]  !== p[1])  { winner = p[0]  > p[1]  ? m.team1 : m.team2; loser = winner === m.team1 ? m.team2 : m.team1; }
+      else if (Array.isArray(et) && et.length === 2 && et[0] !== et[1]) { winner = et[0] > et[1] ? m.team1 : m.team2; loser = winner === m.team1 ? m.team2 : m.team1; }
+    }
+    if (winner) { matchWinners.w[m.num] = winner; matchWinners.l[m.num] = loser; }
+  }
+
   const columns = ROUND_DEFS.map(rd => {
     const ms = raw.filter(m => m.round === rd.key).sort((a,b) => (a.num||0) - (b.num||0));
     if (!ms.length) return "";
     return `
       <div class="bk-col">
         <div class="bk-col-head">${rd.label}<span class="bk-col-count">${ms.length}</span></div>
-        ${ms.map(m => renderBracketMatch(m, teamsMap)).join("")}
+        ${ms.map(m => renderBracketMatch(m, teamsMap, matchWinners)).join("")}
       </div>`;
   }).filter(Boolean).join("");
 
