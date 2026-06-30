@@ -2926,8 +2926,9 @@ function compute(data) {
     owners[o].teamsAlive = owners[o].teams.filter(tr => tr.alive).length;
   }
 
-  // ----- upsets: lower-seeded team wins or draws against a higher-seeded one -----
-  // seed = draft round (1 = best, 12 = last). Score = gap for win, gap×0.5 for draw.
+  // ----- upsets: lower-seeded team wins, draws, or wins on PKs vs higher-seeded -----
+  // resultType: "W" = win in 90 min, "P" = won on penalties (full gap credit),
+  //             "D" = draw (group stage only, half gap).
   const upsets = [];
   for (const m of matches) {
     if (!isPlayed(m)) continue;
@@ -2945,10 +2946,34 @@ function compute(data) {
     const betterGoals = s1 < s2 ? g1 : g2;
     const worseGoals  = s1 < s2 ? g2 : g1;
 
-    let upsetScore = 0, resultType = "";
-    if (worseGoals > betterGoals)       { upsetScore = gap;       resultType = "W"; }
-    else if (worseGoals === betterGoals) { upsetScore = gap * 0.5; resultType = "D"; }
-    else continue; // better seed won — not an upset
+    let upsetScore = 0, resultType = "", pkWinner = null;
+
+    // Check for penalty / extra-time resolution first (knockout round tiebreakers)
+    if (g1 === g2) {
+      const p  = m.score && m.score.p;
+      const et = m.score && m.score.et;
+      if (Array.isArray(p) && p.length === 2 && p[0] !== p[1]) {
+        pkWinner = p[0] > p[1] ? t1 : t2;
+      } else if (Array.isArray(et) && et.length === 2 && et[0] !== et[1]) {
+        pkWinner = et[0] > et[1] ? t1 : t2;
+      }
+    }
+
+    if (worseGoals > betterGoals) {
+      // Worse seed won in 90 min
+      upsetScore = gap; resultType = "W";
+    } else if (g1 === g2 && pkWinner === worseTeam) {
+      // Worse seed won on PKs / ET — full upset credit since they actually advance
+      upsetScore = gap; resultType = "P";
+    } else if (g1 === g2 && pkWinner === betterTeam) {
+      // Better seed won on PKs / ET — not an upset (favorite prevailed)
+      continue;
+    } else if (worseGoals === betterGoals) {
+      // True draw (group stage) — half credit
+      upsetScore = gap * 0.5; resultType = "D";
+    } else {
+      continue; // better seed won in 90 min — not an upset
+    }
 
     upsets.push({
       date: m.date, round: m.round, ground: m.ground,
@@ -4041,7 +4066,7 @@ function renderUpsets(c) {
     const u = upsets[+row.dataset.idx];
     const html = `
       <div><b>${u.worseTeam}</b> <span style="opacity:.7;">(R${u.worseSeed})</span></div>
-      <div style="font-size:11px;opacity:.7;margin:2px 0;">${u.resultType === "W" ? "beat" : "drew"}</div>
+      <div style="font-size:11px;opacity:.7;margin:2px 0;">${u.resultType === "W" ? "beat" : u.resultType === "P" ? "beat on PKs" : "drew"}</div>
       <div><b>${u.betterTeam}</b> <span style="opacity:.7;">(R${u.betterSeed})</span></div>
       <div style="margin-top:6px;border-top:1px solid rgba(243,239,230,.25);padding-top:5px;display:flex;justify-content:space-between;gap:12px;">
         <span style="opacity:.7;">${u.worseGoals}–${u.betterGoals} · ${u.gap}-round gap · ${fmtMatchDate(u.date)}</span>
@@ -4081,6 +4106,10 @@ function renderUpsetBars(upsets) {
     const pct  = ((u.upsetScore / maxScore) * 100).toFixed(1) + "%";
     const color = OWNER_COLOR_HEX[u.worseOwner] || "var(--ink-soft)";
     const isDraw = u.resultType === "D";
+          const isPKWin = u.resultType === "P";
+    const isPK   = u.resultType === "P";
+    const verbWord = isDraw ? "DREW" : isPK ? "WON PKs" : "BEAT";
+    const verbCls  = isDraw ? "draw" : "win";
     return `
       <div class="ubar-row" data-idx="${i}">
         <div class="ubar-rank">${i + 1}</div>
@@ -4088,14 +4117,14 @@ function renderUpsetBars(upsets) {
           <span class="ubar-underdog" style="color:${color}">
             ${flagImg(u.worseTeam,"w20","ubar-flag")}${u.worseTeam}<span class="ubar-seed-tag">R${u.worseSeed}</span>
           </span>
-          <span class="ubar-verb ${isDraw ? "draw" : "win"}">${isDraw ? "DREW" : "BEAT"}</span>
+          <span class="ubar-verb ${verbCls}">${verbWord}</span>
           <span class="ubar-favorite">
             ${flagImg(u.betterTeam,"w20","ubar-flag")}${u.betterTeam}<span class="ubar-seed-tag">R${u.betterSeed}</span>
           </span>
-          <span class="ubar-score-inline">${u.worseGoals}–${u.betterGoals}</span>
+          <span class="ubar-score-inline">${u.worseGoals}–${u.betterGoals}${isPK ? " (PKs)" : ""}</span>
         </div>
         <div class="ubar-track">
-          <div class="ubar-fill ${isDraw ? "draw" : "win"}" style="background:${color};" data-w="${pct}"></div>
+          <div class="ubar-fill ${verbCls}" style="background:${color};${isPK ? "background-image:repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(255,255,255,.25) 3px,rgba(255,255,255,.25) 6px);" : ""}" data-w="${pct}"></div>
         </div>
         <div class="ubar-pts">${renderUpsets_fmtPts(u.upsetScore)}</div>
       </div>`;
@@ -4161,6 +4190,7 @@ function renderSeedMatrix(upsets) {
         if (u) {
           const color = OWNER_COLOR_HEX[u.worseOwner] || "#888";
           const isDraw = u.resultType === "D";
+          const isPKWin = u.resultType === "P";
           const tipLines = [
             `<b>${u.worseTeam}</b> (R${u.worseSeed})`,
             `${isDraw ? "drew" : "beat"} <b>${u.betterTeam}</b> (R${u.betterSeed})`,
@@ -4198,7 +4228,13 @@ function renderSeedMatrix(upsets) {
       <div class="umatrix-legend">
         ${ownerDots}
         <span class="it" style="gap:6px;">
-          <svg width="13" height="13" style="flex-shrink:0;"><circle cx="6.5" cy="6.5" r="5" fill="var(--ink-soft)"/></svg>Win
+          <svg width="13" height="13" style="flex-shrink:0;"><circle cx="6.5" cy="6.5" r="5" fill="var(--ink-soft)"/></svg>Win (90 min)
+        </span>
+        <span class="it" style="gap:6px;">
+          <svg width="13" height="13" style="flex-shrink:0;">
+            <circle cx="6.5" cy="6.5" r="5" fill="none" stroke="var(--ink-soft)" stroke-width="2"/>
+            <path d="M6.5 1.5 A5 5 0 0 1 6.5 11.5 Z" fill="var(--ink-soft)"/>
+          </svg>Win (PKs)
         </span>
         <span class="it" style="gap:6px;">
           <svg width="13" height="13" style="flex-shrink:0;"><circle cx="6.5" cy="6.5" r="4.5" fill="none" stroke="var(--ink-soft)" stroke-width="2"/></svg>Draw
@@ -4232,7 +4268,7 @@ function renderUpsetOwnerCard(s, c) {
         <div class="uo-best">
           <span class="lbl">Best upset</span>
           ${flagImg(best.worseTeam,"w20","uo-flag")} <b>${best.worseTeam}</b>
-          ${best.resultType === "W" ? "beat" : "drew"}
+          ${best.resultType === "W" ? "beat" : best.resultType === "P" ? "beat (PKs)" : "drew"}
           ${flagImg(best.betterTeam,"w20","uo-flag")} <b>${best.betterTeam}</b>
           <span class="dim">(${best.upsetScore % 1 === 0 ? best.upsetScore : best.upsetScore.toFixed(1)} pts)</span>
         </div>` : `<div class="uo-best dim">No upsets earned yet.</div>`}
