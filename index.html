@@ -2003,9 +2003,49 @@
     text-overflow: ellipsis;
   }
   .bk-team-tbd .bk-team-name { font-family: 'Inter', sans-serif; font-size: 11px; color: var(--ink-faint); font-weight: 500; font-style: italic; }
-  .bk-team-adv .bk-team-name { color: var(--alive); }
-  .bk-team-out { opacity: 0.5; }
-  .bk-team-out .bk-team-name { text-decoration: line-through; }
+  .bk-team-name.bk-name-won  { color: var(--alive); }
+  .bk-team-name.bk-name-lost { text-decoration: line-through; color: var(--ink-faint); }
+
+  /* odds bar in match card */
+  .bk-odds { margin-top: 6px; padding-top: 5px; border-top: 1px solid var(--rule-soft); }
+  .bk-odds-bar {
+    display: flex;
+    height: 4px;
+    background: var(--rule-soft);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 3px;
+  }
+  .bk-odds-seg { height: 100%; transition: width .3s ease; }
+  .bk-odds-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+  }
+
+  /* odds setup bar in bracket header */
+  .bk-odds-setup {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    padding: 8px 14px;
+    background: var(--paper-deep);
+    border: 1px solid var(--rule);
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .bk-odds-setup.live { color: var(--ink); }
+  .bk-odds-dot { width:8px; height:8px; border-radius:50%; background:var(--alive); flex-shrink:0; }
+  .bk-odds-setup button {
+    font-family:'Inter',sans-serif; font-size:11px; font-weight:600;
+    background:var(--ink); color:var(--paper); border:1px solid var(--ink);
+    padding:3px 10px; cursor:pointer;
+  }
+  .bk-odds-setup button:hover { background:var(--accent); border-color:var(--accent); }
   .bk-owner {
     font-family: 'Inter', sans-serif;
     font-size: 8px;
@@ -4592,14 +4632,24 @@ function resolveSlot(code, teamsMap, matchWinners) {
   return { label: code, resolved: false };
 }
 
-function bracketTeamHtml(slot) {
+function bracketTeamHtml(slot, matchStatus) {
+  // matchStatus: "won" | "lost" | "pending"
   if (slot.resolved) {
-    const cls = slot.eliminated ? "bk-team-out" : slot.advanced ? "bk-team-adv" : "";
-    const ownerTag = slot.inPool ? `<span class="bk-owner" style="background:${OWNER_COLOR_HEX[slot.owner]};">${slot.owner}</span>` : "";
+    let teamCls = "", nameCls = "", nameStyle = "";
+    if (matchStatus === "won") {
+      nameCls = "bk-name-won";                          // green — won this match
+    } else if (matchStatus === "lost") {
+      teamCls = "bk-team-out"; nameCls = "bk-name-lost"; // dimmed/struck — out
+    } else if (slot.inPool && OWNER_COLOR_HEX[slot.owner]) {
+      nameStyle = `color:${OWNER_COLOR_HEX[slot.owner]}`; // owner color — upcoming
+    }
+    const ownerTag = slot.inPool
+      ? `<span class="bk-owner" style="background:${OWNER_COLOR_HEX[slot.owner]};">${slot.owner}</span>`
+      : "";
     return `
-      <div class="bk-team ${cls}">
+      <div class="bk-team ${teamCls}">
         ${flagImg(slot.team, "w20", "bk-flag")}
-        <span class="bk-team-name">${slot.team}</span>
+        <span class="bk-team-name ${nameCls}"${nameStyle ? ` style="${nameStyle}"` : ""}>${slot.team}</span>
         ${ownerTag}
       </div>`;
   }
@@ -4609,14 +4659,18 @@ function bracketTeamHtml(slot) {
     </div>`;
 }
 
-function renderBracketMatch(m, teamsMap, matchWinners) {
+function renderBracketMatch(m, teamsMap, matchWinners, matchOddsMap) {
   const s1 = resolveSlot(m.team1, teamsMap, matchWinners);
   const s2 = resolveSlot(m.team2, teamsMap, matchWinners);
   const [venue, city] = venueLabel(m.ground);
   const played = m.score && Array.isArray(m.score.ft) && m.score.ft.length === 2;
   const ft = played ? m.score.ft : null;
 
-  // Date label
+  // Per-team match status for color coding
+  const winnerName = played ? matchWinners.w[m.num] : null;
+  const st1 = played ? (winnerName === s1.team ? "won" : "lost") : "pending";
+  const st2 = played ? (winnerName === s2.team ? "won" : "lost") : "pending";
+
   let dateLabel = "";
   if (m.date) {
     const d = new Date(m.date + "T12:00:00Z");
@@ -4627,6 +4681,30 @@ function renderBracketMatch(m, teamsMap, matchWinners) {
     ? `<span class="bk-score ${ft[idx] > ft[1-idx] ? "bk-score-win" : ""}">${ft[idx]}</span>`
     : "";
 
+  // Odds bar — only for upcoming matches where both teams are resolved
+  let oddsHtml = "";
+  if (!played && s1.resolved && s2.resolved && matchOddsMap) {
+    const key = [s1.team, s2.team].sort().join("|");
+    const od  = matchOddsMap[key];
+    if (od) {
+      const [p1, p2] = od.t1 === s1.team ? [od.p1, od.p2] : [od.p2, od.p1];
+      const pct1 = Math.round(p1 * 100), pct2 = Math.round(p2 * 100);
+      const col1 = s1.inPool ? OWNER_COLOR_HEX[s1.owner] : "var(--ink-faint)";
+      const col2 = s2.inPool ? OWNER_COLOR_HEX[s2.owner] : "var(--ink-faint)";
+      oddsHtml = `
+        <div class="bk-odds">
+          <div class="bk-odds-bar">
+            <div class="bk-odds-seg" style="width:${pct1}%;background:${col1};opacity:.75;"></div>
+            <div class="bk-odds-seg" style="width:${pct2}%;background:${col2};opacity:.75;"></div>
+          </div>
+          <div class="bk-odds-labels">
+            <span style="color:${col1}">${pct1}%</span>
+            <span style="color:${col2}">${pct2}%</span>
+          </div>
+        </div>`;
+    }
+  }
+
   return `
     <div class="bk-match">
       <div class="bk-match-meta">
@@ -4634,8 +4712,9 @@ function renderBracketMatch(m, teamsMap, matchWinners) {
         <span class="bk-date">${dateLabel}</span>
         <span class="bk-venue">${venue}${city ? " · " + city : ""}</span>
       </div>
-      <div class="bk-team-row">${bracketTeamHtml(s1)}${scoreHtml(s1, 0)}</div>
-      <div class="bk-team-row">${bracketTeamHtml(s2)}${scoreHtml(s2, 1)}</div>
+      <div class="bk-team-row">${bracketTeamHtml(s1, st1)}${scoreHtml(s1, 0)}</div>
+      <div class="bk-team-row">${bracketTeamHtml(s2, st2)}${scoreHtml(s2, 1)}</div>
+      ${oddsHtml}
     </div>`;
 }
 
@@ -4645,19 +4724,18 @@ function renderBracket(c) {
   const raw = (LAST && LAST.rawData && LAST.rawData.matches) || [];
 
   const ROUND_DEFS = [
-    { key: "Round of 32",        label: "Round of 32" },
-    { key: "Round of 16",        label: "Round of 16" },
-    { key: "Quarter-final",      label: "Quarter-finals" },
-    { key: "Semi-final",         label: "Semi-finals" },
+    { key: "Round of 32",           label: "Round of 32" },
+    { key: "Round of 16",           label: "Round of 16" },
+    { key: "Quarter-final",         label: "Quarter-finals" },
+    { key: "Semi-final",            label: "Semi-finals" },
     { key: "Match for third place", label: "Third place" },
-    { key: "Final",              label: "Final" },
+    { key: "Final",                 label: "Final" },
   ];
 
   const teamsMap = c.teams || {};
   const haveData = raw.length > 0;
 
-  // Pre-compute winners and losers from all played matches so we can resolve
-  // W-code slots (e.g. "W73" → "Canada") even before openfootball back-fills them.
+  // Pre-compute winners/losers so W-codes resolve from results
   const matchWinners = { w: {}, l: {} };
   for (const m of raw) {
     if (!m.num || !m.score || !Array.isArray(m.score.ft)) continue;
@@ -4667,10 +4745,39 @@ function renderBracket(c) {
     else if (g2 > g1) { winner = m.team2; loser = m.team1; }
     else {
       const p = m.score.p, et = m.score.et;
-      if (Array.isArray(p)  && p.length  === 2 && p[0]  !== p[1])  { winner = p[0]  > p[1]  ? m.team1 : m.team2; loser = winner === m.team1 ? m.team2 : m.team1; }
-      else if (Array.isArray(et) && et.length === 2 && et[0] !== et[1]) { winner = et[0] > et[1] ? m.team1 : m.team2; loser = winner === m.team1 ? m.team2 : m.team1; }
+      if (Array.isArray(p)  && p.length  === 2 && p[0]  !== p[1]) { winner = p[0]  > p[1]  ? m.team1 : m.team2; loser = winner===m.team1?m.team2:m.team1; }
+      else if (Array.isArray(et) && et.length === 2 && et[0] !== et[1]) { winner = et[0] > et[1] ? m.team1 : m.team2; loser = winner===m.team1?m.team2:m.team1; }
     }
     if (winner) { matchWinners.w[m.num] = winner; matchWinners.l[m.num] = loser; }
+  }
+
+  // Odds state
+  const oddsKey     = BK_getOddsKey();
+  const cachedOdds  = BK_ODDS_MEM;
+  const matchOddsMap = cachedOdds?.matchOdds || null;
+
+  // Odds status bar
+  let oddsBar = "";
+  if (!oddsKey) {
+    oddsBar = `
+      <div class="bk-odds-setup">
+        <span>Add win% odds:</span>
+        <input id="bkOddsInput" type="text" placeholder="Paste The Odds API key…"
+               style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 8px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);width:230px;" />
+        <button id="bkOddsSave" type="button">Save</button>
+        <a href="https://the-odds-api.com/" target="_blank" rel="noopener" style="font-size:11px;color:var(--ink-soft);">Get free key ↗</a>
+      </div>`;
+  } else {
+    const ts    = cachedOdds ? `Updated ${fmtRelative(cachedOdds._cachedAt)}` : "Fetching…";
+    const rem   = cachedOdds?.remaining ? ` · ${cachedOdds.remaining} calls left` : "";
+    const sport = cachedOdds?.sportKey  ? ` · ${cachedOdds.sportKey}` : "";
+    oddsBar = `
+      <div class="bk-odds-setup live">
+        <span class="bk-odds-dot"></span>
+        <span>Win% odds ${ts}${rem}${sport}</span>
+        <button id="bkOddsRefresh" type="button">Refresh</button>
+        <button id="bkOddsClear"   type="button" style="color:var(--ink-faint);">Remove key</button>
+      </div>`;
   }
 
   const columns = ROUND_DEFS.map(rd => {
@@ -4679,7 +4786,7 @@ function renderBracket(c) {
     return `
       <div class="bk-col">
         <div class="bk-col-head">${rd.label}<span class="bk-col-count">${ms.length}</span></div>
-        ${ms.map(m => renderBracketMatch(m, teamsMap, matchWinners)).join("")}
+        ${ms.map(m => renderBracketMatch(m, teamsMap, matchWinners, matchOddsMap)).join("")}
       </div>`;
   }).filter(Boolean).join("");
 
@@ -4687,26 +4794,135 @@ function renderBracket(c) {
     <p class="section-label">Knockout stage</p>
     <h2 class="section-title">The road to the final</h2>
     <p style="color:var(--ink-soft);margin:0 0 8px;max-width:640px;font-size:14px;">
-      All 32 knockout matches with dates and venues. Slots fill with real teams as the group
-      stage resolves; until then they show the qualifying position (e.g. "Winner Group A").
-      Pool teams are tagged with their owner.
+      Pool teams shown in owner colors before kick-off, green after advancing. Win% odds sourced from The Odds API.
     </p>
+    ${oddsBar}
     <div class="bk-legend">
-      <span class="bk-leg"><span class="bk-leg-sw adv"></span>Advanced / won</span>
+      <span class="bk-leg"><span class="bk-leg-sw" style="background:var(--alive);opacity:.8;"></span>Won match</span>
       <span class="bk-leg"><span class="bk-leg-sw out"></span>Eliminated</span>
-      <span class="bk-leg"><span class="bk-leg-sw tbd"></span>Not yet determined</span>
+      <span class="bk-leg">Owner color = upcoming match</span>
     </div>
     ${haveData ? `
       <div class="bk-scroll">
         <div class="bk-board">${columns}</div>
       </div>
     ` : `
-      <div class="fz-empty">Bracket data not loaded yet.
-        <small>The knockout schedule appears once match data is available.</small>
-      </div>
+      <div class="fz-empty">Bracket data not loaded yet.</div>
     `}
   `;
+
+  // Wire odds key save/refresh/clear
+  const saveBtn = app.querySelector("#bkOddsSave");
+  if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      const k = app.querySelector("#bkOddsInput")?.value?.trim();
+      if (!k) return;
+      BK_saveOddsKey(k);
+      BK_loadOdds(c, true);
+    });
+    app.querySelector("#bkOddsInput")?.addEventListener("keydown", e => {
+      if (e.key === "Enter") saveBtn.click();
+    });
+  }
+  const refBtn = app.querySelector("#bkOddsRefresh");
+  if (refBtn) refBtn.addEventListener("click", () => BK_loadOdds(c, true));
+  const clrBtn = app.querySelector("#bkOddsClear");
+  if (clrBtn) clrBtn.addEventListener("click", () => { BK_clearOddsKey(); renderBracket(c); });
+
+  // Fetch fresh odds if key is set
+  if (oddsKey && !cachedOdds) BK_loadOdds(c, false);
 }
+
+// ── Bracket odds infrastructure ──────────────────────────────────────────
+const BK_KEY_STORE   = "wcpool-bracket-odds-key";
+const BK_CACHE_STORE = "wcpool-bracket-odds-v1";
+const BK_CACHE_MS    = 60 * 60 * 1000; // 1 hour
+let   BK_ODDS_MEM    = null;
+
+function BK_getOddsKey()  { try { return localStorage.getItem(BK_KEY_STORE) || ""; } catch(e) { return ""; } }
+function BK_saveOddsKey(k){ try { localStorage.setItem(BK_KEY_STORE, k.trim()); } catch(e) {} }
+function BK_clearOddsKey(){ try { localStorage.removeItem(BK_KEY_STORE); BK_ODDS_MEM = null; } catch(e) {} }
+
+// Same name normalization as the groups odds (The Odds API vs openfootball spellings)
+const BK_NAME_MAP = {
+  "United States": "USA", "Bosnia and Herzegovina": "Bosnia & Herzegovina",
+  "Ivory Coast": "Ivory Coast", "Cote d'Ivoire": "Ivory Coast",
+  "Curacao": "Curaçao", "Democratic Republic of Congo": "DR Congo",
+  "Turkey": "Turkey",
+};
+const bkNorm = n => BK_NAME_MAP[n] || n;
+
+function bkAmericanToProb(price) {
+  const dec = price > 0 ? (price / 100) + 1 : (100 / Math.abs(price)) + 1;
+  return 1 / dec;
+}
+
+async function BK_fetchOdds(apiKey, force = false) {
+  if (!force && BK_ODDS_MEM && Date.now() - BK_ODDS_MEM._cachedAt < BK_CACHE_MS) return BK_ODDS_MEM;
+  if (!force) {
+    try {
+      const raw = localStorage.getItem(BK_CACHE_STORE);
+      if (raw) { const c = JSON.parse(raw); if (c?._cachedAt && Date.now()-c._cachedAt < BK_CACHE_MS) { BK_ODDS_MEM=c; return c; } }
+    } catch(e) {}
+  }
+
+  // Step 1: discover the live World Cup sport key
+  const sportsResp = await fetch(
+    `https://api.the-odds-api.com/v4/sports?apiKey=${encodeURIComponent(apiKey)}&all=true`,
+    { cache: "no-store" }
+  );
+  if (!sportsResp.ok) throw new Error(`Sports list HTTP ${sportsResp.status} — check your API key`);
+  const sports = await sportsResp.json();
+  const wc = (sports || []).find(s => s.active && (s.key?.includes("world_cup") || s.title?.toLowerCase().includes("world cup")));
+  const sportKey = wc?.key || "soccer_world_cup";
+
+  // Step 2: fetch H2H odds
+  const oddsResp = await fetch(
+    `https://api.the-odds-api.com/v4/sports/${sportKey}/odds?apiKey=${encodeURIComponent(apiKey)}&regions=us&markets=h2h&oddsFormat=american`,
+    { cache: "no-store" }
+  );
+  const remaining = oddsResp.headers.get("x-requests-remaining") ?? "?";
+  if (!oddsResp.ok) throw new Error(`Odds HTTP ${oddsResp.status}`);
+  const data = await oddsResp.json();
+
+  // Step 3: build matchOdds lookup keyed by sorted team pair
+  const matchOdds = {};
+  for (const match of (data || [])) {
+    const t1 = bkNorm(match.home_team), t2 = bkNorm(match.away_team);
+    const bookieProbs = [];
+    for (const bk of (match.bookmakers || [])) {
+      const h2h = bk.markets?.find(m => m.key === "h2h");
+      if (!h2h?.outcomes?.length) continue;
+      const raw = h2h.outcomes.map(o => ({ name: bkNorm(o.name), p: bkAmericanToProb(o.price) }));
+      const tot = raw.reduce((s,o) => s+o.p, 0);
+      bookieProbs.push(raw.map(o => ({ ...o, p: o.p/tot })));
+    }
+    if (!bookieProbs.length) continue;
+    const avg = nm => { const v = bookieProbs.map(bp => bp.find(o=>o.name===nm)?.p??0); return v.reduce((s,x)=>s+x,0)/v.length; };
+    const key = [t1, t2].sort().join("|");
+    matchOdds[key] = { t1, t2, p1: avg(t1), p2: avg(t2) };
+  }
+
+  const result = { matchOdds, sportKey, remaining, _cachedAt: Date.now() };
+  BK_ODDS_MEM = result;
+  try { localStorage.setItem(BK_CACHE_STORE, JSON.stringify(result)); } catch(e) {}
+  return result;
+}
+
+function BK_loadOdds(c, force) {
+  const key = BK_getOddsKey();
+  if (!key) return;
+  BK_fetchOdds(key, force)
+    .then(od => { BK_ODDS_MEM = od; if (CURRENT_VIEW.name==="bracket") renderBracket(c); })
+    .catch(err => {
+      console.error("[BracketOdds]", err.message);
+      if (CURRENT_VIEW.name==="bracket") {
+        const el = document.querySelector(".bk-odds-setup");
+        if (el) el.innerHTML += `<span style="color:var(--accent);font-size:11px;"> · Error: ${err.message}</span>`;
+      }
+    });
+}
+
 
 function renderDraftPerformance(c) {
   setNav("draft");

@@ -232,5 +232,50 @@
       "funny",
       "viral"
     ]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/footyhumour/status/2071529104059326885",
+    "tweetId": "2071529104059326885",
+    "username": "@footyhumour",
+    "caption": "Footy Humour captures the World Cup madness",
+    "added": "2026-07-01",
+    "tags": [
+      "funny",
+      "viral"
+    ]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/criminalsimpson/status/2071742519767859251",
+    "tweetId": "2071742519767859251",
+    "username": "@criminalsimpson",
+    "caption": "Criminal Simpson on the World Cup",
+    "added": "2026-07-01",
+    "tags": [
+      "funny"
+    ]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/skullspeeddeal/status/2071930478605795645",
+    "tweetId": "2071930478605795645",
+    "username": "@skullspeeddeal",
+    "caption": "World Cup moment",
+    "added": "2026-07-01",
+    "tags": [
+      "fans"
+    ]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/lukeevangelist_/status/2071997426253140359",
+    "tweetId": "2071997426253140359",
+    "username": "@lukeevangelist_",
+    "caption": "Fan perspective on the World Cup",
+    "added": "2026-07-01",
+    "tags": [
+      "fans"
+    ]
   }
 ]
