@@ -316,7 +316,45 @@ async function updateOdds(apiKey) {
   }
 
   const teamCount = Object.keys(teamOdds).length;
-  const out = { fetchedAt: new Date().toISOString(), remaining, used, sportKey, teamCount, teamOdds };
+
+  // Also build match-level American odds for bracket/standings display.
+  // Keyed by sorted team pair: "France|Germany" → { t1, t2, line1, line2, drawLine, matchTime }
+  const matchOdds = {};
+  const decToAmerican = dec => dec >= 2
+    ? Math.round((dec - 1) * 100)
+    : Math.round(-100 / (dec - 1));
+
+  for (const match of matches) {
+    const mt = new Date(match.commence_time).getTime();
+    if (mt < now - 2 * 60 * 60 * 1000) continue;
+    if (!match.bookmakers?.length) continue;
+    const home = normName(match.home_team), away = normName(match.away_team);
+    const collected = { [home]: [], [away]: [], Draw: [] };
+    for (const bk of match.bookmakers) {
+      const h2h = bk.markets?.find(m => m.key === "h2h");
+      if (!h2h?.outcomes?.length) continue;
+      for (const o of h2h.outcomes) {
+        const nm = normName(o.name);
+        if (nm in collected) collected[nm].push(o.price);
+      }
+    }
+    const avgAmerican = prices => {
+      if (!prices.length) return null;
+      const avgDec = prices.map(p => p > 0 ? (p/100)+1 : (100/Math.abs(p))+1)
+                           .reduce((s,v) => s+v, 0) / prices.length;
+      return decToAmerican(avgDec);
+    };
+    const key = [home, away].sort().join("|");
+    matchOdds[key] = {
+      t1: home, t2: away,
+      line1: avgAmerican(collected[home]),
+      line2: avgAmerican(collected[away]),
+      drawLine: avgAmerican(collected.Draw),
+      matchTime: mt,
+    };
+  }
+
+  const out = { fetchedAt: new Date().toISOString(), remaining, used, sportKey, teamCount, teamOdds, matchOdds };
   fs.writeFileSync(ODDS_FILE, JSON.stringify(out, null, 2) + "\n");
 
   if (teamCount > 0) {
