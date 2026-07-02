@@ -1966,12 +1966,17 @@
   }
 
 
-  /* Odds — today's row */
+  /* Odds — today's row (spans full grid width beneath the teams row) */
   .td-odds {
-    display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
-    font-size: 11px; color: var(--ink-soft);
-    padding-top: 4px; margin-top: 4px;
-    border-top: 1px solid var(--rule-soft);
+    grid-column: 2 / -1;      /* start under teams, span through venue col */
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: baseline;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: -6px;         /* pull up under the teams row */
+    padding-top: 2px;
   }
   .td-odds b { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--ink); }
   .td-odds-draw { color: var(--ink-faint); font-size: 10px; }
@@ -2527,6 +2532,7 @@ function compute(data) {
       team: tm,
       group: TEAM_INFO[tm].group,
       owner: TEAM_INFO[tm].owner,
+      inPool: true,               // every team in TEAMS is drafted by definition
       pick: d ? d.pick : "",
       pickRound: d ? d.round : null,
       pickSlot: d ? d.slot : null,
