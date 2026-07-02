@@ -2006,57 +2006,46 @@
   .bk-team-name.bk-name-won  { color: var(--alive); }
   .bk-team-name.bk-name-lost { text-decoration: line-through; color: var(--ink-faint); }
 
-  /* American odds line next to bracket team */
-  .bk-line {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 700;
-    flex-shrink: 0;
-    min-width: 40px;
-    text-align: right;
+  /* odds bar in match card */
+  .bk-odds { margin-top: 6px; padding-top: 5px; border-top: 1px solid var(--rule-soft); }
+  .bk-odds-bar {
+    display: flex;
+    height: 4px;
+    background: var(--rule-soft);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 3px;
   }
-  .bk-line-neg { color: var(--ink-soft); }
-  .bk-line-pos { color: var(--alive); }
+  .bk-odds-seg { height: 100%; transition: width .3s ease; }
+  .bk-odds-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+  }
 
-  /* Odds status bar in bracket header */
-  .bk-odds-status {
+  /* odds setup bar in bracket header */
+  .bk-odds-setup {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    flex-wrap: wrap;
     margin-bottom: 12px;
-    padding: 6px 12px;
+    padding: 8px 14px;
     background: var(--paper-deep);
     border: 1px solid var(--rule);
-    font-size: 11px;
-    color: var(--ink-soft);
-  }
-  .bk-odds-dot { width:7px; height:7px; border-radius:50%; background:var(--alive); flex-shrink:0; }
-
-  /* Today's Games odds display */
-  .td-odds {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
-    font-size: 11px;
-    color: var(--ink-soft);
-    padding-top: 4px;
-    margin-top: 2px;
-    border-top: 1px solid var(--rule-soft);
-  }
-  .td-odds-line b { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--ink); }
-  .td-odds-draw { color: var(--ink-faint); }
-
-  /* Match banner odds */
-  .bn-odds {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
     font-size: 12px;
     color: var(--ink-soft);
-    margin-top: 6px;
   }
-  .bn-odds b { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--ink); font-size: 13px; }
-  .bn-odds-draw { color: var(--ink-faint); }
+  .bk-odds-setup.live { color: var(--ink); }
+  .bk-odds-dot { width:8px; height:8px; border-radius:50%; background:var(--alive); flex-shrink:0; }
+  .bk-odds-setup button {
+    font-family:'Inter',sans-serif; font-size:11px; font-weight:600;
+    background:var(--ink); color:var(--paper); border:1px solid var(--ink);
+    padding:3px 10px; cursor:pointer;
+  }
+  .bk-odds-setup button:hover { background:var(--accent); border-color:var(--accent); }
   .bk-owner {
     font-family: 'Inter', sans-serif;
     font-size: 8px;
@@ -3064,10 +3053,6 @@ function fmtRelative(ts) {
 function fmtDate(ts) {
   return new Date(ts).toLocaleString(undefined, { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
 }
-function fmtLine(line) {
-  if (line == null || line === undefined) return "";
-  return line > 0 ? \`+\${line}\` : \`\${line}\`;
-}
 function fmtMatchDate(d) {
   if (!d) return "—";
   const dt = new Date(d + "T12:00:00Z");
@@ -3549,22 +3534,6 @@ function renderTodayRow(f) {
     ? `<span class="td-score">${f.ft[0]}–${f.ft[1]}</span>`
     : `<span class="td-v">v</span>`;
 
-  // Odds for upcoming matches
-  let oddsHtml = "";
-  if (!f.played && !f.live && ODDS_MEM?.matchOdds) {
-    const key = [f.team1, f.team2].sort().join("|");
-    const od  = ODDS_MEM.matchOdds[key];
-    if (od) {
-      const [line1, line2] = od.t1 === f.team1 ? [od.line1, od.line2] : [od.line2, od.line1];
-      const drawPart = od.drawLine != null ? `<span class="td-odds-draw">Draw ${fmtLine(od.drawLine)}</span>` : "";
-      oddsHtml = `<div class="td-odds">
-        <span class="td-odds-line">${f.team1} <b>${fmtLine(line1)}</b></span>
-        ${drawPart}
-        <span class="td-odds-line">${f.team2} <b>${fmtLine(line2)}</b></span>
-      </div>`;
-    }
-  }
-
   return `
     <div class="today-row ${rowCls}">
       <div class="td-time">${statusHtml}</div>
@@ -3577,7 +3546,6 @@ function renderTodayRow(f) {
         <span class="td-round">${f.round}</span>
         ${where ? `<span class="td-where">📍 ${where}</span>` : ""}
       </div>
-      ${oddsHtml}
     </div>
   `;
 }
@@ -3612,22 +3580,6 @@ function renderMatchBanner(c) {
   const o1 = f.o1 ? `<span class="bn-ow">${f.o1}</span>` : "";
   const o2 = f.o2 ? `<span class="bn-ow">${f.o2}</span>` : "";
   const where = f.ground ? `${cityLabel(f.ground)}${venueName(f.ground) ? " · " + venueName(f.ground) : ""}` : "";
-  // Odds for the next pool match
-  let bnOddsHtml = "";
-  if (ODDS_MEM?.matchOdds) {
-    const key = [f.team1, f.team2].sort().join("|");
-    const od  = ODDS_MEM.matchOdds[key];
-    if (od) {
-      const [l1, l2] = od.t1 === f.team1 ? [od.line1, od.line2] : [od.line2, od.line1];
-      const drawPart = od.drawLine != null ? `<span class="bn-odds-draw">Draw ${fmtLine(od.drawLine)}</span>` : "";
-      bnOddsHtml = `<div class="bn-odds">
-        <span>${f.team1} <b>${fmtLine(l1)}</b></span>
-        ${drawPart}
-        <span>${f.team2} <b>${fmtLine(l2)}</b></span>
-      </div>`;
-    }
-  }
-
   return `
     <div class="banner upcoming" data-kickoff="${f.kickoff}">
       <div class="banner-label">Next pool match</div>
@@ -3642,7 +3594,6 @@ function renderMatchBanner(c) {
           <span class="bn-when">${fmtMatchDate(f.date)} · ${fmtClock(f.kickoff)}</span>
         </div>
       </div>
-      ${bnOddsHtml}
       ${where ? `<div class="bn-where">📍 ${where}</div>` : ""}
     </div>`;
 }
@@ -3932,7 +3883,7 @@ async function fetchOddsFile(force = false) {
       }
     } catch(e) {}
   }
-  const resp = await fetch("./odds.json");
+  const resp = await fetch("./odds.json", { cache: "no-store" });
   if (!resp.ok) return null;
   const data = await resp.json();
   if (!data?.teamOdds) return null;
@@ -3945,7 +3896,7 @@ async function fetchOddsFile(force = false) {
 // ---------- HISTORICAL TREND (from history.json on GitHub) ----------
 async function fetchHistory() {
   try {
-    const resp = await fetch("./history.json");
+    const resp = await fetch("./history.json", { cache: "no-store" });
     if (!resp.ok) return [];
     const data = await resp.json();
     return Array.isArray(data) ? data : [];
@@ -4386,7 +4337,7 @@ async function fetchLinks(force = false) {
       }
     } catch(e) {}
   }
-  const resp = await fetch("./links.json");
+  const resp = await fetch("./links.json", { cache: "no-store" });
   if (!resp.ok) return { links: [], _cachedAt: Date.now() };
   const links = await resp.json();
   const result = { links: Array.isArray(links) ? links : [], _cachedAt: Date.now() };
@@ -4730,16 +4681,29 @@ function renderBracketMatch(m, teamsMap, matchWinners, matchOddsMap) {
     ? `<span class="bk-score ${ft[idx] > ft[1-idx] ? "bk-score-win" : ""}">${ft[idx]}</span>`
     : "";
 
-  // American odds — show next to team name for upcoming matches with resolved teams
-  let od = null;
+  // Odds bar — only for upcoming matches where both teams are resolved
+  let oddsHtml = "";
   if (!played && s1.resolved && s2.resolved && matchOddsMap) {
-    od = getBracketMatchOdds(s1.team, s2.team);
+    const key = [s1.team, s2.team].sort().join("|");
+    const od  = matchOddsMap[key];
+    if (od) {
+      const [p1, p2] = od.t1 === s1.team ? [od.p1, od.p2] : [od.p2, od.p1];
+      const pct1 = Math.round(p1 * 100), pct2 = Math.round(p2 * 100);
+      const col1 = s1.inPool ? OWNER_COLOR_HEX[s1.owner] : "var(--ink-faint)";
+      const col2 = s2.inPool ? OWNER_COLOR_HEX[s2.owner] : "var(--ink-faint)";
+      oddsHtml = `
+        <div class="bk-odds">
+          <div class="bk-odds-bar">
+            <div class="bk-odds-seg" style="width:${pct1}%;background:${col1};opacity:.75;"></div>
+            <div class="bk-odds-seg" style="width:${pct2}%;background:${col2};opacity:.75;"></div>
+          </div>
+          <div class="bk-odds-labels">
+            <span style="color:${col1}">${pct1}%</span>
+            <span style="color:${col2}">${pct2}%</span>
+          </div>
+        </div>`;
+    }
   }
-  const oddsLine = (teamIdx) => {
-    if (!od) return "";
-    const line = teamIdx === 0 ? od.line1 : od.line2;
-    return `<span class="bk-line ${line > 0 ? "bk-line-pos" : "bk-line-neg"}">${fmtLine(line)}</span>`;
-  };
 
   return `
     <div class="bk-match">
@@ -4748,8 +4712,9 @@ function renderBracketMatch(m, teamsMap, matchWinners, matchOddsMap) {
         <span class="bk-date">${dateLabel}</span>
         <span class="bk-venue">${venue}${city ? " · " + city : ""}</span>
       </div>
-      <div class="bk-team-row">${bracketTeamHtml(s1, st1)}${played ? scoreHtml(s1, 0) : oddsLine(0)}</div>
-      <div class="bk-team-row">${bracketTeamHtml(s2, st2)}${played ? scoreHtml(s2, 1) : oddsLine(1)}</div>
+      <div class="bk-team-row">${bracketTeamHtml(s1, st1)}${scoreHtml(s1, 0)}</div>
+      <div class="bk-team-row">${bracketTeamHtml(s2, st2)}${scoreHtml(s2, 1)}</div>
+      ${oddsHtml}
     </div>`;
 }
 
@@ -4786,11 +4751,34 @@ function renderBracket(c) {
     if (winner) { matchWinners.w[m.num] = winner; matchWinners.l[m.num] = loser; }
   }
 
-  // Odds from odds.json (committed by GitHub Action using ODDS_API_KEY secret)
-  const matchOddsMap = ODDS_MEM?.matchOdds || null;
-  const oddsBar = matchOddsMap
-    ? `<div class="bk-odds-status"><span class="bk-odds-dot"></span>Odds updated ${fmtRelative(ODDS_MEM._cachedAt)} · via GitHub Actions</div>`
-    : "";
+  // Odds state
+  const oddsKey     = BK_getOddsKey();
+  const cachedOdds  = BK_ODDS_MEM;
+  const matchOddsMap = cachedOdds?.matchOdds || null;
+
+  // Odds status bar
+  let oddsBar = "";
+  if (!oddsKey) {
+    oddsBar = `
+      <div class="bk-odds-setup">
+        <span>Add win% odds:</span>
+        <input id="bkOddsInput" type="text" placeholder="Paste The Odds API key…"
+               style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 8px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);width:230px;" />
+        <button id="bkOddsSave" type="button">Save</button>
+        <a href="https://the-odds-api.com/" target="_blank" rel="noopener" style="font-size:11px;color:var(--ink-soft);">Get free key ↗</a>
+      </div>`;
+  } else {
+    const ts    = cachedOdds ? `Updated ${fmtRelative(cachedOdds._cachedAt)}` : "Fetching…";
+    const rem   = cachedOdds?.remaining ? ` · ${cachedOdds.remaining} calls left` : "";
+    const sport = cachedOdds?.sportKey  ? ` · ${cachedOdds.sportKey}` : "";
+    oddsBar = `
+      <div class="bk-odds-setup live">
+        <span class="bk-odds-dot"></span>
+        <span>Win% odds ${ts}${rem}${sport}</span>
+        <button id="bkOddsRefresh" type="button">Refresh</button>
+        <button id="bkOddsClear"   type="button" style="color:var(--ink-faint);">Remove key</button>
+      </div>`;
+  }
 
   const columns = ROUND_DEFS.map(rd => {
     const ms = raw.filter(m => m.round === rd.key).sort((a,b) => (a.num||0) - (b.num||0));
@@ -4823,19 +4811,116 @@ function renderBracket(c) {
     `}
   `;
 
+  // Wire odds key save/refresh/clear
+  const saveBtn = app.querySelector("#bkOddsSave");
+  if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      const k = app.querySelector("#bkOddsInput")?.value?.trim();
+      if (!k) return;
+      BK_saveOddsKey(k);
+      BK_loadOdds(c, true);
+    });
+    app.querySelector("#bkOddsInput")?.addEventListener("keydown", e => {
+      if (e.key === "Enter") saveBtn.click();
+    });
+  }
+  const refBtn = app.querySelector("#bkOddsRefresh");
+  if (refBtn) refBtn.addEventListener("click", () => BK_loadOdds(c, true));
+  const clrBtn = app.querySelector("#bkOddsClear");
+  if (clrBtn) clrBtn.addEventListener("click", () => { BK_clearOddsKey(); renderBracket(c); });
+
+  // Fetch fresh odds if key is set
+  if (oddsKey && !cachedOdds) BK_loadOdds(c, false);
 }
 
-// ── Bracket odds: read from odds.json (written by GitHub Action) ──────────
-// No browser-side API key needed — the Action uses the ODDS_API_KEY secret.
+// ── Bracket odds infrastructure ──────────────────────────────────────────
+const BK_KEY_STORE   = "wcpool-bracket-odds-key";
+const BK_CACHE_STORE = "wcpool-bracket-odds-v1";
+const BK_CACHE_MS    = 60 * 60 * 1000; // 1 hour
+let   BK_ODDS_MEM    = null;
 
-function getBracketMatchOdds(team1, team2) {
-  if (!ODDS_MEM?.matchOdds) return null;
-  const key = [team1, team2].sort().join("|");
-  const od  = ODDS_MEM.matchOdds[key];
-  if (!od) return null;
-  return od.t1 === team1
-    ? { line1: od.line1, line2: od.line2, drawLine: od.drawLine }
-    : { line1: od.line2, line2: od.line1, drawLine: od.drawLine };
+function BK_getOddsKey()  { try { return localStorage.getItem(BK_KEY_STORE) || ""; } catch(e) { return ""; } }
+function BK_saveOddsKey(k){ try { localStorage.setItem(BK_KEY_STORE, k.trim()); } catch(e) {} }
+function BK_clearOddsKey(){ try { localStorage.removeItem(BK_KEY_STORE); BK_ODDS_MEM = null; } catch(e) {} }
+
+// Same name normalization as the groups odds (The Odds API vs openfootball spellings)
+const BK_NAME_MAP = {
+  "United States": "USA", "Bosnia and Herzegovina": "Bosnia & Herzegovina",
+  "Ivory Coast": "Ivory Coast", "Cote d'Ivoire": "Ivory Coast",
+  "Curacao": "Curaçao", "Democratic Republic of Congo": "DR Congo",
+  "Turkey": "Turkey",
+};
+const bkNorm = n => BK_NAME_MAP[n] || n;
+
+function bkAmericanToProb(price) {
+  const dec = price > 0 ? (price / 100) + 1 : (100 / Math.abs(price)) + 1;
+  return 1 / dec;
+}
+
+async function BK_fetchOdds(apiKey, force = false) {
+  if (!force && BK_ODDS_MEM && Date.now() - BK_ODDS_MEM._cachedAt < BK_CACHE_MS) return BK_ODDS_MEM;
+  if (!force) {
+    try {
+      const raw = localStorage.getItem(BK_CACHE_STORE);
+      if (raw) { const c = JSON.parse(raw); if (c?._cachedAt && Date.now()-c._cachedAt < BK_CACHE_MS) { BK_ODDS_MEM=c; return c; } }
+    } catch(e) {}
+  }
+
+  // Step 1: discover the live World Cup sport key
+  const sportsResp = await fetch(
+    `https://api.the-odds-api.com/v4/sports?apiKey=${encodeURIComponent(apiKey)}&all=true`,
+    { cache: "no-store" }
+  );
+  if (!sportsResp.ok) throw new Error(`Sports list HTTP ${sportsResp.status} — check your API key`);
+  const sports = await sportsResp.json();
+  const wc = (sports || []).find(s => s.active && (s.key?.includes("world_cup") || s.title?.toLowerCase().includes("world cup")));
+  const sportKey = wc?.key || "soccer_world_cup";
+
+  // Step 2: fetch H2H odds
+  const oddsResp = await fetch(
+    `https://api.the-odds-api.com/v4/sports/${sportKey}/odds?apiKey=${encodeURIComponent(apiKey)}&regions=us&markets=h2h&oddsFormat=american`,
+    { cache: "no-store" }
+  );
+  const remaining = oddsResp.headers.get("x-requests-remaining") ?? "?";
+  if (!oddsResp.ok) throw new Error(`Odds HTTP ${oddsResp.status}`);
+  const data = await oddsResp.json();
+
+  // Step 3: build matchOdds lookup keyed by sorted team pair
+  const matchOdds = {};
+  for (const match of (data || [])) {
+    const t1 = bkNorm(match.home_team), t2 = bkNorm(match.away_team);
+    const bookieProbs = [];
+    for (const bk of (match.bookmakers || [])) {
+      const h2h = bk.markets?.find(m => m.key === "h2h");
+      if (!h2h?.outcomes?.length) continue;
+      const raw = h2h.outcomes.map(o => ({ name: bkNorm(o.name), p: bkAmericanToProb(o.price) }));
+      const tot = raw.reduce((s,o) => s+o.p, 0);
+      bookieProbs.push(raw.map(o => ({ ...o, p: o.p/tot })));
+    }
+    if (!bookieProbs.length) continue;
+    const avg = nm => { const v = bookieProbs.map(bp => bp.find(o=>o.name===nm)?.p??0); return v.reduce((s,x)=>s+x,0)/v.length; };
+    const key = [t1, t2].sort().join("|");
+    matchOdds[key] = { t1, t2, p1: avg(t1), p2: avg(t2) };
+  }
+
+  const result = { matchOdds, sportKey, remaining, _cachedAt: Date.now() };
+  BK_ODDS_MEM = result;
+  try { localStorage.setItem(BK_CACHE_STORE, JSON.stringify(result)); } catch(e) {}
+  return result;
+}
+
+function BK_loadOdds(c, force) {
+  const key = BK_getOddsKey();
+  if (!key) return;
+  BK_fetchOdds(key, force)
+    .then(od => { BK_ODDS_MEM = od; if (CURRENT_VIEW.name==="bracket") renderBracket(c); })
+    .catch(err => {
+      console.error("[BracketOdds]", err.message);
+      if (CURRENT_VIEW.name==="bracket") {
+        const el = document.querySelector(".bk-odds-setup");
+        if (el) el.innerHTML += `<span style="color:var(--accent);font-size:11px;"> · Error: ${err.message}</span>`;
+      }
+    });
 }
 
 
@@ -5237,110 +5322,28 @@ document.getElementById("brandLink").addEventListener("click",  () => navigate({
 document.getElementById("refreshBtn").addEventListener("click", () => load(true));
 
 // ---------- boot ----------
-// ── Cache-first load ─────────────────────────────────────────────────────
-// 1. Synchronously render from localStorage cache if any exists (any age).
-//    User sees content instantly, even if last cached days ago.
-// 2. Background-fetch fresh data. When it arrives, re-render silently.
-// 3. If the fetch fails or hangs, cached view stays visible — no error state.
-// 4. Only when there is NO cache at all AND the fetch fails do we show an error.
-
-function readCache() {
+async function load(force = false) {
+  setStatus("stale", force ? "Refreshing…" : "Loading…");
   try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    if (raw) {
-      const c = JSON.parse(raw);
-      if (c && c.data) return c;
-    }
-  } catch (e) {}
-  return null;
-}
-
-function readHistoryCache() {
-  try {
-    const raw = localStorage.getItem("wcpool-history-v1");
-    if (raw) return JSON.parse(raw);
-  } catch (e) {}
-  return [];
-}
-
-function readOddsCache() {
-  try {
-    const raw = localStorage.getItem(ODDS_CACHE_KEY);
-    if (raw) {
-      const c = JSON.parse(raw);
-      if (c) { ODDS_MEM = c; return c; }
-    }
-  } catch (e) {}
-  return null;
-}
-
-async function backgroundRefresh(force) {
-  // Fire all three fetches in parallel; failures are silent.
-  const [matchResult, historyResult, oddsResult] = await Promise.allSettled([
-    fetch(DATA_URL, { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))),
-    fetch("./history.json").then(r => r.ok ? r.json() : []),
-    fetch("./odds.json").then(r => r.ok ? r.json() : null),
-  ]);
-
-  // Odds: silent success/fail — just update in-memory + localStorage
-  if (oddsResult.status === "fulfilled" && oddsResult.value?.teamOdds) {
-    const withStamp = { ...oddsResult.value, _cachedAt: Date.now() };
-    ODDS_MEM = withStamp;
-    try { localStorage.setItem(ODDS_CACHE_KEY, JSON.stringify(withStamp)); } catch (e) {}
-  }
-
-  // History: cache to localStorage for next cold start
-  let history = [];
-  if (historyResult.status === "fulfilled" && Array.isArray(historyResult.value)) {
-    history = historyResult.value;
-    try { localStorage.setItem("wcpool-history-v1", JSON.stringify(history)); } catch (e) {}
-  } else {
-    history = readHistoryCache();
-  }
-
-  // Match data: if fresh fetch succeeded, cache + re-render. If failed, keep cached view.
-  if (matchResult.status === "fulfilled") {
-    const data = matchResult.value;
-    const fetchedAt = Date.now();
-    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data, fetchedAt })); } catch (e) {}
+    // Fetch match data and history in parallel; history failure is non-fatal
+    const [matchResult, historyResult] = await Promise.allSettled([
+      fetchData(force),
+      fetchHistory(),
+    ]);
+    if (matchResult.status === "rejected") throw matchResult.reason;
+    const { data, fetchedAt, fromCache } = matchResult.value;
+    const history = historyResult.status === "fulfilled" ? historyResult.value : [];
     const computed = compute(data);
-    render(computed, fetchedAt, false, data, history);
-    setStatus("ok", "Live");
-  } else {
-    // Fetch failed — only surface an error if we have nothing to show
-    const existing = readCache();
-    if (!existing) {
-      const app = document.getElementById("app");
-      const err = matchResult.reason;
-      setStatus("err", "Couldn't reach openfootball");
-      if (app.querySelector(".panel-msg")) {
-        app.innerHTML = `<div class="panel-msg">Couldn't load the latest data.
-          <span class="small">${(err && err.message) || err}. Try Refresh, or serve the file over http(s).</span></div>`;
-      }
-    } else {
-      // We have cached content on screen — just quietly mark as stale
-      setStatus("stale", `Cached · ${fmtRelative(existing.fetchedAt)}`);
+    render(computed, fetchedAt, fromCache, data, history);
+  } catch (e) {
+    console.error(e);
+    setStatus("err", "Couldn't reach openfootball — see console");
+    const app = document.getElementById("app");
+    if (app.querySelector(".panel-msg")) {
+      app.innerHTML = `<div class="panel-msg">Couldn't load the latest data.
+        <span class="small">${(e && e.message) || e}. Try Refresh, or serve the file over http(s) (file:// can block fetch).</span></div>`;
     }
   }
-}
-
-function load(force = false) {
-  // Step 1: synchronous cache render — this happens BEFORE any network I/O.
-  const cached = readCache();
-  readOddsCache();                       // hydrates ODDS_MEM
-  const history = readHistoryCache();
-  if (cached) {
-    try {
-      const computed = compute(cached.data);
-      render(computed, cached.fetchedAt, true, cached.data, history);
-      setStatus("stale", "Refreshing…");
-    } catch (e) { console.error("Cache render failed:", e); }
-  } else {
-    setStatus("stale", "Loading…");
-  }
-
-  // Step 2: background refresh — never blocks initial paint.
-  backgroundRefresh(force);
 }
 
 load(false);
