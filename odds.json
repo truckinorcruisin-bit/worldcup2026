@@ -1,6 +1,10 @@
 {
-  "fetchedAt": null,
-  "remaining": null,
+  "fetchedAt": "2026-07-02T15:27:31.800Z",
+  "status": "ok",
+  "remaining": "485",
+  "used": "15",
+  "sportKey": "cricket_t20_world_cup_womens",
   "teamCount": 0,
-  "teamOdds": {}
+  "teamOdds": {},
+  "matchOdds": {}
 }
