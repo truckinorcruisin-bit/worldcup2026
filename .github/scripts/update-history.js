@@ -215,10 +215,28 @@ function normalizeOutcomes(outcomes) {
   return outcomes.map((o, i) => ({ name: normName(o.name), p: raw[i] / total }));
 }
 
+function writeOddsStatus(status, detail) {
+  const out = {
+    fetchedAt: new Date().toISOString(),
+    status,           // "ok" | "no_key" | "sports_list_failed" | "no_wc_market" | "odds_fetch_failed" | "unknown_error"
+    detail: detail || null,
+    teamCount: 0,
+    teamOdds: {},
+    matchOdds: {},
+  };
+  try {
+    fs.writeFileSync(ODDS_FILE, JSON.stringify(out, null, 2) + "\n");
+    console.log(`  → odds.json updated with status="${status}"`);
+  } catch (e) {
+    console.error("  → Could NOT write odds.json:", e.message);
+  }
+}
+
 async function updateOdds(apiKey) {
   if (!apiKey) {
     console.log("ODDS_API_KEY not set — skipping odds update.");
     console.log("  → Add it as a GitHub repository secret named ODDS_API_KEY");
+    writeOddsStatus("no_key", "ODDS_API_KEY secret is not set on this runner");
     return;
   }
   console.log("ODDS_API_KEY is set ✓");
@@ -233,6 +251,7 @@ async function updateOdds(apiKey) {
   if (sportsResp.status !== 200) {
     console.error("Could not retrieve sports list. Check that ODDS_API_KEY is valid.");
     console.error("Response:", JSON.stringify(sportsResp.body).slice(0, 300));
+    writeOddsStatus("sports_list_failed", `HTTP ${sportsResp.status}: ${JSON.stringify(sportsResp.body).slice(0,200)}`);
     return;
   }
 
@@ -268,11 +287,21 @@ async function updateOdds(apiKey) {
 
   if (oddsResp.status !== 200) {
     console.error("Odds request failed:", JSON.stringify(oddsResp.body).slice(0, 300));
+    writeOddsStatus("odds_fetch_failed", `HTTP ${oddsResp.status}: ${JSON.stringify(oddsResp.body).slice(0,200)}`);
     return;
   }
 
   const matches = Array.isArray(oddsResp.body) ? oddsResp.body : [];
   console.log(`Received ${matches.length} match objects.`);
+
+  if (matches.length === 0) {
+    console.warn("Odds API returned 0 matches. This usually means:");
+    console.warn("  • No live/upcoming WC matches have odds posted yet");
+    console.warn("  • Or the sport is between rounds (bookmakers pause between R32/R16/etc)");
+    writeOddsStatus("no_wc_market",
+      `Sport key "${sportKey}" returned 0 matches. Remaining API calls: ${remaining}`);
+    return;
+  }
 
   // ── Step 3: compute per-team implied win probability ──────────────────────
   const now      = Date.now();
@@ -354,7 +383,7 @@ async function updateOdds(apiKey) {
     };
   }
 
-  const out = { fetchedAt: new Date().toISOString(), remaining, used, sportKey, teamCount, teamOdds, matchOdds };
+  const out = { fetchedAt: new Date().toISOString(), status: "ok", remaining, used, sportKey, teamCount, teamOdds, matchOdds };
   fs.writeFileSync(ODDS_FILE, JSON.stringify(out, null, 2) + "\n");
 
   if (teamCount > 0) {
@@ -394,7 +423,13 @@ async function main() {
   console.log(`history.json written (${history.length} snapshots).`);
 
   // --- odds ---
-  await updateOdds(process.env.ODDS_API_KEY || "");
+  try {
+    await updateOdds(process.env.ODDS_API_KEY || "");
+  } catch (err) {
+    console.error("Unexpected error in updateOdds:", err.message);
+    console.error(err.stack);
+    writeOddsStatus("unknown_error", err.message);
+  }
 }
 
 main().catch(err => {
