@@ -264,15 +264,24 @@ async function updateOdds(apiKey) {
   console.log(`\nAll soccer/football sports (${soccerAll.length}):`);
   soccerAll.forEach(s => console.log(`  [${s.active ? "ACTIVE" : "inactive"}] key="${s.key}"  title="${s.title}"`));
 
-  const wcCandidates = allSports.filter(s =>
-    s.key?.toLowerCase().includes("world_cup") ||
-    s.title?.toLowerCase().includes("world cup")
-  );
-  console.log(`\nWorld Cup candidates: ${wcCandidates.length}`);
+  // Restrict to SOCCER World Cup specifically — the Odds API also lists cricket,
+  // rugby, and other "World Cup" tournaments that would otherwise match.
+  const wcCandidates = allSports.filter(s => {
+    const key   = (s.key   || "").toLowerCase();
+    const title = (s.title || "").toLowerCase();
+    const group = (s.group || "").toLowerCase();
+    const isSoccer  = key.startsWith("soccer") || group.includes("soccer");
+    const isWorldCup = key.includes("world_cup") || title.includes("world cup");
+    // Exclude qualifiers, women's, youth, and unrelated tournaments
+    const isRelevant = !key.includes("qualif") && !key.includes("women") &&
+                       !key.includes("u20") && !key.includes("u21") && !key.includes("u17");
+    return isSoccer && isWorldCup && isRelevant;
+  });
+  console.log(`\nSoccer World Cup candidates: ${wcCandidates.length}`);
   wcCandidates.forEach(s => console.log(`  [${s.active?"ACTIVE":"inactive"}] key="${s.key}"  title="${s.title}"`));
 
-  // Prefer an active World Cup sport; fall back to first candidate or default
-  const sportKey = (wcCandidates.find(s => s.active) || wcCandidates[0])?.key || "soccer_world_cup";
+  // Prefer an active FIFA World Cup sport; fall back to first candidate or default
+  const sportKey = (wcCandidates.find(s => s.active) || wcCandidates[0])?.key || "soccer_fifa_world_cup";
   console.log(`\nUsing sport key: "${sportKey}"`);
 
   // ── Step 2: fetch H2H odds for that sport ─────────────────────────────────
