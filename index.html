@@ -1147,71 +1147,6 @@
   .gt-status.m3rd { border: 1px solid var(--gold);  color: var(--gold); }
   .gt-status.elm  { border: 1px solid var(--eliminated); color: var(--eliminated); }
 
-  /* odds column */
-  .gt-odds-th {
-    text-align: center;
-    white-space: nowrap;
-  }
-  .gt-odds-td { text-align: center; padding: 6px 8px !important; min-width: 60px; }
-  .gt-odds-val {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    font-weight: 700;
-    display: block;
-    line-height: 1.2;
-  }
-  .gt-odds-bar {
-    display: flex;
-    height: 3px;
-    background: var(--rule-soft);
-    margin: 3px 0 2px;
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .gt-odds-w, .gt-odds-d {
-    height: 100%;
-    transition: width 0.3s ease;
-  }
-  .gt-odds-d { background: var(--gold); opacity: 0.6; }
-  .gt-odds-opp {
-    font-size: 9px;
-    color: var(--ink-faint);
-    font-family: 'Inter', sans-serif;
-    white-space: nowrap;
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 70px;
-    margin: 0 auto;
-  }
-
-  /* odds status bar (shown when odds.json is available) */
-  .odds-status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 16px;
-    padding: 8px 14px;
-    background: var(--paper-deep);
-    border: 1px solid var(--rule);
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--ink);
-    flex-wrap: wrap;
-  }
-  .odds-status.err { border-color: var(--accent); color: var(--accent); }
-  .odds-status-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--alive);
-    flex-shrink: 0;
-  }
-  .odds-status-meta {
-    font-weight: 400;
-    color: var(--ink-faint);
-    font-size: 11px;
-  }
-  .odds-note { color: var(--ink-soft); font-size: 11px; }
 
   /* legend */
   .groups-legend {
@@ -1226,9 +1161,6 @@
   .gl-it { display: inline-flex; align-items: center; gap: 5px; }
 
   @media (max-width: 760px) {
-    .gt-odds-opp { display: none; }
-    .gt-odds-td { min-width: 44px; }
-    .gt-odds-val { font-size: 11px; }
   }
 
   .trend-empty {
@@ -2006,46 +1938,7 @@
   .bk-team-name.bk-name-won  { color: var(--alive); }
   .bk-team-name.bk-name-lost { text-decoration: line-through; color: var(--ink-faint); }
 
-  /* odds bar in match card */
-  .bk-odds { margin-top: 6px; padding-top: 5px; border-top: 1px solid var(--rule-soft); }
-  .bk-odds-bar {
-    display: flex;
-    height: 4px;
-    background: var(--rule-soft);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-bottom: 3px;
-  }
-  .bk-odds-seg { height: 100%; transition: width .3s ease; }
-  .bk-odds-labels {
-    display: flex;
-    justify-content: space-between;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    font-weight: 700;
-  }
 
-  /* odds setup bar in bracket header */
-  .bk-odds-setup {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-    padding: 8px 14px;
-    background: var(--paper-deep);
-    border: 1px solid var(--rule);
-    font-size: 12px;
-    color: var(--ink-soft);
-  }
-  .bk-odds-setup.live { color: var(--ink); }
-  .bk-odds-dot { width:8px; height:8px; border-radius:50%; background:var(--alive); flex-shrink:0; }
-  .bk-odds-setup button {
-    font-family:'Inter',sans-serif; font-size:11px; font-weight:600;
-    background:var(--ink); color:var(--paper); border:1px solid var(--ink);
-    padding:3px 10px; cursor:pointer;
-  }
-  .bk-odds-setup button:hover { background:var(--accent); border-color:var(--accent); }
   .bk-owner {
     font-family: 'Inter', sans-serif;
     font-size: 8px;
@@ -3094,7 +2987,7 @@ function render(computed, fetchedAt, isCached = false, rawData = null, history =
     history: history !== null ? history : (LAST && LAST.history) || [],
   };
   if (CURRENT_VIEW.name === "home")        renderHome(computed);
-  else if (CURRENT_VIEW.name === "groups") loadGroupsWithOdds(computed);
+  else if (CURRENT_VIEW.name === "groups") renderGroups(computed);
   else if (CURRENT_VIEW.name === "bracket") renderBracket(computed);
   else if (CURRENT_VIEW.name === "draft")  renderDraftPerformance(computed);
   else if (CURRENT_VIEW.name === "upsets") renderUpsets(computed);
@@ -3534,6 +3427,7 @@ function renderTodayRow(f) {
     ? `<span class="td-score">${f.ft[0]}–${f.ft[1]}</span>`
     : `<span class="td-v">v</span>`;
 
+
   return `
     <div class="today-row ${rowCls}">
       <div class="td-time">${statusHtml}</div>
@@ -3580,6 +3474,7 @@ function renderMatchBanner(c) {
   const o1 = f.o1 ? `<span class="bn-ow">${f.o1}</span>` : "";
   const o2 = f.o2 ? `<span class="bn-ow">${f.o2}</span>` : "";
   const where = f.ground ? `${cityLabel(f.ground)}${venueName(f.ground) ? " · " + venueName(f.ground) : ""}` : "";
+
   return `
     <div class="banner upcoming" data-kickoff="${f.kickoff}">
       <div class="banner-label">Next pool match</div>
@@ -3717,32 +3612,11 @@ function renderAdvancementTracker(c) {
 }
 
 // ---------- GROUPS (group-stage tables) ----------
-function renderGroups(c, oddsData, oddsError) {
+function renderGroups(c) {
   setNav("groups");
   const app = document.getElementById("app");
   const groups = "ABCDEFGHIJKL".split("");
-  const hasOdds = oddsData && Object.keys(oddsData.teamOdds || {}).length > 0;
 
-  // Odds status bar — shown only when we have data (or an error)
-  let oddsBar = "";
-  if (hasOdds) {
-    const when = oddsData.fetchedAt
-      ? `Updated ${fmtRelative(new Date(oddsData.fetchedAt).getTime())}`
-      : "";
-    const rem = oddsData.remaining ? ` · ${oddsData.remaining} API calls left this month` : "";
-    oddsBar = `
-      <div class="odds-status">
-        <span class="odds-status-dot"></span>
-        <span>Win% odds live</span>
-        <span class="odds-status-meta">${when}${rem} · refreshed by GitHub Actions every 6 h</span>
-      </div>`;
-  } else if (oddsError) {
-    oddsBar = `
-      <div class="odds-status err">
-        <span>Odds unavailable</span>
-        <span class="odds-status-meta">${oddsError}</span>
-      </div>`;
-  }
 
   app.innerHTML = `
     ${renderMatchBanner(c)}
@@ -3753,16 +3627,14 @@ function renderGroups(c, oddsData, oddsError) {
       Live group tables. Pool teams highlighted with their owner. Top two in each group
       (plus best 8 third-placed teams) advance to the Round of 32. Tap a pool team to go to their page.
     </p>
-    ${oddsBar}
     <div class="groups-grid">
-      ${groups.map(g => renderGroupTable(g, c.groupTables[g], oddsData?.teamOdds)).join("")}
+      ${groups.map(g => renderGroupTable(g, c.groupTables[g])).join("")}
     </div>
     <div class="groups-legend">
       <span class="gl-it"><span class="gl-bar zone-clinched"></span>Clinched advanced</span>
       <span class="gl-it"><span class="gl-bar zone-top"></span>Currently top 2</span>
       <span class="gl-it"><span class="gl-bar zone-third"></span>Currently advancing as 3rd <span class="gt-status m3rd">3RD ·#n</span></span>
       <span class="gl-it"><span class="gt-star">★</span> Clinched group winner</span>
-      ${hasOdds ? `<span class="gl-it odds-note">Win% = implied probability of winning next match (vig-free avg across bookmakers)</span>` : ""}
     </div>
   `;
 
@@ -3771,18 +3643,11 @@ function renderGroups(c, oddsData, oddsError) {
   });
 }
 
-function loadGroupsWithOdds(c, force = false) {
-  renderGroups(c, ODDS_MEM, null);  // render immediately with whatever we have cached
-  fetchOddsFile(force)
-    .then(od => { if (CURRENT_VIEW.name === "groups") renderGroups(c, od, null); })
-    .catch(err => { if (CURRENT_VIEW.name === "groups") renderGroups(c, ODDS_MEM, err?.message); });
-}
 
-function renderGroupTable(letter, rows, teamOdds) {
+function renderGroupTable(letter, rows) {
   if (!rows || rows.length === 0) {
     return `<div class="group-card"><div class="group-hd">Group ${letter}</div><div class="empty" style="padding:12px;">No data yet.</div></div>`;
   }
-  const hasOdds = teamOdds && Object.keys(teamOdds).length > 0;
   return `
     <div class="group-card">
       <div class="group-hd">Group ${letter}</div>
@@ -3797,7 +3662,6 @@ function renderGroupTable(letter, rows, teamOdds) {
             <th title="Lost">L</th>
             <th title="Goal difference">GD</th>
             <th title="Points">Pts</th>
-            ${hasOdds ? `<th class="gt-odds-th" title="Implied win probability for next match">Win%</th>` : ""}
           </tr>
         </thead>
         <tbody>
@@ -3815,28 +3679,6 @@ function renderGroupTable(letter, rows, teamOdds) {
             // group-winner star (clinched 1st specifically)
             const starHtml = r.wonGroup ? `<span class="gt-star" title="Clinched group winner">★</span>` : "";
 
-            // Odds
-            let oddsHtml = "";
-            if (hasOdds) {
-              const od = teamOdds[r.team];
-              if (od) {
-                const winPct = Math.round(od.winProb * 100);
-                const drawPct = Math.round(od.drawProb * 100);
-                const losePct = 100 - winPct - drawPct;
-                const color = winPct >= 60 ? "var(--alive)" : winPct >= 40 ? "var(--gold)" : "var(--accent)";
-                oddsHtml = `
-                  <td class="gt-odds-td" title="vs ${od.opp}: Win ${winPct}% / Draw ${drawPct}% / Loss ${losePct}%">
-                    <span class="gt-odds-val" style="color:${color}">${winPct}%</span>
-                    <div class="gt-odds-bar">
-                      <div class="gt-odds-w" style="width:${winPct}%;background:${color};"></div>
-                      <div class="gt-odds-d" style="width:${drawPct}%;"></div>
-                    </div>
-                    <span class="gt-odds-opp">vs ${od.opp}</span>
-                  </td>`;
-              } else {
-                oddsHtml = `<td class="gt-odds-td"><span style="color:var(--ink-faint);font-size:11px;">—</span></td>`;
-              }
-            }
 
             const poolCls  = r.inPool ? "pool" : "";
             const clickable = r.inPool ? `data-owner-link="${r.owner}" style="cursor:pointer;"` : "";
@@ -3856,7 +3698,6 @@ function renderGroupTable(letter, rows, teamOdds) {
                 <td>${r.l}</td>
                 <td>${r.gd > 0 ? "+" + r.gd : r.gd}</td>
                 <td class="gt-pts">${r.pts}</td>
-                ${oddsHtml}
               </tr>`;
           }).join("")}
         </tbody>
@@ -3865,38 +3706,11 @@ function renderGroupTable(letter, rows, teamOdds) {
   `;
 }
 
-// ---------- ODDS — read from odds.json committed by GitHub Actions ----------
-// The Odds API key lives as a GitHub repository secret and is never in this file.
-// The scheduled Action fetches odds and writes odds.json; we just read that file.
-const ODDS_CACHE_KEY = "wcpool-odds-v1";
-const ODDS_CACHE_MS  = 30 * 60 * 1000; // re-read the file at most every 30 min
-let   ODDS_MEM       = null;
-
-async function fetchOddsFile(force = false) {
-  if (!force && ODDS_MEM && Date.now() - ODDS_MEM._cachedAt < ODDS_CACHE_MS) return ODDS_MEM;
-  if (!force) {
-    try {
-      const raw = localStorage.getItem(ODDS_CACHE_KEY);
-      if (raw) {
-        const c = JSON.parse(raw);
-        if (c?._cachedAt && Date.now() - c._cachedAt < ODDS_CACHE_MS) { ODDS_MEM = c; return c; }
-      }
-    } catch(e) {}
-  }
-  const resp = await fetch("./odds.json", { cache: "no-store" });
-  if (!resp.ok) return null;
-  const data = await resp.json();
-  if (!data?.teamOdds) return null;
-  const result = { ...data, _cachedAt: Date.now() };
-  ODDS_MEM = result;
-  try { localStorage.setItem(ODDS_CACHE_KEY, JSON.stringify(result)); } catch(e) {}
-  return result;
-}
 
 // ---------- HISTORICAL TREND (from history.json on GitHub) ----------
 async function fetchHistory() {
   try {
-    const resp = await fetch("./history.json", { cache: "no-store" });
+    const resp = await fetch("./history.json");
     if (!resp.ok) return [];
     const data = await resp.json();
     return Array.isArray(data) ? data : [];
@@ -4337,7 +4151,7 @@ async function fetchLinks(force = false) {
       }
     } catch(e) {}
   }
-  const resp = await fetch("./links.json", { cache: "no-store" });
+  const resp = await fetch("./links.json");
   if (!resp.ok) return { links: [], _cachedAt: Date.now() };
   const links = await resp.json();
   const result = { links: Array.isArray(links) ? links : [], _cachedAt: Date.now() };
@@ -4659,7 +4473,7 @@ function bracketTeamHtml(slot, matchStatus) {
     </div>`;
 }
 
-function renderBracketMatch(m, teamsMap, matchWinners, matchOddsMap) {
+function renderBracketMatch(m, teamsMap, matchWinners) {
   const s1 = resolveSlot(m.team1, teamsMap, matchWinners);
   const s2 = resolveSlot(m.team2, teamsMap, matchWinners);
   const [venue, city] = venueLabel(m.ground);
@@ -4681,29 +4495,6 @@ function renderBracketMatch(m, teamsMap, matchWinners, matchOddsMap) {
     ? `<span class="bk-score ${ft[idx] > ft[1-idx] ? "bk-score-win" : ""}">${ft[idx]}</span>`
     : "";
 
-  // Odds bar — only for upcoming matches where both teams are resolved
-  let oddsHtml = "";
-  if (!played && s1.resolved && s2.resolved && matchOddsMap) {
-    const key = [s1.team, s2.team].sort().join("|");
-    const od  = matchOddsMap[key];
-    if (od) {
-      const [p1, p2] = od.t1 === s1.team ? [od.p1, od.p2] : [od.p2, od.p1];
-      const pct1 = Math.round(p1 * 100), pct2 = Math.round(p2 * 100);
-      const col1 = s1.inPool ? OWNER_COLOR_HEX[s1.owner] : "var(--ink-faint)";
-      const col2 = s2.inPool ? OWNER_COLOR_HEX[s2.owner] : "var(--ink-faint)";
-      oddsHtml = `
-        <div class="bk-odds">
-          <div class="bk-odds-bar">
-            <div class="bk-odds-seg" style="width:${pct1}%;background:${col1};opacity:.75;"></div>
-            <div class="bk-odds-seg" style="width:${pct2}%;background:${col2};opacity:.75;"></div>
-          </div>
-          <div class="bk-odds-labels">
-            <span style="color:${col1}">${pct1}%</span>
-            <span style="color:${col2}">${pct2}%</span>
-          </div>
-        </div>`;
-    }
-  }
 
   return `
     <div class="bk-match">
@@ -4714,7 +4505,6 @@ function renderBracketMatch(m, teamsMap, matchWinners, matchOddsMap) {
       </div>
       <div class="bk-team-row">${bracketTeamHtml(s1, st1)}${scoreHtml(s1, 0)}</div>
       <div class="bk-team-row">${bracketTeamHtml(s2, st2)}${scoreHtml(s2, 1)}</div>
-      ${oddsHtml}
     </div>`;
 }
 
@@ -4751,34 +4541,6 @@ function renderBracket(c) {
     if (winner) { matchWinners.w[m.num] = winner; matchWinners.l[m.num] = loser; }
   }
 
-  // Odds state
-  const oddsKey     = BK_getOddsKey();
-  const cachedOdds  = BK_ODDS_MEM;
-  const matchOddsMap = cachedOdds?.matchOdds || null;
-
-  // Odds status bar
-  let oddsBar = "";
-  if (!oddsKey) {
-    oddsBar = `
-      <div class="bk-odds-setup">
-        <span>Add win% odds:</span>
-        <input id="bkOddsInput" type="text" placeholder="Paste The Odds API key…"
-               style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 8px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);width:230px;" />
-        <button id="bkOddsSave" type="button">Save</button>
-        <a href="https://the-odds-api.com/" target="_blank" rel="noopener" style="font-size:11px;color:var(--ink-soft);">Get free key ↗</a>
-      </div>`;
-  } else {
-    const ts    = cachedOdds ? `Updated ${fmtRelative(cachedOdds._cachedAt)}` : "Fetching…";
-    const rem   = cachedOdds?.remaining ? ` · ${cachedOdds.remaining} calls left` : "";
-    const sport = cachedOdds?.sportKey  ? ` · ${cachedOdds.sportKey}` : "";
-    oddsBar = `
-      <div class="bk-odds-setup live">
-        <span class="bk-odds-dot"></span>
-        <span>Win% odds ${ts}${rem}${sport}</span>
-        <button id="bkOddsRefresh" type="button">Refresh</button>
-        <button id="bkOddsClear"   type="button" style="color:var(--ink-faint);">Remove key</button>
-      </div>`;
-  }
 
   const columns = ROUND_DEFS.map(rd => {
     const ms = raw.filter(m => m.round === rd.key).sort((a,b) => (a.num||0) - (b.num||0));
@@ -4786,7 +4548,7 @@ function renderBracket(c) {
     return `
       <div class="bk-col">
         <div class="bk-col-head">${rd.label}<span class="bk-col-count">${ms.length}</span></div>
-        ${ms.map(m => renderBracketMatch(m, teamsMap, matchWinners, matchOddsMap)).join("")}
+        ${ms.map(m => renderBracketMatch(m, teamsMap, matchWinners)).join("")}
       </div>`;
   }).filter(Boolean).join("");
 
@@ -4796,7 +4558,6 @@ function renderBracket(c) {
     <p style="color:var(--ink-soft);margin:0 0 8px;max-width:640px;font-size:14px;">
       Pool teams shown in owner colors before kick-off, green after advancing. Win% odds sourced from The Odds API.
     </p>
-    ${oddsBar}
     <div class="bk-legend">
       <span class="bk-leg"><span class="bk-leg-sw" style="background:var(--alive);opacity:.8;"></span>Won match</span>
       <span class="bk-leg"><span class="bk-leg-sw out"></span>Eliminated</span>
@@ -4811,116 +4572,6 @@ function renderBracket(c) {
     `}
   `;
 
-  // Wire odds key save/refresh/clear
-  const saveBtn = app.querySelector("#bkOddsSave");
-  if (saveBtn) {
-    saveBtn.addEventListener("click", () => {
-      const k = app.querySelector("#bkOddsInput")?.value?.trim();
-      if (!k) return;
-      BK_saveOddsKey(k);
-      BK_loadOdds(c, true);
-    });
-    app.querySelector("#bkOddsInput")?.addEventListener("keydown", e => {
-      if (e.key === "Enter") saveBtn.click();
-    });
-  }
-  const refBtn = app.querySelector("#bkOddsRefresh");
-  if (refBtn) refBtn.addEventListener("click", () => BK_loadOdds(c, true));
-  const clrBtn = app.querySelector("#bkOddsClear");
-  if (clrBtn) clrBtn.addEventListener("click", () => { BK_clearOddsKey(); renderBracket(c); });
-
-  // Fetch fresh odds if key is set
-  if (oddsKey && !cachedOdds) BK_loadOdds(c, false);
-}
-
-// ── Bracket odds infrastructure ──────────────────────────────────────────
-const BK_KEY_STORE   = "wcpool-bracket-odds-key";
-const BK_CACHE_STORE = "wcpool-bracket-odds-v1";
-const BK_CACHE_MS    = 60 * 60 * 1000; // 1 hour
-let   BK_ODDS_MEM    = null;
-
-function BK_getOddsKey()  { try { return localStorage.getItem(BK_KEY_STORE) || ""; } catch(e) { return ""; } }
-function BK_saveOddsKey(k){ try { localStorage.setItem(BK_KEY_STORE, k.trim()); } catch(e) {} }
-function BK_clearOddsKey(){ try { localStorage.removeItem(BK_KEY_STORE); BK_ODDS_MEM = null; } catch(e) {} }
-
-// Same name normalization as the groups odds (The Odds API vs openfootball spellings)
-const BK_NAME_MAP = {
-  "United States": "USA", "Bosnia and Herzegovina": "Bosnia & Herzegovina",
-  "Ivory Coast": "Ivory Coast", "Cote d'Ivoire": "Ivory Coast",
-  "Curacao": "Curaçao", "Democratic Republic of Congo": "DR Congo",
-  "Turkey": "Turkey",
-};
-const bkNorm = n => BK_NAME_MAP[n] || n;
-
-function bkAmericanToProb(price) {
-  const dec = price > 0 ? (price / 100) + 1 : (100 / Math.abs(price)) + 1;
-  return 1 / dec;
-}
-
-async function BK_fetchOdds(apiKey, force = false) {
-  if (!force && BK_ODDS_MEM && Date.now() - BK_ODDS_MEM._cachedAt < BK_CACHE_MS) return BK_ODDS_MEM;
-  if (!force) {
-    try {
-      const raw = localStorage.getItem(BK_CACHE_STORE);
-      if (raw) { const c = JSON.parse(raw); if (c?._cachedAt && Date.now()-c._cachedAt < BK_CACHE_MS) { BK_ODDS_MEM=c; return c; } }
-    } catch(e) {}
-  }
-
-  // Step 1: discover the live World Cup sport key
-  const sportsResp = await fetch(
-    `https://api.the-odds-api.com/v4/sports?apiKey=${encodeURIComponent(apiKey)}&all=true`,
-    { cache: "no-store" }
-  );
-  if (!sportsResp.ok) throw new Error(`Sports list HTTP ${sportsResp.status} — check your API key`);
-  const sports = await sportsResp.json();
-  const wc = (sports || []).find(s => s.active && (s.key?.includes("world_cup") || s.title?.toLowerCase().includes("world cup")));
-  const sportKey = wc?.key || "soccer_world_cup";
-
-  // Step 2: fetch H2H odds
-  const oddsResp = await fetch(
-    `https://api.the-odds-api.com/v4/sports/${sportKey}/odds?apiKey=${encodeURIComponent(apiKey)}&regions=us&markets=h2h&oddsFormat=american`,
-    { cache: "no-store" }
-  );
-  const remaining = oddsResp.headers.get("x-requests-remaining") ?? "?";
-  if (!oddsResp.ok) throw new Error(`Odds HTTP ${oddsResp.status}`);
-  const data = await oddsResp.json();
-
-  // Step 3: build matchOdds lookup keyed by sorted team pair
-  const matchOdds = {};
-  for (const match of (data || [])) {
-    const t1 = bkNorm(match.home_team), t2 = bkNorm(match.away_team);
-    const bookieProbs = [];
-    for (const bk of (match.bookmakers || [])) {
-      const h2h = bk.markets?.find(m => m.key === "h2h");
-      if (!h2h?.outcomes?.length) continue;
-      const raw = h2h.outcomes.map(o => ({ name: bkNorm(o.name), p: bkAmericanToProb(o.price) }));
-      const tot = raw.reduce((s,o) => s+o.p, 0);
-      bookieProbs.push(raw.map(o => ({ ...o, p: o.p/tot })));
-    }
-    if (!bookieProbs.length) continue;
-    const avg = nm => { const v = bookieProbs.map(bp => bp.find(o=>o.name===nm)?.p??0); return v.reduce((s,x)=>s+x,0)/v.length; };
-    const key = [t1, t2].sort().join("|");
-    matchOdds[key] = { t1, t2, p1: avg(t1), p2: avg(t2) };
-  }
-
-  const result = { matchOdds, sportKey, remaining, _cachedAt: Date.now() };
-  BK_ODDS_MEM = result;
-  try { localStorage.setItem(BK_CACHE_STORE, JSON.stringify(result)); } catch(e) {}
-  return result;
-}
-
-function BK_loadOdds(c, force) {
-  const key = BK_getOddsKey();
-  if (!key) return;
-  BK_fetchOdds(key, force)
-    .then(od => { BK_ODDS_MEM = od; if (CURRENT_VIEW.name==="bracket") renderBracket(c); })
-    .catch(err => {
-      console.error("[BracketOdds]", err.message);
-      if (CURRENT_VIEW.name==="bracket") {
-        const el = document.querySelector(".bk-odds-setup");
-        if (el) el.innerHTML += `<span style="color:var(--accent);font-size:11px;"> · Error: ${err.message}</span>`;
-      }
-    });
 }
 
 
@@ -5269,7 +4920,7 @@ function navigate(view) {
   history.pushState(view, "", hash);
   if (!LAST) return;
   if (view.name === "home")        renderHome(LAST.computed);
-  else if (view.name === "groups") loadGroupsWithOdds(LAST.computed);
+  else if (view.name === "groups") renderGroups(LAST.computed);
   else if (view.name === "bracket") renderBracket(LAST.computed);
   else if (view.name === "draft")  renderDraftPerformance(LAST.computed);
   else if (view.name === "upsets") renderUpsets(LAST.computed);
@@ -5294,7 +4945,7 @@ window.addEventListener("popstate", (ev) => {
     else CURRENT_VIEW = { name: "home" };
   }
   if (CURRENT_VIEW.name === "home")        renderHome(LAST.computed);
-  else if (CURRENT_VIEW.name === "groups") loadGroupsWithOdds(LAST.computed);
+  else if (CURRENT_VIEW.name === "groups") renderGroups(LAST.computed);
   else if (CURRENT_VIEW.name === "bracket") renderBracket(LAST.computed);
   else if (CURRENT_VIEW.name === "draft")  renderDraftPerformance(LAST.computed);
   else if (CURRENT_VIEW.name === "upsets") renderUpsets(LAST.computed);
@@ -5322,28 +4973,92 @@ document.getElementById("brandLink").addEventListener("click",  () => navigate({
 document.getElementById("refreshBtn").addEventListener("click", () => load(true));
 
 // ---------- boot ----------
-async function load(force = false) {
-  setStatus("stale", force ? "Refreshing…" : "Loading…");
+// ── Cache-first load ─────────────────────────────────────────────────────
+// 1. Synchronously render from localStorage cache if any exists (any age).
+//    User sees content instantly, even if last cached days ago.
+// 2. Background-fetch fresh data. When it arrives, re-render silently.
+// 3. If the fetch fails or hangs, cached view stays visible — no error state.
+// 4. Only when there is NO cache at all AND the fetch fails do we show an error.
+
+function readCache() {
   try {
-    // Fetch match data and history in parallel; history failure is non-fatal
-    const [matchResult, historyResult] = await Promise.allSettled([
-      fetchData(force),
-      fetchHistory(),
-    ]);
-    if (matchResult.status === "rejected") throw matchResult.reason;
-    const { data, fetchedAt, fromCache } = matchResult.value;
-    const history = historyResult.status === "fulfilled" ? historyResult.value : [];
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (raw) {
+      const c = JSON.parse(raw);
+      if (c && c.data) return c;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function readHistoryCache() {
+  try {
+    const raw = localStorage.getItem("wcpool-history-v1");
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return [];
+}
+
+
+async function backgroundRefresh(force) {
+  // Fire all three fetches in parallel; failures are silent.
+  const [matchResult, historyResult] = await Promise.allSettled([
+    fetch(DATA_URL, { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))),
+    fetch("./history.json").then(r => r.ok ? r.json() : []),
+  ]);
+
+
+  // History: cache to localStorage for next cold start
+  let history = [];
+  if (historyResult.status === "fulfilled" && Array.isArray(historyResult.value)) {
+    history = historyResult.value;
+    try { localStorage.setItem("wcpool-history-v1", JSON.stringify(history)); } catch (e) {}
+  } else {
+    history = readHistoryCache();
+  }
+
+  // Match data: if fresh fetch succeeded, cache + re-render. If failed, keep cached view.
+  if (matchResult.status === "fulfilled") {
+    const data = matchResult.value;
+    const fetchedAt = Date.now();
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data, fetchedAt })); } catch (e) {}
     const computed = compute(data);
-    render(computed, fetchedAt, fromCache, data, history);
-  } catch (e) {
-    console.error(e);
-    setStatus("err", "Couldn't reach openfootball — see console");
-    const app = document.getElementById("app");
-    if (app.querySelector(".panel-msg")) {
-      app.innerHTML = `<div class="panel-msg">Couldn't load the latest data.
-        <span class="small">${(e && e.message) || e}. Try Refresh, or serve the file over http(s) (file:// can block fetch).</span></div>`;
+    render(computed, fetchedAt, false, data, history);
+    setStatus("ok", "Live");
+  } else {
+    // Fetch failed — only surface an error if we have nothing to show
+    const existing = readCache();
+    if (!existing) {
+      const app = document.getElementById("app");
+      const err = matchResult.reason;
+      setStatus("err", "Couldn't reach openfootball");
+      if (app.querySelector(".panel-msg")) {
+        app.innerHTML = `<div class="panel-msg">Couldn't load the latest data.
+          <span class="small">${(err && err.message) || err}. Try Refresh, or serve the file over http(s).</span></div>`;
+      }
+    } else {
+      // We have cached content on screen — just quietly mark as stale
+      setStatus("stale", `Cached · ${fmtRelative(existing.fetchedAt)}`);
     }
   }
+}
+
+function load(force = false) {
+  // Step 1: synchronous cache render — this happens BEFORE any network I/O.
+  const cached = readCache();
+  const history = readHistoryCache();
+  if (cached) {
+    try {
+      const computed = compute(cached.data);
+      render(computed, cached.fetchedAt, true, cached.data, history);
+      setStatus("stale", "Refreshing…");
+    } catch (e) { console.error("Cache render failed:", e); }
+  } else {
+    setStatus("stale", "Loading…");
+  }
+
+  // Step 2: background refresh — never blocks initial paint.
+  backgroundRefresh(force);
 }
 
 load(false);
