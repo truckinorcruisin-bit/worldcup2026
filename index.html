@@ -5237,32 +5237,110 @@ document.getElementById("brandLink").addEventListener("click",  () => navigate({
 document.getElementById("refreshBtn").addEventListener("click", () => load(true));
 
 // ---------- boot ----------
-async function load(force = false) {
-  setStatus("stale", force ? "Refreshing…" : "Loading…");
+// ── Cache-first load ─────────────────────────────────────────────────────
+// 1. Synchronously render from localStorage cache if any exists (any age).
+//    User sees content instantly, even if last cached days ago.
+// 2. Background-fetch fresh data. When it arrives, re-render silently.
+// 3. If the fetch fails or hangs, cached view stays visible — no error state.
+// 4. Only when there is NO cache at all AND the fetch fails do we show an error.
+
+function readCache() {
   try {
-    // Fetch match data, history, and odds in parallel — all three go over the wire
-    // simultaneously so the first render already has everything it needs.
-    // History and odds failures are non-fatal.
-    const [matchResult, historyResult, oddsResult] = await Promise.allSettled([
-      fetchData(force),
-      fetchHistory(),
-      fetchOddsFile(force),
-    ]);
-    if (matchResult.status === "rejected") throw matchResult.reason;
-    const { data, fetchedAt, fromCache } = matchResult.value;
-    const history = historyResult.status === "fulfilled" ? historyResult.value : [];
-    // ODDS_MEM is set inside fetchOddsFile — no need to thread it through
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (raw) {
+      const c = JSON.parse(raw);
+      if (c && c.data) return c;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function readHistoryCache() {
+  try {
+    const raw = localStorage.getItem("wcpool-history-v1");
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return [];
+}
+
+function readOddsCache() {
+  try {
+    const raw = localStorage.getItem(ODDS_CACHE_KEY);
+    if (raw) {
+      const c = JSON.parse(raw);
+      if (c) { ODDS_MEM = c; return c; }
+    }
+  } catch (e) {}
+  return null;
+}
+
+async function backgroundRefresh(force) {
+  // Fire all three fetches in parallel; failures are silent.
+  const [matchResult, historyResult, oddsResult] = await Promise.allSettled([
+    fetch(DATA_URL, { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))),
+    fetch("./history.json").then(r => r.ok ? r.json() : []),
+    fetch("./odds.json").then(r => r.ok ? r.json() : null),
+  ]);
+
+  // Odds: silent success/fail — just update in-memory + localStorage
+  if (oddsResult.status === "fulfilled" && oddsResult.value?.teamOdds) {
+    const withStamp = { ...oddsResult.value, _cachedAt: Date.now() };
+    ODDS_MEM = withStamp;
+    try { localStorage.setItem(ODDS_CACHE_KEY, JSON.stringify(withStamp)); } catch (e) {}
+  }
+
+  // History: cache to localStorage for next cold start
+  let history = [];
+  if (historyResult.status === "fulfilled" && Array.isArray(historyResult.value)) {
+    history = historyResult.value;
+    try { localStorage.setItem("wcpool-history-v1", JSON.stringify(history)); } catch (e) {}
+  } else {
+    history = readHistoryCache();
+  }
+
+  // Match data: if fresh fetch succeeded, cache + re-render. If failed, keep cached view.
+  if (matchResult.status === "fulfilled") {
+    const data = matchResult.value;
+    const fetchedAt = Date.now();
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ data, fetchedAt })); } catch (e) {}
     const computed = compute(data);
-    render(computed, fetchedAt, fromCache, data, history);
-  } catch (e) {
-    console.error(e);
-    setStatus("err", "Couldn't reach openfootball — see console");
-    const app = document.getElementById("app");
-    if (app.querySelector(".panel-msg")) {
-      app.innerHTML = `<div class="panel-msg">Couldn't load the latest data.
-        <span class="small">${(e && e.message) || e}. Try Refresh, or serve the file over http(s) (file:// can block fetch).</span></div>`;
+    render(computed, fetchedAt, false, data, history);
+    setStatus("ok", "Live");
+  } else {
+    // Fetch failed — only surface an error if we have nothing to show
+    const existing = readCache();
+    if (!existing) {
+      const app = document.getElementById("app");
+      const err = matchResult.reason;
+      setStatus("err", "Couldn't reach openfootball");
+      if (app.querySelector(".panel-msg")) {
+        app.innerHTML = `<div class="panel-msg">Couldn't load the latest data.
+          <span class="small">${(err && err.message) || err}. Try Refresh, or serve the file over http(s).</span></div>`;
+      }
+    } else {
+      // We have cached content on screen — just quietly mark as stale
+      setStatus("stale", `Cached · ${fmtRelative(existing.fetchedAt)}`);
     }
   }
+}
+
+function load(force = false) {
+  // Step 1: synchronous cache render — this happens BEFORE any network I/O.
+  const cached = readCache();
+  readOddsCache();                       // hydrates ODDS_MEM
+  const history = readHistoryCache();
+  if (cached) {
+    try {
+      const computed = compute(cached.data);
+      render(computed, cached.fetchedAt, true, cached.data, history);
+      setStatus("stale", "Refreshing…");
+    } catch (e) { console.error("Cache render failed:", e); }
+  } else {
+    setStatus("stale", "Loading…");
+  }
+
+  // Step 2: background refresh — never blocks initial paint.
+  backgroundRefresh(force);
 }
 
 load(false);
