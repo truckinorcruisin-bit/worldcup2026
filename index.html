@@ -3932,7 +3932,7 @@ async function fetchOddsFile(force = false) {
       }
     } catch(e) {}
   }
-  const resp = await fetch("./odds.json", { cache: "no-store" });
+  const resp = await fetch("./odds.json");
   if (!resp.ok) return null;
   const data = await resp.json();
   if (!data?.teamOdds) return null;
@@ -3945,7 +3945,7 @@ async function fetchOddsFile(force = false) {
 // ---------- HISTORICAL TREND (from history.json on GitHub) ----------
 async function fetchHistory() {
   try {
-    const resp = await fetch("./history.json", { cache: "no-store" });
+    const resp = await fetch("./history.json");
     if (!resp.ok) return [];
     const data = await resp.json();
     return Array.isArray(data) ? data : [];
@@ -4386,7 +4386,7 @@ async function fetchLinks(force = false) {
       }
     } catch(e) {}
   }
-  const resp = await fetch("./links.json", { cache: "no-store" });
+  const resp = await fetch("./links.json");
   if (!resp.ok) return { links: [], _cachedAt: Date.now() };
   const links = await resp.json();
   const result = { links: Array.isArray(links) ? links : [], _cachedAt: Date.now() };
@@ -5240,14 +5240,18 @@ document.getElementById("refreshBtn").addEventListener("click", () => load(true)
 async function load(force = false) {
   setStatus("stale", force ? "Refreshing…" : "Loading…");
   try {
-    // Fetch match data and history in parallel; history failure is non-fatal
-    const [matchResult, historyResult] = await Promise.allSettled([
+    // Fetch match data, history, and odds in parallel — all three go over the wire
+    // simultaneously so the first render already has everything it needs.
+    // History and odds failures are non-fatal.
+    const [matchResult, historyResult, oddsResult] = await Promise.allSettled([
       fetchData(force),
       fetchHistory(),
+      fetchOddsFile(force),
     ]);
     if (matchResult.status === "rejected") throw matchResult.reason;
     const { data, fetchedAt, fromCache } = matchResult.value;
     const history = historyResult.status === "fulfilled" ? historyResult.value : [];
+    // ODDS_MEM is set inside fetchOddsFile — no need to thread it through
     const computed = compute(data);
     render(computed, fetchedAt, fromCache, data, history);
   } catch (e) {
