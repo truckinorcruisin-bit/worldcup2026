@@ -1965,6 +1965,60 @@
     .bk-team-name { font-size: 12px; }
   }
 
+
+  /* Odds — today's row */
+  .td-odds {
+    display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+    font-size: 11px; color: var(--ink-soft);
+    padding-top: 4px; margin-top: 4px;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .td-odds b { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--ink); }
+  .td-odds-draw { color: var(--ink-faint); font-size: 10px; }
+
+  /* Odds — match banner */
+  .bn-odds {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    font-size: 12px; color: var(--ink-soft);
+    margin-top: 6px;
+  }
+  .bn-odds b { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--ink); font-size: 13px; }
+  .bn-odds-draw { color: var(--ink-faint); }
+
+  /* Odds — bracket line */
+  .bk-line {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 700;
+    flex-shrink: 0; min-width: 40px; text-align: right;
+  }
+  .bk-line-neg { color: var(--ink-soft); }
+  .bk-line-pos { color: var(--alive); }
+
+  /* Odds — groups Win% column */
+  .gt-odds-th { text-align: center; white-space: nowrap; }
+  .gt-odds-td {
+    text-align: center; padding: 4px 8px !important;
+    min-width: 56px; line-height: 1.2;
+  }
+  .gt-odds-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 700;
+    display: block;
+  }
+  .gt-odds-opp {
+    font-size: 9px; color: var(--ink-faint);
+    display: block;
+    max-width: 70px; margin: 1px auto 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .gt-odds-none { color: var(--ink-faint); font-size: 11px; }
+
+  @media (max-width: 760px) {
+    .gt-odds-opp { display: none; }
+    .gt-odds-td { min-width: 44px; }
+    .gt-odds-val { font-size: 11px; }
+  }
+
   /* ---------- footer ---------- */
   footer {
     border-top: 1px solid var(--rule);
@@ -2946,6 +3000,18 @@ function fmtRelative(ts) {
 function fmtDate(ts) {
   return new Date(ts).toLocaleString(undefined, { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
 }
+let ODDS_MEM = null;
+
+function fmtLine(line) {
+  if (line == null) return "";
+  return line > 0 ? "+" + line : String(line);
+}
+
+function fmtPct(p) {
+  if (p == null) return "";
+  return Math.round(p * 100) + "%";
+}
+
 function fmtMatchDate(d) {
   if (!d) return "—";
   const dt = new Date(d + "T12:00:00Z");
@@ -3428,6 +3494,22 @@ function renderTodayRow(f) {
     : `<span class="td-v">v</span>`;
 
 
+  // American odds for upcoming matches
+  let oddsHtml = "";
+  if (!f.played && !f.live && ODDS_MEM?.matchOdds) {
+    const key = [f.team1, f.team2].sort().join("|");
+    const od = ODDS_MEM.matchOdds[key];
+    if (od) {
+      const [l1, l2] = od.t1 === f.team1 ? [od.line1, od.line2] : [od.line2, od.line1];
+      const draw = od.drawLine != null ? `<span class="td-odds-draw">Draw ${fmtLine(od.drawLine)}</span>` : "";
+      oddsHtml = `<div class="td-odds">
+        <span>${f.team1} <b>${fmtLine(l1)}</b></span>
+        ${draw}
+        <span>${f.team2} <b>${fmtLine(l2)}</b></span>
+      </div>`;
+    }
+  }
+
   return `
     <div class="today-row ${rowCls}">
       <div class="td-time">${statusHtml}</div>
@@ -3440,6 +3522,7 @@ function renderTodayRow(f) {
         <span class="td-round">${f.round}</span>
         ${where ? `<span class="td-where">📍 ${where}</span>` : ""}
       </div>
+      ${oddsHtml}
     </div>
   `;
 }
@@ -3475,6 +3558,22 @@ function renderMatchBanner(c) {
   const o2 = f.o2 ? `<span class="bn-ow">${f.o2}</span>` : "";
   const where = f.ground ? `${cityLabel(f.ground)}${venueName(f.ground) ? " · " + venueName(f.ground) : ""}` : "";
 
+  // Odds for the next pool match
+  let bnOdds = "";
+  if (ODDS_MEM?.matchOdds) {
+    const key = [f.team1, f.team2].sort().join("|");
+    const od = ODDS_MEM.matchOdds[key];
+    if (od) {
+      const [l1, l2] = od.t1 === f.team1 ? [od.line1, od.line2] : [od.line2, od.line1];
+      const draw = od.drawLine != null ? `<span class="bn-odds-draw">Draw ${fmtLine(od.drawLine)}</span>` : "";
+      bnOdds = `<div class="bn-odds">
+        <span>${f.team1} <b>${fmtLine(l1)}</b></span>
+        ${draw}
+        <span>${f.team2} <b>${fmtLine(l2)}</b></span>
+      </div>`;
+    }
+  }
+
   return `
     <div class="banner upcoming" data-kickoff="${f.kickoff}">
       <div class="banner-label">Next pool match</div>
@@ -3489,6 +3588,7 @@ function renderMatchBanner(c) {
           <span class="bn-when">${fmtMatchDate(f.date)} · ${fmtClock(f.kickoff)}</span>
         </div>
       </div>
+      ${bnOdds}
       ${where ? `<div class="bn-where">📍 ${where}</div>` : ""}
     </div>`;
 }
@@ -3645,6 +3745,8 @@ function renderGroups(c) {
 
 
 function renderGroupTable(letter, rows) {
+  const teamOdds = ODDS_MEM?.teamOdds || {};
+  const hasOdds  = Object.keys(teamOdds).length > 0;
   if (!rows || rows.length === 0) {
     return `<div class="group-card"><div class="group-hd">Group ${letter}</div><div class="empty" style="padding:12px;">No data yet.</div></div>`;
   }
@@ -3662,6 +3764,7 @@ function renderGroupTable(letter, rows) {
             <th title="Lost">L</th>
             <th title="Goal difference">GD</th>
             <th title="Points">Pts</th>
+            ${hasOdds ? '<th class="gt-odds-th" title="Implied win probability for next match">Win%</th>' : ""}
           </tr>
         </thead>
         <tbody>
@@ -3698,6 +3801,17 @@ function renderGroupTable(letter, rows) {
                 <td>${r.l}</td>
                 <td>${r.gd > 0 ? "+" + r.gd : r.gd}</td>
                 <td class="gt-pts">${r.pts}</td>
+                ${(() => {
+                  if (!hasOdds) return "";
+                  const od = teamOdds[r.team];
+                  if (!od) return `<td class="gt-odds-td"><span class="gt-odds-none">—</span></td>`;
+                  const pct = Math.round(od.winProb * 100);
+                  const color = pct >= 60 ? "var(--alive)" : pct >= 40 ? "var(--gold)" : "var(--accent)";
+                  return `<td class="gt-odds-td" title="vs ${od.opp}: Win ${pct}% / Draw ${Math.round(od.drawProb*100)}% / Loss ${Math.round(od.loseProb*100)}%">
+                    <span class="gt-odds-val" style="color:${color}">${pct}%</span>
+                    <span class="gt-odds-opp">vs ${od.opp}</span>
+                  </td>`;
+                })()}
               </tr>`;
           }).join("")}
         </tbody>
@@ -4496,6 +4610,24 @@ function renderBracketMatch(m, teamsMap, matchWinners) {
     : "";
 
 
+  // American lines for upcoming matches with both teams resolved
+  let od = null;
+  if (!played && s1.resolved && s2.resolved && ODDS_MEM?.matchOdds) {
+    const key = [s1.team, s2.team].sort().join("|");
+    const raw = ODDS_MEM.matchOdds[key];
+    if (raw) {
+      od = raw.t1 === s1.team
+        ? { l1: raw.line1, l2: raw.line2 }
+        : { l1: raw.line2, l2: raw.line1 };
+    }
+  }
+  const lineHtml = (n) => {
+    if (!od) return "";
+    const v = n === 0 ? od.l1 : od.l2;
+    if (v == null) return "";
+    return `<span class="bk-line ${v > 0 ? "bk-line-pos" : "bk-line-neg"}">${fmtLine(v)}</span>`;
+  };
+
   return `
     <div class="bk-match">
       <div class="bk-match-meta">
@@ -4503,8 +4635,8 @@ function renderBracketMatch(m, teamsMap, matchWinners) {
         <span class="bk-date">${dateLabel}</span>
         <span class="bk-venue">${venue}${city ? " · " + city : ""}</span>
       </div>
-      <div class="bk-team-row">${bracketTeamHtml(s1, st1)}${scoreHtml(s1, 0)}</div>
-      <div class="bk-team-row">${bracketTeamHtml(s2, st2)}${scoreHtml(s2, 1)}</div>
+      <div class="bk-team-row">${bracketTeamHtml(s1, st1)}${played ? scoreHtml(s1, 0) : lineHtml(0)}</div>
+      <div class="bk-team-row">${bracketTeamHtml(s2, st2)}${played ? scoreHtml(s2, 1) : lineHtml(1)}</div>
     </div>`;
 }
 
@@ -5002,10 +5134,17 @@ function readHistoryCache() {
 
 async function backgroundRefresh(force) {
   // Fire all three fetches in parallel; failures are silent.
-  const [matchResult, historyResult] = await Promise.allSettled([
+  const [matchResult, historyResult, oddsResult] = await Promise.allSettled([
     fetch(DATA_URL, { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))),
     fetch("./history.json").then(r => r.ok ? r.json() : []),
+    fetch("./odds.json").then(r => r.ok ? r.json() : null),
   ]);
+
+  // Odds: silent — populate ODDS_MEM if available, otherwise leave as-is
+  if (oddsResult.status === "fulfilled" && oddsResult.value?.teamOdds) {
+    ODDS_MEM = oddsResult.value;
+    try { localStorage.setItem("wcpool-odds-v2", JSON.stringify(ODDS_MEM)); } catch (e) {}
+  }
 
 
   // History: cache to localStorage for next cold start
@@ -5046,6 +5185,11 @@ async function backgroundRefresh(force) {
 function load(force = false) {
   // Step 1: synchronous cache render — this happens BEFORE any network I/O.
   const cached = readCache();
+  // Hydrate ODDS_MEM synchronously from localStorage so the first paint has odds
+  try {
+    const oc = localStorage.getItem("wcpool-odds-v2");
+    if (oc) ODDS_MEM = JSON.parse(oc);
+  } catch (e) {}
   const history = readHistoryCache();
   if (cached) {
     try {
