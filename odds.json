@@ -1,106 +1,106 @@
 {
-  "fetchedAt": "2026-07-02T15:36:40.737Z",
+  "fetchedAt": "2026-07-02T19:38:21.913Z",
   "status": "ok",
-  "remaining": "484",
-  "used": "16",
+  "remaining": "483",
+  "used": "17",
   "sportKey": "soccer_fifa_world_cup",
   "teamCount": 22,
   "teamOdds": {
     "Spain": {
-      "winProb": 0.742,
-      "drawProb": 0.171,
-      "loseProb": 0.087,
+      "winProb": 0.807,
+      "drawProb": 0.14,
+      "loseProb": 0.053,
       "opp": "Austria",
       "matchTime": 1783018800000
     },
     "Austria": {
-      "winProb": 0.087,
-      "drawProb": 0.171,
-      "loseProb": 0.742,
+      "winProb": 0.053,
+      "drawProb": 0.14,
+      "loseProb": 0.807,
       "opp": "Spain",
       "matchTime": 1783018800000
     },
     "Portugal": {
-      "winProb": 0.564,
-      "drawProb": 0.255,
-      "loseProb": 0.18,
+      "winProb": 0.571,
+      "drawProb": 0.253,
+      "loseProb": 0.175,
       "opp": "Croatia",
       "matchTime": 1783033200000
     },
     "Croatia": {
-      "winProb": 0.18,
-      "drawProb": 0.255,
-      "loseProb": 0.564,
+      "winProb": 0.175,
+      "drawProb": 0.253,
+      "loseProb": 0.571,
       "opp": "Portugal",
       "matchTime": 1783033200000
     },
     "Switzerland": {
       "winProb": 0.492,
-      "drawProb": 0.292,
-      "loseProb": 0.216,
+      "drawProb": 0.29,
+      "loseProb": 0.218,
       "opp": "Algeria",
       "matchTime": 1783047600000
     },
     "Algeria": {
-      "winProb": 0.216,
-      "drawProb": 0.292,
+      "winProb": 0.218,
+      "drawProb": 0.29,
       "loseProb": 0.492,
       "opp": "Switzerland",
       "matchTime": 1783047600000
     },
     "Australia": {
       "winProb": 0.283,
-      "drawProb": 0.332,
-      "loseProb": 0.384,
+      "drawProb": 0.333,
+      "loseProb": 0.383,
       "opp": "Egypt",
       "matchTime": 1783101600000
     },
     "Egypt": {
-      "winProb": 0.384,
-      "drawProb": 0.332,
+      "winProb": 0.383,
+      "drawProb": 0.333,
       "loseProb": 0.283,
       "opp": "Australia",
       "matchTime": 1783101600000
     },
     "Argentina": {
-      "winProb": 0.824,
-      "drawProb": 0.124,
-      "loseProb": 0.052,
+      "winProb": 0.827,
+      "drawProb": 0.123,
+      "loseProb": 0.05,
       "opp": "Cape Verde",
       "matchTime": 1783116000000
     },
     "Cape Verde": {
-      "winProb": 0.052,
-      "drawProb": 0.124,
-      "loseProb": 0.824,
+      "winProb": 0.05,
+      "drawProb": 0.123,
+      "loseProb": 0.827,
       "opp": "Argentina",
       "matchTime": 1783116000000
     },
     "Colombia": {
-      "winProb": 0.628,
-      "drawProb": 0.24,
-      "loseProb": 0.132,
+      "winProb": 0.647,
+      "drawProb": 0.232,
+      "loseProb": 0.121,
       "opp": "Ghana",
       "matchTime": 1783128600000
     },
     "Ghana": {
-      "winProb": 0.132,
-      "drawProb": 0.24,
-      "loseProb": 0.628,
+      "winProb": 0.121,
+      "drawProb": 0.232,
+      "loseProb": 0.647,
       "opp": "Colombia",
       "matchTime": 1783128600000
     },
     "Canada": {
-      "winProb": 0.191,
-      "drawProb": 0.276,
+      "winProb": 0.192,
+      "drawProb": 0.275,
       "loseProb": 0.533,
       "opp": "Morocco",
       "matchTime": 1783184400000
     },
     "Morocco": {
       "winProb": 0.533,
-      "drawProb": 0.276,
-      "loseProb": 0.191,
+      "drawProb": 0.275,
+      "loseProb": 0.192,
       "opp": "Canada",
       "matchTime": 1783184400000
     },
@@ -119,44 +119,44 @@
       "matchTime": 1783198800000
     },
     "Brazil": {
-      "winProb": 0.51,
+      "winProb": 0.511,
       "drawProb": 0.26,
-      "loseProb": 0.23,
+      "loseProb": 0.229,
       "opp": "Norway",
       "matchTime": 1783281600000
     },
     "Norway": {
-      "winProb": 0.23,
+      "winProb": 0.229,
       "drawProb": 0.26,
-      "loseProb": 0.51,
+      "loseProb": 0.511,
       "opp": "Brazil",
       "matchTime": 1783281600000
     },
     "Mexico": {
       "winProb": 0.306,
-      "drawProb": 0.303,
-      "loseProb": 0.391,
+      "drawProb": 0.301,
+      "loseProb": 0.393,
       "opp": "England",
       "matchTime": 1783296000000
     },
     "England": {
-      "winProb": 0.391,
-      "drawProb": 0.303,
+      "winProb": 0.393,
+      "drawProb": 0.301,
       "loseProb": 0.306,
       "opp": "Mexico",
       "matchTime": 1783296000000
     },
     "USA": {
-      "winProb": 0.375,
-      "drawProb": 0.278,
-      "loseProb": 0.346,
+      "winProb": 0.364,
+      "drawProb": 0.281,
+      "loseProb": 0.355,
       "opp": "Belgium",
       "matchTime": 1783382400000
     },
     "Belgium": {
-      "winProb": 0.346,
-      "drawProb": 0.278,
-      "loseProb": 0.375,
+      "winProb": 0.355,
+      "drawProb": 0.281,
+      "loseProb": 0.364,
       "opp": "USA",
       "matchTime": 1783382400000
     }
@@ -165,55 +165,55 @@
     "Austria|Spain": {
       "t1": "Spain",
       "t2": "Austria",
-      "line1": -350,
-      "line2": 1001,
-      "drawLine": 458,
+      "line1": -607,
+      "line2": 2285,
+      "drawLine": 619,
       "matchTime": 1783018800000
     },
     "Croatia|Portugal": {
       "t1": "Portugal",
       "t2": "Croatia",
-      "line1": -145,
-      "line2": 429,
-      "drawLine": 273,
+      "line1": -149,
+      "line2": 445,
+      "drawLine": 277,
       "matchTime": 1783033200000
     },
     "Algeria|Switzerland": {
       "t1": "Switzerland",
       "t2": "Algeria",
       "line1": -107,
-      "line2": 340,
-      "drawLine": 226,
+      "line2": 337,
+      "drawLine": 228,
       "matchTime": 1783047600000
     },
     "Australia|Egypt": {
       "t1": "Australia",
       "t2": "Egypt",
       "line1": 236,
-      "line2": 148,
-      "drawLine": 187,
+      "line2": 149,
+      "drawLine": 186,
       "matchTime": 1783101600000
     },
     "Argentina|Cape Verde": {
       "t1": "Argentina",
       "t2": "Cape Verde",
-      "line1": -632,
-      "line2": 1763,
-      "drawLine": 668,
+      "line1": -648,
+      "line2": 1813,
+      "drawLine": 681,
       "matchTime": 1783116000000
     },
     "Colombia|Ghana": {
       "t1": "Colombia",
       "t2": "Ghana",
-      "line1": -193,
-      "line2": 625,
-      "drawLine": 296,
+      "line1": -212,
+      "line2": 691,
+      "drawLine": 310,
       "matchTime": 1783128600000
     },
     "Canada|Morocco": {
       "t1": "Canada",
       "t2": "Morocco",
-      "line1": 397,
+      "line1": 396,
       "line2": -128,
       "drawLine": 245,
       "matchTime": 1783184400000
@@ -221,16 +221,16 @@
     "France|Paraguay": {
       "t1": "Paraguay",
       "t2": "France",
-      "line1": 1651,
-      "line2": -563,
-      "drawLine": 599,
+      "line1": 1648,
+      "line2": -561,
+      "drawLine": 600,
       "matchTime": 1783198800000
     },
     "Brazil|Norway": {
       "t1": "Brazil",
       "t2": "Norway",
-      "line1": -115,
-      "line2": 314,
+      "line1": -116,
+      "line2": 316,
       "drawLine": 266,
       "matchTime": 1783281600000
     },
@@ -238,16 +238,16 @@
       "t1": "Mexico",
       "t2": "England",
       "line1": 210,
-      "line2": 143,
-      "drawLine": 213,
+      "line2": 141,
+      "drawLine": 216,
       "matchTime": 1783296000000
     },
     "Belgium|USA": {
       "t1": "USA",
       "t2": "Belgium",
-      "line1": 154,
-      "line2": 175,
-      "drawLine": 242,
+      "line1": 161,
+      "line2": 168,
+      "drawLine": 239,
       "matchTime": 1783382400000
     }
   }
