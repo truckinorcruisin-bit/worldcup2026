@@ -30,12 +30,12 @@ jobs:
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
 
-      - name: Commit history.json if it changed
+      - name: Commit changed files if any
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add history.json
+          git add history.json odds.json
           # Only commit when there are actual changes (--quiet exits 1 if diff exists)
-          git diff --staged --quiet && echo "No changes to history.json." || \
-            git commit -m "chore: update standings history $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
+          git diff --staged --quiet && echo "No changes to commit." || \
+            git commit -m "chore: update standings + odds $(date -u +'%Y-%m-%d %H:%M UTC') [skip ci]"
           git push
