@@ -1,64 +1,64 @@
 {
-  "fetchedAt": "2026-07-07T03:51:22.519Z",
+  "fetchedAt": "2026-07-07T09:50:45.432Z",
   "status": "ok",
-  "remaining": "466",
-  "used": "34",
+  "remaining": "465",
+  "used": "35",
   "sportKey": "soccer_fifa_world_cup",
   "teamCount": 10,
   "teamOdds": {
     "Argentina": {
-      "winProb": 0.704,
-      "drawProb": 0.198,
-      "loseProb": 0.099,
+      "winProb": 0.713,
+      "drawProb": 0.194,
+      "loseProb": 0.093,
       "opp": "Egypt",
       "matchTime": 1783440000000
     },
     "Egypt": {
-      "winProb": 0.099,
-      "drawProb": 0.198,
-      "loseProb": 0.704,
+      "winProb": 0.093,
+      "drawProb": 0.194,
+      "loseProb": 0.713,
       "opp": "Argentina",
       "matchTime": 1783440000000
     },
     "Switzerland": {
-      "winProb": 0.267,
-      "drawProb": 0.308,
-      "loseProb": 0.424,
+      "winProb": 0.27,
+      "drawProb": 0.307,
+      "loseProb": 0.423,
       "opp": "Colombia",
       "matchTime": 1783454400000
     },
     "Colombia": {
-      "winProb": 0.424,
-      "drawProb": 0.308,
-      "loseProb": 0.267,
+      "winProb": 0.423,
+      "drawProb": 0.307,
+      "loseProb": 0.27,
       "opp": "Switzerland",
       "matchTime": 1783454400000
     },
     "France": {
-      "winProb": 0.6,
-      "drawProb": 0.244,
-      "loseProb": 0.155,
+      "winProb": 0.599,
+      "drawProb": 0.245,
+      "loseProb": 0.156,
       "opp": "Morocco",
       "matchTime": 1783627200000
     },
     "Morocco": {
-      "winProb": 0.155,
-      "drawProb": 0.244,
-      "loseProb": 0.6,
+      "winProb": 0.156,
+      "drawProb": 0.245,
+      "loseProb": 0.599,
       "opp": "France",
       "matchTime": 1783627200000
     },
     "Spain": {
-      "winProb": 0.585,
+      "winProb": 0.588,
       "drawProb": 0.241,
-      "loseProb": 0.174,
+      "loseProb": 0.171,
       "opp": "Belgium",
       "matchTime": 1783710000000
     },
     "Belgium": {
-      "winProb": 0.174,
+      "winProb": 0.171,
       "drawProb": 0.241,
-      "loseProb": 0.585,
+      "loseProb": 0.588,
       "opp": "Spain",
       "matchTime": 1783710000000
     },
@@ -81,32 +81,32 @@
     "Argentina|Egypt": {
       "t1": "Argentina",
       "t2": "Egypt",
-      "line1": -282,
-      "line2": 873,
-      "drawLine": 382,
+      "line1": -297,
+      "line2": 928,
+      "drawLine": 391,
       "matchTime": 1783440000000
     },
     "Colombia|Switzerland": {
       "t1": "Switzerland",
       "t2": "Colombia",
-      "line1": 257,
-      "line2": 124,
+      "line1": 252,
+      "line2": 125,
       "drawLine": 209,
       "matchTime": 1783454400000
     },
     "France|Morocco": {
       "t1": "France",
       "t2": "Morocco",
-      "line1": -172,
-      "line2": 513,
-      "drawLine": 289,
+      "line1": -171,
+      "line2": 510,
+      "drawLine": 288,
       "matchTime": 1783627200000
     },
     "Belgium|Spain": {
       "t1": "Spain",
       "t2": "Belgium",
-      "line1": -160,
-      "line2": 448,
+      "line1": -162,
+      "line2": 458,
       "drawLine": 294,
       "matchTime": 1783710000000
     },
