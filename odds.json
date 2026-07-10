@@ -1,27 +1,27 @@
 {
-  "fetchedAt": "2026-07-10T03:45:50.690Z",
+  "fetchedAt": "2026-07-10T09:43:35.957Z",
   "status": "ok",
-  "remaining": "454",
-  "used": "46",
+  "remaining": "453",
+  "used": "47",
   "sportKey": "soccer_fifa_world_cup",
   "teamCount": 6,
   "teamOdds": {
     "Spain": {
-      "winProb": 0.582,
+      "winProb": 0.585,
       "drawProb": 0.243,
-      "loseProb": 0.175,
+      "loseProb": 0.172,
       "opp": "Belgium",
       "matchTime": 1783710000000
     },
     "Belgium": {
-      "winProb": 0.175,
+      "winProb": 0.172,
       "drawProb": 0.243,
-      "loseProb": 0.582,
+      "loseProb": 0.585,
       "opp": "Spain",
       "matchTime": 1783710000000
     },
     "Norway": {
-      "winProb": 0.228,
+      "winProb": 0.229,
       "drawProb": 0.259,
       "loseProb": 0.512,
       "opp": "England",
@@ -30,21 +30,21 @@
     "England": {
       "winProb": 0.512,
       "drawProb": 0.259,
-      "loseProb": 0.228,
+      "loseProb": 0.229,
       "opp": "Norway",
       "matchTime": 1783803600000
     },
     "Argentina": {
-      "winProb": 0.561,
+      "winProb": 0.563,
       "drawProb": 0.269,
-      "loseProb": 0.17,
+      "loseProb": 0.168,
       "opp": "Switzerland",
       "matchTime": 1783818000000
     },
     "Switzerland": {
-      "winProb": 0.17,
+      "winProb": 0.168,
       "drawProb": 0.269,
-      "loseProb": 0.561,
+      "loseProb": 0.563,
       "opp": "Argentina",
       "matchTime": 1783818000000
     }
@@ -53,9 +53,9 @@
     "Belgium|Spain": {
       "t1": "Spain",
       "t2": "Belgium",
-      "line1": -157,
-      "line2": 445,
-      "drawLine": 292,
+      "line1": -158,
+      "line2": 457,
+      "drawLine": 293,
       "matchTime": 1783710000000
     },
     "England|Norway": {
@@ -63,14 +63,14 @@
       "t2": "England",
       "line1": 317,
       "line2": -116,
-      "drawLine": 267,
+      "drawLine": 268,
       "matchTime": 1783803600000
     },
     "Argentina|Switzerland": {
       "t1": "Argentina",
       "t2": "Switzerland",
-      "line1": -143,
-      "line2": 460,
+      "line1": -144,
+      "line2": 467,
       "drawLine": 254,
       "matchTime": 1783818000000
     }
