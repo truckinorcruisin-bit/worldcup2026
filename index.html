@@ -258,6 +258,7 @@
     vertical-align: 1px;
   }
   .meta-row .top-team { color: var(--ink); font-weight: 600; }
+  .meta-row .max-score b { color: var(--ink); }
 
   .roster-strip {
     display: flex;
@@ -1828,10 +1829,14 @@
     line-height: 1.2;
   }
   .db-pickno {
-    display: block;
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px;
     color: var(--ink-faint);
+  }
+  .db-cell-foot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     margin-top: 2px;
     margin-left: 20px;
   }
@@ -1841,9 +1846,37 @@
   .db-cell.db-eliminated .db-flag { opacity: 0.4; }
   .db-cell.db-empty { color: var(--ink-faint); text-align: center; }
 
+  /* knockout round-reached badge */
+  .db-ko {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 1px 5px;
+    border-radius: 2px;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+  .db-ko-through { background: rgba(47,107,58,0.15);  color: var(--alive); }
+  .db-ko-out     { background: rgba(184,52,28,0.12);  color: var(--accent); }
+  .db-ko-final   { background: rgba(201,162,39,0.20); color: #8a6d10; }
+  .db-ko-champ   { background: var(--gold); color: var(--paper); font-weight: 800; }
+
+  .db-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin: -28px 0 40px;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .db-leg-it { display: inline-flex; align-items: center; gap: 6px; }
+
   @media (max-width: 600px) {
     .db-team { font-size: 12px; }
     .db-cell { min-width: 110px; padding: 6px 8px; }
+    .db-legend { margin-top: 12px; }
   }
 
   /* ---------- knockout bracket ---------- */
@@ -2919,6 +2952,42 @@ function compute(data) {
     owners[o].teamsAlive = owners[o].teams.filter(tr => tr.alive).length;
   }
 
+  // ----- max remaining score: the ceiling each owner could reach if every -----
+  // ----- one of their still-alive teams won out from here to the title.   -----
+  // Only ONE team can ever be champion, so the +20 champion bonus is capped to
+  // once per owner even if they have multiple teams still alive (a team-vs-
+  // teammate collision, e.g. two of an owner's teams meeting in the semis,
+  // still sums each team's other bonuses independently — a small, clearly
+  // labeled simplification rather than a full bracket-collision solver).
+  const KO_ROUND_ORDER = ["Round of 32","Round of 16","Quarter-final","Semi-final","Final"];
+  const KO_ROUND_PTS   = {
+    "Round of 32": POINTS.r32Win, "Round of 16": POINTS.r16Win,
+    "Quarter-final": POINTS.qfWin, "Semi-final": POINTS.sfWin, "Final": POINTS.champion,
+  };
+  function teamRemainingBreakdown(tr) {
+    if (!tr.alive) return { remaining: 0, includesChampion: false };
+    let reachedIdx = -1; // -1 = hasn't won a KO match yet; every round still ahead
+    for (const m of (tr.matchHistory || [])) {
+      const idx = KO_ROUND_ORDER.indexOf(m.round);
+      if (idx > reachedIdx && (m.result === "W" || m.result === "🏆")) reachedIdx = idx;
+    }
+    let remaining = 0;
+    for (let i = reachedIdx + 1; i < KO_ROUND_ORDER.length; i++) remaining += KO_ROUND_PTS[KO_ROUND_ORDER[i]];
+    const includesChampion = reachedIdx < KO_ROUND_ORDER.length - 1;
+    return { remaining, includesChampion };
+  }
+  for (const o of OWNERS) {
+    let sum = 0, champCounted = false;
+    for (const tr of owners[o].teams) {
+      if (!tr.alive) continue;
+      const { remaining, includesChampion } = teamRemainingBreakdown(tr);
+      if (includesChampion && champCounted) sum += remaining - POINTS.champion;
+      else { sum += remaining; if (includesChampion) champCounted = true; }
+    }
+    owners[o].maxRemaining = sum;
+    owners[o].maxTotal = owners[o].total + sum;
+  }
+
   // ----- upsets: lower-seeded team wins, draws, or wins on PKs vs higher-seeded -----
   // resultType: "W" = win in 90 min, "P" = won on penalties (full gap credit),
   //             "D" = draw (group stage only, half gap).
@@ -3156,6 +3225,7 @@ function renderStandingsRow(o, idx, leaderTotal) {
             <div class="meta-row">
               <span><span class="pip"></span>${o.teamsAlive} of 12 alive</span>
               <span>Top: <span class="top-team">${top.team}</span> (${top.total} pt${top.total === 1 ? "" : "s"})</span>
+              ${o.teamsAlive > 0 ? `<span class="max-score" title="Ceiling if every one of ${o.owner}'s remaining teams wins out from here">Max: <b>${o.maxTotal}</b></span>` : ""}
             </div>
           </div>
         </div>
@@ -3201,6 +3271,7 @@ function renderStandingsCard(o, idx, leaderTotal) {
         <span>Grp <b>${o.groupPoints}</b></span>
         <span>${gapTxt}</span>
         <span>Top: <b>${top.team}</b> (${top.total})</span>
+        ${o.teamsAlive > 0 ? `<span title="Ceiling if every remaining team wins out">Max <b>${o.maxTotal}</b></span>` : ""}
       </div>
       <div class="roster-strip">
         ${sorted.map(tr => `
@@ -4294,6 +4365,17 @@ function fzShuffle(arr) {
   return a;
 }
 
+// True random shuffle (Math.random) — a fresh order on every single page load,
+// unlike fzShuffle above which stays fixed for the whole day.
+function fzShuffleRandom(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function renderFanZone(opts = {}) {
   setNav("fanzone");
   const app = document.getElementById("app");
@@ -4318,7 +4400,11 @@ function renderFanZone(opts = {}) {
   // Group by type, shuffle items within each group
   const byType = {};
   for (const l of links) { (byType[l.type] = byType[l.type] || []).push(l); }
-  for (const t of Object.keys(byType)) { byType[t] = fzShuffle(byType[t]); }
+  for (const t of Object.keys(byType)) {
+    // X/Twitter reshuffles fresh on every page load; everything else keeps a
+    // stable order for the whole day so the page doesn't feel different on refresh.
+    byType[t] = (t === "tweet") ? fzShuffleRandom(byType[t]) : fzShuffle(byType[t]);
+  }
 
   // Section renderers keyed by type
   const sectionRenderers = {
@@ -4336,8 +4422,9 @@ function renderFanZone(opts = {}) {
                 `<div class="fz-link-grid">${items.map(renderArticleCard).join("")}</div>`),
   };
 
-  // Randomize section order
-  const sectionTypes = fzShuffle(Object.keys(byType));
+  // X/Twitter always leads; the remaining sections shuffle order daily behind it.
+  const restTypes = fzShuffle(Object.keys(byType).filter(t => t !== "tweet"));
+  const sectionTypes = byType.tweet ? ["tweet", ...restTypes] : restTypes;
   const sectionsHtml = sectionTypes.map(t => {
     const fn = sectionRenderers[t] || sectionRenderers.link;
     return fn(byType[t]);
@@ -4350,7 +4437,7 @@ function renderFanZone(opts = {}) {
     <h2 class="section-title">Fan life at USA 2026</h2>
     <p class="fz-intro">
       The best viral moments, fan reactions, and cultural collisions from the World Cup.
-      All hand-picked \u2014 no algorithm, no ads. Order shuffles daily.
+      All hand-picked \u2014 no algorithm, no ads. X/Twitter reshuffles every visit; other sections shuffle daily.
     </p>
     ${isEmpty ? `
       <div class="fz-empty">No links yet.
@@ -4752,9 +4839,10 @@ function renderDraftPerformance(c) {
 
     <p class="section-label" style="margin-top:40px;">The board</p>
     <h2 class="section-title">Every pick, in draft order</h2>
-    <p style="color:var(--ink-soft);margin:0 0 16px;max-width:640px;font-size:14px;">
-      All 48 picks by round. <span style="color:var(--alive);font-weight:600;">Green</span> = advanced to the knockouts,
+    <p style="color:var(--ink-soft);margin:0 0 16px;max-width:680px;font-size:14px;">
+      All 48 picks by round. <span style="color:var(--alive);font-weight:600;">Green</span> = through the group stage,
       <span style="text-decoration:line-through;color:var(--ink-faint);">struck through</span> = eliminated, plain = still alive in the group stage.
+      A round badge shows how far any team made it into the knockouts — even one that's since been eliminated.
     </p>
     ${renderDraftBoard(c)}
   `;
@@ -4762,6 +4850,31 @@ function renderDraftPerformance(c) {
   wireDraftFilters(c);
   wireDraftChartPoints(model);
   wireQuartileBars();
+}
+
+// Knockout round abbreviations, in progression order
+const KO_ABBR = {
+  "Round of 32":            "R32",
+  "Round of 16":            "R16",
+  "Quarter-final":          "QF",
+  "Semi-final":             "SF",
+  "Match for third place":  "3rd",
+  "Final":                  "F",
+};
+const KO_ROUNDS_SET = new Set(Object.keys(KO_ABBR));
+
+// Look at a team's full match history and find the furthest knockout round they
+// reached, regardless of whether they're still alive or have since been eliminated.
+function furthestKO(tm) {
+  if (!tm || !tm.matchHistory) return null;
+  let last = null;
+  for (const m of tm.matchHistory) {
+    if (KO_ROUNDS_SET.has(m.round)) last = m; // matchHistory is date-sorted ascending
+  }
+  if (!last) return null;
+  if (last.result === "🏆") return { label: "🏆 Champion", cls: "champ" };
+  if (last.round === "Final" && last.result === "L") return { label: "Runner-up", cls: "final" };
+  return { label: KO_ABBR[last.round], cls: last.result === "L" ? "out" : "through" };
 }
 
 function renderDraftBoard(c) {
@@ -4773,7 +4886,11 @@ function renderDraftBoard(c) {
     const pick = DRAFT.find(d => d.round === round && d.owner === owner);
     if (!pick) return `<td class="db-cell db-empty">—</td>`;
     const tm = c.teams[pick.team];
-    const status = tm ? (tm.advanced ? "advanced" : tm.eliminated ? "eliminated" : "alive") : "alive";
+    // Eliminated must win over "advanced" — a team that cleared groups but was
+    // later knocked out in the Round of 32 is eliminated, not still "advanced".
+    const status = tm ? (tm.eliminated ? "eliminated" : tm.advanced ? "advanced" : "alive") : "alive";
+    const ko = tm ? furthestKO(tm) : null;
+    const koBadge = ko ? `<span class="db-ko db-ko-${ko.cls}">${ko.label}</span>` : "";
     const flag = flagImg(pick.team, "w20", "db-flag");
     return `
       <td class="db-cell db-${status}">
@@ -4781,7 +4898,10 @@ function renderDraftBoard(c) {
           ${flag}
           <span class="db-team">${pick.team}</span>
         </div>
-        <span class="db-pickno">${pick.pick}</span>
+        <div class="db-cell-foot">
+          <span class="db-pickno">${pick.pick}</span>
+          ${koBadge}
+        </div>
       </td>`;
   };
 
@@ -4805,6 +4925,12 @@ function renderDraftBoard(c) {
             </tr>`).join("")}
         </tbody>
       </table>
+    </div>
+    <div class="db-legend">
+      <span class="db-leg-it"><span class="db-ko db-ko-through">R16</span> reached that round, still alive</span>
+      <span class="db-leg-it"><span class="db-ko db-ko-out">R32</span> reached that round, eliminated there</span>
+      <span class="db-leg-it"><span class="db-ko db-ko-final">Runner-up</span> lost the final</span>
+      <span class="db-leg-it"><span class="db-ko db-ko-champ">🏆 Champion</span> won it all</span>
     </div>`;
 }
 

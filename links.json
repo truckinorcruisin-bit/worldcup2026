@@ -277,5 +277,51 @@
     "tags": [
       "fans"
     ]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/dschlopesisback/status/2072534089786138781",
+    "tweetId": "2072534089786138781",
+    "username": "@dschlopesisback",
+    "caption": "World Cup moment",
+    "added": "2026-07-10",
+    "tags": [
+      "fans"
+    ]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/trollfootball/status/2072526938288341184",
+    "tweetId": "2072526938288341184",
+    "username": "@trollfootball",
+    "caption": "Troll Football on the World Cup",
+    "added": "2026-07-10",
+    "tags": [
+      "funny",
+      "viral"
+    ]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/meninblazers/status/2072502296395805173",
+    "tweetId": "2072502296395805173",
+    "username": "@meninblazers",
+    "caption": "Men in Blazers take on the quarterfinals",
+    "added": "2026-07-10",
+    "tags": [
+      "fans"
+    ]
+  },
+  {
+    "type": "tweet",
+    "url": "https://x.com/dudespostingws/status/2072460491172266403",
+    "tweetId": "2072460491172266403",
+    "username": "@dudespostingws",
+    "caption": "Dudes Posting W's \u2014 World Cup edition",
+    "added": "2026-07-10",
+    "tags": [
+      "funny",
+      "viral"
+    ]
   }
 ]
