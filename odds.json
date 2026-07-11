@@ -1,50 +1,50 @@
 {
-  "fetchedAt": "2026-07-11T08:02:57.969Z",
+  "fetchedAt": "2026-07-11T13:37:01.333Z",
   "status": "ok",
-  "remaining": "449",
-  "used": "51",
+  "remaining": "448",
+  "used": "52",
   "sportKey": "soccer_fifa_world_cup",
   "teamCount": 6,
   "teamOdds": {
     "Norway": {
-      "winProb": 0.245,
-      "drawProb": 0.26,
-      "loseProb": 0.495,
+      "winProb": 0.248,
+      "drawProb": 0.259,
+      "loseProb": 0.493,
       "opp": "England",
       "matchTime": 1783803600000
     },
     "England": {
-      "winProb": 0.495,
-      "drawProb": 0.26,
-      "loseProb": 0.245,
+      "winProb": 0.493,
+      "drawProb": 0.259,
+      "loseProb": 0.248,
       "opp": "Norway",
       "matchTime": 1783803600000
     },
     "Argentina": {
-      "winProb": 0.566,
-      "drawProb": 0.267,
-      "loseProb": 0.166,
+      "winProb": 0.567,
+      "drawProb": 0.266,
+      "loseProb": 0.167,
       "opp": "Switzerland",
       "matchTime": 1783818000000
     },
     "Switzerland": {
-      "winProb": 0.166,
-      "drawProb": 0.267,
-      "loseProb": 0.566,
+      "winProb": 0.167,
+      "drawProb": 0.266,
+      "loseProb": 0.567,
       "opp": "Argentina",
       "matchTime": 1783818000000
     },
     "France": {
-      "winProb": 0.407,
-      "drawProb": 0.294,
-      "loseProb": 0.299,
+      "winProb": 0.405,
+      "drawProb": 0.295,
+      "loseProb": 0.3,
       "opp": "Spain",
       "matchTime": 1784055600000
     },
     "Spain": {
-      "winProb": 0.299,
-      "drawProb": 0.294,
-      "loseProb": 0.407,
+      "winProb": 0.3,
+      "drawProb": 0.295,
+      "loseProb": 0.405,
       "opp": "France",
       "matchTime": 1784055600000
     }
@@ -53,25 +53,25 @@
     "England|Norway": {
       "t1": "Norway",
       "t2": "England",
-      "line1": 289,
-      "line2": -108,
+      "line1": 286,
+      "line2": -107,
       "drawLine": 268,
       "matchTime": 1783803600000
     },
     "Argentina|Switzerland": {
       "t1": "Argentina",
       "t2": "Switzerland",
-      "line1": -146,
+      "line1": -145,
       "line2": 475,
-      "drawLine": 257,
+      "drawLine": 260,
       "matchTime": 1783818000000
     },
     "France|Spain": {
       "t1": "France",
       "t2": "Spain",
-      "line1": 134,
-      "line2": 219,
-      "drawLine": 224,
+      "line1": 135,
+      "line2": 217,
+      "drawLine": 223,
       "matchTime": 1784055600000
     }
   }
