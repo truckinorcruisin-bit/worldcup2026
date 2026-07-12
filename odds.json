@@ -1,77 +1,33 @@
 {
-  "fetchedAt": "2026-07-11T19:10:59.874Z",
+  "fetchedAt": "2026-07-12T03:24:22.014Z",
   "status": "ok",
-  "remaining": "447",
-  "used": "53",
+  "remaining": "446",
+  "used": "54",
   "sportKey": "soccer_fifa_world_cup",
-  "teamCount": 6,
+  "teamCount": 2,
   "teamOdds": {
-    "Norway": {
-      "winProb": 0.243,
-      "drawProb": 0.253,
-      "loseProb": 0.504,
-      "opp": "England",
-      "matchTime": 1783803600000
-    },
-    "England": {
-      "winProb": 0.504,
-      "drawProb": 0.253,
-      "loseProb": 0.243,
-      "opp": "Norway",
-      "matchTime": 1783803600000
-    },
-    "Argentina": {
-      "winProb": 0.561,
-      "drawProb": 0.272,
-      "loseProb": 0.167,
-      "opp": "Switzerland",
-      "matchTime": 1783818000000
-    },
-    "Switzerland": {
-      "winProb": 0.167,
-      "drawProb": 0.272,
-      "loseProb": 0.561,
-      "opp": "Argentina",
-      "matchTime": 1783818000000
-    },
     "France": {
-      "winProb": 0.408,
-      "drawProb": 0.294,
-      "loseProb": 0.298,
+      "winProb": 0.412,
+      "drawProb": 0.295,
+      "loseProb": 0.293,
       "opp": "Spain",
       "matchTime": 1784055600000
     },
     "Spain": {
-      "winProb": 0.298,
-      "drawProb": 0.294,
-      "loseProb": 0.408,
+      "winProb": 0.293,
+      "drawProb": 0.295,
+      "loseProb": 0.412,
       "opp": "France",
       "matchTime": 1784055600000
     }
   },
   "matchOdds": {
-    "England|Norway": {
-      "t1": "Norway",
-      "t2": "England",
-      "line1": 293,
-      "line2": -112,
-      "drawLine": 278,
-      "matchTime": 1783803600000
-    },
-    "Argentina|Switzerland": {
-      "t1": "Argentina",
-      "t2": "Switzerland",
-      "line1": -143,
-      "line2": 471,
-      "drawLine": 251,
-      "matchTime": 1783818000000
-    },
     "France|Spain": {
       "t1": "France",
       "t2": "Spain",
-      "line1": 134,
-      "line2": 220,
-      "drawLine": 224,
+      "line1": 131,
+      "line2": 225,
+      "drawLine": 223,
       "matchTime": 1784055600000
     }
   }
