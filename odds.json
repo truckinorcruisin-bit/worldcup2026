@@ -1,8 +1,8 @@
 {
-  "fetchedAt": "2026-07-15T08:21:56.524Z",
+  "fetchedAt": "2026-07-15T13:52:07.490Z",
   "status": "ok",
-  "remaining": "433",
-  "used": "67",
+  "remaining": "432",
+  "used": "68",
   "sportKey": "soccer_fifa_world_cup",
   "teamCount": 2,
   "teamOdds": {
@@ -25,7 +25,7 @@
     "Argentina|England": {
       "t1": "England",
       "t2": "Argentina",
-      "line1": 170,
+      "line1": 171,
       "line2": 203,
       "drawLine": 188,
       "matchTime": 1784142000000
