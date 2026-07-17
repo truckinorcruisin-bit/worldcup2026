@@ -1,36 +1,36 @@
 {
-  "fetchedAt": "2026-07-17T02:57:41.682Z",
+  "fetchedAt": "2026-07-17T08:17:37.995Z",
   "status": "ok",
-  "remaining": "426",
-  "used": "74",
+  "remaining": "425",
+  "used": "75",
   "sportKey": "soccer_fifa_world_cup",
   "teamCount": 4,
   "teamOdds": {
     "France": {
       "winProb": 0.504,
-      "drawProb": 0.246,
-      "loseProb": 0.25,
+      "drawProb": 0.247,
+      "loseProb": 0.249,
       "opp": "England",
       "matchTime": 1784408400000
     },
     "England": {
-      "winProb": 0.25,
-      "drawProb": 0.246,
+      "winProb": 0.249,
+      "drawProb": 0.247,
       "loseProb": 0.504,
       "opp": "France",
       "matchTime": 1784408400000
     },
     "Spain": {
-      "winProb": 0.419,
-      "drawProb": 0.316,
-      "loseProb": 0.265,
+      "winProb": 0.417,
+      "drawProb": 0.318,
+      "loseProb": 0.266,
       "opp": "Argentina",
       "matchTime": 1784487600000
     },
     "Argentina": {
-      "winProb": 0.265,
-      "drawProb": 0.316,
-      "loseProb": 0.419,
+      "winProb": 0.266,
+      "drawProb": 0.318,
+      "loseProb": 0.417,
       "opp": "Spain",
       "matchTime": 1784487600000
     }
@@ -41,15 +41,15 @@
       "t2": "England",
       "line1": -112,
       "line2": 282,
-      "drawLine": 287,
+      "drawLine": 285,
       "matchTime": 1784408400000
     },
     "Argentina|Spain": {
       "t1": "Spain",
       "t2": "Argentina",
-      "line1": 128,
-      "line2": 260,
-      "drawLine": 202,
+      "line1": 129,
+      "line2": 259,
+      "drawLine": 200,
       "matchTime": 1784487600000
     }
   }
