@@ -1,34 +1,8 @@
 {
-  "fetchedAt": "2026-07-19T19:11:56.427Z",
-  "status": "ok",
-  "remaining": "415",
-  "used": "85",
-  "sportKey": "soccer_fifa_world_cup",
-  "teamCount": 2,
-  "teamOdds": {
-    "Spain": {
-      "winProb": 0.427,
-      "drawProb": 0.316,
-      "loseProb": 0.257,
-      "opp": "Argentina",
-      "matchTime": 1784487900000
-    },
-    "Argentina": {
-      "winProb": 0.257,
-      "drawProb": 0.316,
-      "loseProb": 0.427,
-      "opp": "Spain",
-      "matchTime": 1784487900000
-    }
-  },
-  "matchOdds": {
-    "Argentina|Spain": {
-      "t1": "Spain",
-      "t2": "Argentina",
-      "line1": 121,
-      "line2": 268,
-      "drawLine": 199,
-      "matchTime": 1784487900000
-    }
-  }
+  "fetchedAt": "2026-07-20T03:34:40.858Z",
+  "status": "no_wc_market",
+  "detail": "Sport key \"soccer_fifa_club_world_cup\" returned 0 matches. Remaining API calls: 415",
+  "teamCount": 0,
+  "teamOdds": {},
+  "matchOdds": {}
 }
