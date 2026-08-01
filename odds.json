@@ -1,7 +1,7 @@
 {
-  "fetchedAt": "2026-07-31T19:40:32.644Z",
+  "fetchedAt": "2026-08-01T03:23:48.377Z",
   "status": "no_wc_market",
-  "detail": "Sport key \"soccer_fifa_club_world_cup\" returned 0 matches. Remaining API calls: 415",
+  "detail": "Sport key \"soccer_fifa_club_world_cup\" returned 0 matches. Remaining API calls: 500",
   "teamCount": 0,
   "teamOdds": {},
   "matchOdds": {}
